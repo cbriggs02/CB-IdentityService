@@ -30,7 +30,7 @@ namespace IdentityServiceApi.Services.Logging
         ///     logging context data is available before logging occurs.
         /// </exception>
         public void ValidateContextData(string value, string fieldName)
-        {
+        {   
             ValidateNotNullOrEmpty(fieldName, nameof(fieldName));
 
             if (string.IsNullOrEmpty(value))
