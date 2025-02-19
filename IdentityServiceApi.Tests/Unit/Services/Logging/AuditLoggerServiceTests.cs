@@ -17,7 +17,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
-    [Trait("Category", "UnitTest")]
+    [Trait("TestCategory", "UnitTest")]
     public class AuditLoggerServiceTests
     {
         private readonly Mock<ApplicationDbContext> _dbContextMock;

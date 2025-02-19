@@ -16,7 +16,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
-    [Trait("Category", "UnitTest")]
+    [Trait("TestCategory", "UnitTest")]
     public class UserContextServiceTests
     {
         private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
