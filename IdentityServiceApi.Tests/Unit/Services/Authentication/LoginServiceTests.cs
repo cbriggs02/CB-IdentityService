@@ -426,7 +426,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
         ///     expected validation methods during test execution.
         /// </summary>
         /// <param name="numberOfTimes">
-        ///     number of times <see cref="_parameterValidatorMock.ValidateNotNullOrEmpty"/> is expected to be called.
+        ///     number of times <see cref="IParameterValidator.ValidateNotNullOrEmpty"/> is expected to be called.
         /// </param>
         private void VerifyCallsToParameterService(int numberOfTimes)
         {

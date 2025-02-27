@@ -17,7 +17,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
     /// </summary>
     /// <remarks>
     ///     @Author: Christian Briglio
-    ///     @Created: 2024
+    ///     @Created: 2025
     /// </remarks>
     [Trait("TestCategory", "UnitTest")]
     public class ExceptionLoggerServiceTests

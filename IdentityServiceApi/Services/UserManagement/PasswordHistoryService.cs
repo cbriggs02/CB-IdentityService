@@ -130,7 +130,7 @@ namespace IdentityServiceApi.Services.UserManagement
 
             return true;
         }
-
+        
         /// <summary>
         ///     Asynchronously removes old password entries for a user, keeping only the most recent five.
         /// </summary>
