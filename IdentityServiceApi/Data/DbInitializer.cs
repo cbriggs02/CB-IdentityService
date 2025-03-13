@@ -71,15 +71,6 @@ namespace IdentityServiceApi.Data
             }
         }
 
-        /// <summary>
-        ///     Asynchronously initializes users by seeding default users and the admin user if no users exist.
-        /// </summary>
-        /// <param name="userManager">
-        ///     The <see cref="UserManager{TUser}"/> used to manage user creation.
-        /// </param>
-        /// <returns>
-        ///     A task that represents the asynchronous operation.
-        /// </returns>
         private static async Task InitializeUsers(UserManager<User> userManager)
         {
             await SeedDefaultUsers(userManager);
@@ -87,29 +78,11 @@ namespace IdentityServiceApi.Data
             await SeedSuper(userManager);
         }
 
-        /// <summary>
-        ///     Asynchronously initializes roles by seeding them if they do not already exist.
-        /// </summary>
-        /// <param name="roleManager">
-        ///     The <see cref="RoleManager{IdentityRole}"/> used to manage roles.
-        /// </param>
-        /// <returns>
-        ///     A task that represents the asynchronous operation.
-        /// </returns>
         private static async Task InitializeRoles(RoleManager<IdentityRole> roleManager)
         {
             await SeedRoles(roleManager);
         }
 
-        /// <summary>
-        ///     Asynchronously seeds the database with a list of default users if no users exist.
-        /// </summary>
-        /// <param name="userManager">
-        ///     The <see cref="UserManager{TUser}"/> used to manage user creation.
-        /// </param>
-        /// <returns>
-        ///     A task that represents the asynchronous operation.
-        /// </returns>
         private static async Task SeedDefaultUsers(UserManager<User> userManager)
         {
             const string password = "P@s_s8w0rd!";
@@ -135,15 +108,6 @@ namespace IdentityServiceApi.Data
             }
         }
 
-        /// <summary>
-        ///     Asynchronously seeds an super admin user with a specified email and assigns the "SuperAdmin" role.
-        /// </summary>
-        /// <param name="userManager">
-        ///     The <see cref="UserManager{TUser}"/> used to manage user creation and role assignment.
-        /// </param>
-        /// <returns>
-        ///     A task that represents the asynchronous operation.
-        /// </returns>
         private static async Task SeedSuper(UserManager<User> userManager)
         {
             const string Email = "super@admin.com";
@@ -176,15 +140,6 @@ namespace IdentityServiceApi.Data
             }
         }
 
-        /// <summary>
-        ///     Asynchronously seeds an admin user with a specified email and assigns the "Admin" role.
-        /// </summary>
-        /// <param name="userManager">
-        ///     The <see cref="UserManager{TUser}"/> used to manage user creation and role assignment.
-        /// </param>
-        /// <returns>
-        ///     A task that represents the asynchronous operation.
-        /// </returns>
         private static async Task SeedAdmin(UserManager<User> userManager)
         {
             const string Email = "admin@admin.com";
@@ -217,15 +172,6 @@ namespace IdentityServiceApi.Data
             }
         }
 
-        /// <summary>
-        ///     Asynchronously seeds the default roles in the database if they do not already exist.
-        /// </summary>
-        /// <param name="roleManager">
-        ///     The <see cref="RoleManager{IdentityRole}"/> used to manage roles.
-        /// </param>
-        /// <returns>
-        ///     A task that represents the asynchronous operation.
-        /// </returns>
         private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
         {
             string[] roleNames = { Roles.SuperAdmin, Roles.Admin, Roles.User };

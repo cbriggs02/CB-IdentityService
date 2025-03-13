@@ -141,13 +141,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             VerifyCallsToParameterService();
         }
 
-        /// <summary>
-        ///     Configures the mock for <see cref="IAuthorizationService"/> to return a specified permission result
-        ///     when validating a user's permission status.
-        /// </summary>
-        /// <param name="hasPermission">
-        ///     Indicates whether the user has permission (true) or lacks permission (false).
-        /// </param>
         private void ArrangeAuthorizationServiceMock(bool hasPermission)
         {
             _authServiceMock
@@ -155,10 +148,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .ReturnsAsync(hasPermission);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="IParameterValidator"/> service's <c>ValidateNotNullOrEmpty</c> method 
-        ///     was called exactly once during the test.
-        /// </summary>
         private void VerifyCallsToParameterService()
         {
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);

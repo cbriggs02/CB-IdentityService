@@ -69,56 +69,22 @@ namespace IdentityServiceApi.Middleware
             ConsoleLogPerformanceMetrics(context, requestId, requestDuration, cpuUsage); 
         }
 
-        /// <summary>
-        ///     Starts the <see cref="Stopwatch"/> to measure the duration of the HTTP request.
-        /// </summary>
-        /// <returns>
-        ///     An instance of a started <see cref="Stopwatch"/>.
-        /// </returns>
         private static Stopwatch StartRequestTimer()
         {
             return Stopwatch.StartNew();
         }
 
-        /// <summary>
-        ///     Stops the <see cref="Stopwatch"/> and returns the elapsed time in milliseconds.
-        /// </summary>
-        /// <param name="stopwatch">
-        ///     The <see cref="Stopwatch"/> instance used to measure the request duration.
-        /// </param>
-        /// <returns>
-        ///     The total elapsed time of the request in milliseconds.
-        /// </returns>
         private static long StopRequestTimer(Stopwatch stopwatch)
         {
             stopwatch.Stop();
             return stopwatch.ElapsedMilliseconds;
         }
 
-        /// <summary>
-        ///     Retrieves the total CPU usage of the current process.
-        /// </summary>
-        /// <returns>
-        ///     The total processor time consumed by the process in milliseconds.
-        /// </returns>
         private static double GetCpuUsage()
         {
             return Process.GetCurrentProcess().TotalProcessorTime.TotalMilliseconds;
         }
 
-        /// <summary>
-        ///     Asynchronously checks the performance of the request based on the request duration.
-        ///     If the request duration exceeds the threshold (e.g., 1000ms), logs it via the logger service.
-        /// </summary>
-        /// <param name="requestDuration">
-        ///     The total request processing time in milliseconds.
-        /// </param>
-        /// <param name="loggerService">
-        ///     The service used for logging slow performance metrics.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation.
-        /// </returns>
         private async Task CheckPerformance(long requestDuration, ILoggerService loggerService)
         {
             if (requestDuration > performanceThreshold)
@@ -129,21 +95,6 @@ namespace IdentityServiceApi.Middleware
 
         }
 
-        /// <summary>
-        ///     Logs the performance metrics, including request ID, request path, response status code, request duration, and CPU usage.
-        /// </summary>
-        /// <param name="context">
-        ///     The <see cref="HttpContext"/> containing details of the HTTP request and response.
-        /// </param>
-        /// <param name="requestId">
-        ///     A unique identifier for the request.
-        /// </param>
-        /// <param name="requestDuration">
-        ///     The total time taken to process the request in milliseconds.
-        /// </param>
-        /// <param name="cpuUsage">
-        ///     The CPU time consumed by the request, in milliseconds.
-        /// </param>
         private void ConsoleLogPerformanceMetrics(HttpContext context, string requestId, long requestDuration, double cpuUsage)
         {
             string metrics = $"Request ID: {requestId}, " +

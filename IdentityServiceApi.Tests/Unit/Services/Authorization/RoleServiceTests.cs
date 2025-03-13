@@ -491,8 +491,8 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeUserLookupServiceMock(user, userId, "");
 
             _roleManagerMock
-              .Setup(r => r.RoleExistsAsync(It.IsAny<string>()))
-              .ReturnsAsync(true);
+                .Setup(r => r.RoleExistsAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _userManagerMock
                 .Setup(u => u.GetRolesAsync(user))
                 .ReturnsAsync(new List<string>());
@@ -652,18 +652,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             _userManagerMock.Verify(u => u.RemoveFromRoleAsync(It.IsAny<User>(), It.IsAny<string>()), Times.Never);
         }
 
-        /// <summary>
-        ///     Sets up a mock for the user lookup service to simulate finding a user by their ID.
-        /// </summary>
-        /// <param name="user">
-        ///     The user object to be returned if found; pass <c>null</c> if the user is not found.
-        /// </param>
-        /// <param name="userId">
-        ///     The ID of the user to be searched for in the mock setup.
-        /// </param>
-        /// <param name="expectedErrorMessage">
-        ///     The error message to include in the result if the user is not found.
-        /// </param>
         private void ArrangeUserLookupServiceMock(User user, string userId, string expectedErrorMessage)
         {
             _userLookupServiceMock
@@ -681,29 +669,12 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                     });
         }
 
-        /// <summary>
-        ///     Creates a mock <see cref="User"/> object with the specified account status.
-        /// </summary>
-        /// <param name="accountStatus">
-        ///     The account status to set for the mock user. This could indicate whether the user is active or inactive.
-        /// </param>
-        /// <returns>
-        ///     A <see cref="User"/> object initialized with the specified account status and a predefined username.
-        /// </returns>
         private static User CreateMockUser(bool accountStatus)
         {
             const string mockUserName = "test-user";
             return new User { UserName = mockUserName, AccountStatus = accountStatus ? 1 : 0 };
         }
 
-        /// <summary>
-        ///     Sets up the mock service factory result to return a 
-        ///     <see cref="ServiceResult"/> indicating a failure with the specified error message.
-        /// </summary>
-        /// <param name="expectedErrorMessage">
-        ///     The expected error message to be included in the 
-        ///     <see cref="ServiceResult"/> indicating the reason for failure.
-        /// </param>
         private void ArrangeFailureServiceResult(string expectedErrorMessage)
         {
             var result = new ServiceResult
@@ -717,10 +688,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Returns(result);
         }
 
-        /// <summary>
-        ///     Sets up the mock service factory result to return a 
-        ///     <see cref="ServiceResult"/> indicating a success..
-        /// </summary>
         private void ArrangeSuccessServiceResult()
         {
             _serviceResultFactoryMock
@@ -728,25 +695,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Returns(new ServiceResult { Success = true });
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="_userLookupServiceMock"/> mock was called once
-        ///     to find a user by the specified id.
-        /// </summary>
-        /// <param name="id">
-        ///     The id string used as the parameter to look up the user in the test.
-        /// </param>
         private void VerifyCallsToLookupService(string id)
         {
             _userLookupServiceMock.Verify(l => l.FindUserById(id), Times.Once);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="_parameterValidatorMock"/> mock was called with 
-        ///     expected validation methods during test execution.
-        /// </summary>
-        /// <param name="numberOfTimes">
-        ///     number of times <see cref="_parameterValidatorMock.ValidateNotNullOrEmpty"/> is expected to be called.
-        /// </param>
         private void VerifyCallsToParameterService(int numberOfTimes)
         {
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(numberOfTimes));

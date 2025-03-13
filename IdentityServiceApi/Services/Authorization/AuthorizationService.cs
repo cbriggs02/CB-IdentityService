@@ -95,23 +95,6 @@ namespace IdentityServiceApi.Services.Authorization
         }
 
         /// <summary>
-        ///     Determines if the current user is accessing their own data.
-        /// </summary>
-        /// <param name="userId">
-        ///     The ID of the target user being accessed.
-        /// </param>
-        /// <param name="currentUserId">
-        ///     The ID of the current authenticated user.
-        /// </param>
-        /// <returns>
-        ///     True if the current user is accessing their own data; otherwise, false.
-        /// </returns>
-        private static bool IsSelfAccess(string userId, string currentUserId)
-        {
-            return userId.Equals(currentUserId, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
         ///     Asynchronously validates whether an admin user has permission to perform actions on another user.
         ///     Admin users can access any user except other admins.
         /// </summary>
@@ -157,30 +140,17 @@ namespace IdentityServiceApi.Services.Authorization
             return true;
         }
 
-        /// <summary>
-        ///     Asynchronously checks if the target user is an admin.
-        /// </summary>
-        /// <param name="user">
-        ///     The target user whose roles are being checked.
-        /// </param>
-        /// <returns>
-        ///     True if the target user is an admin; otherwise, false.
-        /// </returns>
+        private static bool IsSelfAccess(string userId, string currentUserId)
+        {
+            return userId.Equals(currentUserId, StringComparison.OrdinalIgnoreCase);
+        }
+
         private async Task<bool> IsTargetAdmin(User user)
         {
             var targetUserRoles = await _userManager.GetRolesAsync(user);
             return targetUserRoles.Any(role => role == Roles.Admin);
         }
 
-        /// <summary>
-        ///     Asynchronously checks if the target user is an super admin.
-        /// </summary>
-        /// <param name="user">
-        ///     The target user whose roles are being checked.
-        /// </param>
-        /// <returns>
-        ///     True if the target user is an super admin; otherwise, false.
-        /// </returns>
         private async Task<bool> IsTargetSuperAdmin(User user)
         {
             var targetUserRoles = await _userManager.GetRolesAsync(user);

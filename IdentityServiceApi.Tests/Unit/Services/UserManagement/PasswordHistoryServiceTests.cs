@@ -120,15 +120,25 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 
             var request = new StorePasswordHistoryRequest { UserId = UserId, PasswordHash = passwordHash };
 
+            var passwordHistory = new PasswordHistory
+            {
+                UserId = request.UserId,
+                PasswordHash = request.PasswordHash,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            _dbContextMock.Setup(a => a.Add(passwordHistory));
+
             // Act
             await _passwordHistoryService.AddPasswordHistory(request);
 
             // Assert
-
             using var context = new ApplicationDbContext();
             var historyRecord = context.PasswordHistories.FirstAsync(x => x.UserId == UserId);
 
             Assert.NotNull(historyRecord);
+
+            _dbContextMock.Verify(a => a.Add(passwordHistory), Times.Once());
         }
 
         /// <summary>
@@ -214,13 +224,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="_parameterValidatorMock"/> mock was called with 
-        ///     expected validation methods during test execution.
-        /// </summary>
-        /// <param name="numberOfTimes">
-        ///     number of times <see cref="IParameterValidator.ValidateNotNullOrEmpty"/> is expected to be called.
-        /// </param>
         private void VerifyCallsToParameterService(int numberOfTimes)
         {
             _parameterValidatorMock.Verify(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()), Times.Once);

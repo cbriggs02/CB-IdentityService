@@ -239,48 +239,17 @@ namespace IdentityServiceApi.Services.Authorization
             return _serviceResultFactory.GeneralOperationSuccess();
         }
 
-        /// <summary>
-        ///     Asynchronously determines whether the specified role exists in the system.
-        /// </summary>
-        /// <param name="roleName">
-        ///     The name of the role to check for existence.
-        /// </param>
-        /// <returns>
-        ///     A Boolean value indicating whether the specified role exists.
-        ///     Returns true if the role exists; otherwise, false.
-        /// </returns>
         private async Task<bool> DoesRoleExist(string roleName)
         {
             return await _roleManager.RoleExistsAsync(roleName);
         }
 
-        /// <summary>
-        ///     Asynchronously verifies if the specified user is assigned to the given role.
-        /// </summary>
-        /// <param name="user">
-        ///     The user whose roles are being checked.
-        /// </param>
-        /// <param name="roleName">
-        ///     The name of the role to check for.
-        /// </param>
-        /// <returns>
-        ///     A boolean value indicating whether the user has the specified role.
-        /// </returns>
         private async Task<bool> HasRole(User user, string roleName)
         {
             var roles = await _userManager.GetRolesAsync(user);
             return roles.Any(role => role == roleName);
         }
 
-        /// <summary>
-        ///     Determines if the specified user is active based on their account status.
-        /// </summary>
-        /// <param name="user">
-        ///     The user whose account status is being checked.
-        /// </param>
-        /// <returns>
-        ///     True if the user is active (i.e., AccountStatus is 1); otherwise, false.
-        /// </returns>
         private static bool IsUserActive(User user)
         {
             return user.AccountStatus == 1;

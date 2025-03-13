@@ -288,15 +288,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             Assert.Null(result);
         }
 
-        /// <summary>
-        ///     Creates a DefaultHttpContext with the specified user's name.
-        /// </summary>
-        /// <param name="userName">
-        ///     The name of the authenticated user.
-        /// </param>
-        /// <returns>
-        ///     A configured DefaultHttpContext.
-        /// </returns>
         private static DefaultHttpContext CreateHttpContextWithUser(string userName)
         {
             var claimsPrincipal = CreateClaimsPrincipalWithUserName(userName);
@@ -308,15 +299,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             return httpContext;
         }
 
-        /// <summary>
-        ///     Creates a ClaimsPrincipal with the specified user's ID.
-        /// </summary>
-        /// <param name="userId">
-        ///     The ID of the authenticated user.
-        /// </param>
-        /// <returns>
-        ///     A configured ClaimsPrincipal.
-        /// </returns>
         private static ClaimsPrincipal CreateClaimsPrincipalWithUserId(string userId)
         {
             var claims = new List<Claim>
@@ -326,15 +308,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             return CreateClaimsPrincipal(claims);
         }
 
-        /// <summary>
-        ///     Creates a ClaimsPrincipal with the specified user's name.
-        /// </summary>
-        /// <param name="userName">
-        ///     The name of the authenticated user.
-        /// </param>
-        /// <returns>
-        ///     A configured ClaimsPrincipal.
-        /// </returns>
         private static ClaimsPrincipal CreateClaimsPrincipalWithUserName(string userName)
         {
             var claims = new List<Claim>
@@ -344,15 +317,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             return CreateClaimsPrincipal(claims);
         }
 
-        /// <summary>
-        ///     Creates a ClaimsPrincipal with the specified roles for testing purposes.
-        /// </summary>
-        /// <param name="roles">
-        ///     The list of roles to add to the claims principal.
-        /// </param>
-        /// <returns>
-        ///     A ClaimsPrincipal containing the specified roles.
-        /// </returns>
         private static ClaimsPrincipal CreateClaimsPrinciplesWithRoles(List<string> roles)
         {
             var claims = new List<Claim>();
@@ -364,15 +328,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             return CreateClaimsPrincipal(claims);
         }
 
-        /// <summary>
-        ///     Creates a ClaimsPrincipal with the given claims.
-        /// </summary>
-        /// <param name="claims">
-        ///     A list of claims to include in the ClaimsPrincipal.
-        /// </param>
-        /// <returns>
-        ///     A configured ClaimsPrincipal.
-        /// </returns>
         private static ClaimsPrincipal CreateClaimsPrincipal(IEnumerable<Claim> claims)
         {
             const string authenticationType = "TestAuthentication";

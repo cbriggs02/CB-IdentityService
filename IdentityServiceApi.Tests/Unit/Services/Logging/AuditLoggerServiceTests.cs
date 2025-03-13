@@ -186,15 +186,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
             VerifyCallsToDbContextSaveChanges();
         }
 
-        /// <summary>
-        ///     Creates an instance of <see cref="AuditLog"/> with predefined properties.
-        /// </summary>
-        /// <param name="action">
-        ///     The action performed, represented by an <see cref="AuditAction"/> enumeration value.
-        /// </param>
-        /// <returns>
-        ///     A new <see cref="AuditLog"/> object with the specified action and other preset properties.
-        /// </returns>
         private static AuditLog CreateAuditLogObject(AuditAction action)
         {
             return new AuditLog
@@ -208,15 +199,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
             };
         }
 
-        /// <summary>
-        ///     Sets up mock behavior for database operations related to removing an <see cref="AuditLog"/> entity.
-        /// </summary>
-        /// <param name="log">
-        ///     The <see cref="AuditLog"/> instance to be removed.
-        /// </param>
-        /// <param name="operationStatus">
-        ///     A boolean indicating whether the operation should succeed (true) or fail (false).
-        /// </param>
         private void SetupAuditLogEntityRemoveOperationMocks(AuditLog log, bool operationStatus)
         {
             _dbContextMock
@@ -230,14 +212,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .ReturnsAsync(operationStatus ? 1 : 0);
         }
 
-        /// <summary>
-        ///     Sets up the mock service factory result to return a 
-        ///     <see cref="ServiceResult"/> indicating a failure with the specified error message.
-        /// </summary>
-        /// <param name="expectedErrorMessage">
-        ///     The expected error message to be included in the 
-        ///     <see cref="ServiceResult"/> indicating the reason for failure.
-        /// </param>
         private void ArrangeFailureServiceResult(string expectedErrorMessage)
         {
             var result = new ServiceResult
@@ -251,44 +225,22 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .Returns(result);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="IParameterValidator.ValidateNotNullOrEmpty"/> 
-        ///     method is called a specified number of times during the test execution.
-        /// </summary>
-        /// <param name="numOfTimes">
-        ///     The number of times the validation is expected to be called.
-        /// </param>
         private void VerifyCallsToParameterServiceForStringValidation(int numOfTimes)
         {
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(numOfTimes));
 
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="IParameterValidator.ValidateObjectNotNull"/> 
-        ///     method is called exactly once during the test execution.
-        /// </summary>
         private void VerifyCallsToParameterServiceForObjectValidation()
         {
             _parameterValidatorMock.Verify(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="ApplicationDbContext.AuditLogs.FindAsync"/> 
-        ///     method is called exactly once with the specified ID during the test execution.
-        /// </summary>
-        /// <param name="id">
-        ///     The ID of the audit log expected to be passed to the method.
-        /// </param>
         private void VerifyCallsToDbContextFindAsync(string id)
         {
             _dbContextMock.Verify(f => f.AuditLogs.FindAsync(id), Times.Once);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="ApplicationDbContext.SaveChangesAsync"/> 
-        ///     method is called exactly once during the test execution.
-        /// </summary>
         private void VerifyCallsToDbContextSaveChanges()
         {
             _dbContextMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);

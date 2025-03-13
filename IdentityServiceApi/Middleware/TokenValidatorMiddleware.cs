@@ -84,16 +84,6 @@ namespace IdentityServiceApi.Middleware
             await _next(context);
         }
 
-        /// <summary>
-        ///     Extracts the user ID from the claims contained in the <see cref="ClaimsPrincipal"/>.
-        /// </summary>
-        /// <param name="principal">
-        ///     The <see cref="ClaimsPrincipal"/> representing the authenticated user.
-        /// </param>
-        /// <returns>
-        /// <returns>
-        ///     The user ID as a string if found in the claims; otherwise, null.
-        /// </returns>
         private static string GetUserIdFromClaims(ClaimsPrincipal principal)
         {
             var identity = principal.Identity as ClaimsIdentity;
@@ -101,21 +91,6 @@ namespace IdentityServiceApi.Middleware
             return userClaim?.Value;
         }
 
-        /// <summary>
-        ///     Handles an authorization breach by logging the incident and responding with a 401 Unauthorized status.
-        /// </summary>
-        /// <param name="context">
-        ///     The <see cref="HttpContext"/> for the current request.
-        /// </param>
-        /// <param name="loggerService">
-        ///     The logger service for recording the breach.
-        /// </param>
-        /// <param name="reason">
-        ///     The reason for the authorization breach.
-        /// </param>
-        /// <param name="userId">
-        ///     The ID of the user involved in the breach.
-        /// </param>
         private async Task HandleAuthorizationBreach(HttpContext context, ILoggerService loggerService, string reason, string userId)
         {
             var correlationId = Guid.NewGuid().ToString();
@@ -124,29 +99,11 @@ namespace IdentityServiceApi.Middleware
             await WriteServerUnauthorizedResponse(context, correlationId); // Return 401 status to client
         }
 
-        /// <summary>
-        ///     Logs an unauthorized access attempt to the application console and the logger.
-        /// </summary>
-        /// <param name="reason">
-        ///     The reason for the unauthorized access attempt, providing context for the breach.
-        /// </param>
-        /// <param name="userId">
-        ///     The unique identifier of the user involved in the unauthorized access attempt.
-        /// </param>
         private void ConsoleLogAuthorizationBreach(string reason, string userId)
         {
             _logger.LogWarning($"Unauthorized access attempt: Reason: {reason}, UserId: {userId}");
         }
 
-        /// <summary>
-        ///     Asynchronously logs an unauthorized access attempt and responds with a 401 Unauthorized status code.
-        /// </summary>
-        /// <param name="context">
-        ///     The <see cref="HttpContext"/> for the current request.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation of sending the unauthorized response.
-        /// </returns>
         private static async Task WriteServerUnauthorizedResponse(HttpContext context, string correlationId)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;

@@ -116,7 +116,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             var result = await _authorizationService.ValidatePermission(targetUserId);
 
             // Assert
-            Assert.NotNull(result);
             Assert.True(result);
 
             VerifyCallsToUserContextService(claimsPrincipal);
@@ -682,18 +681,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             Assert.False(result);
         }
 
-        /// <summary>
-        ///     Creates a <see cref="ClaimsPrincipal"/> instance with the specified user ID and role.
-        /// </summary>
-        /// <param name="currentUserId">
-        ///     The ID of the current user.
-        /// </param>
-        /// <param name="role">
-        ///     The role of the current user.
-        /// </param>
-        /// <returns>
-        ///     A <see cref="ClaimsPrincipal"/> with the specified claims.
-        /// </returns>
         private static ClaimsPrincipal CreateClaimsPrinciple(string currentUserId, string role)
         {
             return new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
@@ -703,13 +690,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             }));
         }
 
-        /// <summary>
-        ///     Sets up a mock for retrieving the current <see cref="ClaimsPrincipal"/> 
-        ///     from the user context service to be used in tests.
-        /// </summary>
-        /// <param name="claimsPrincipal">
-        ///     The <see cref="ClaimsPrincipal"/> instance to return when requested.
-        /// </param>
         private void ArrangeClaimsPrinciple(ClaimsPrincipal claimsPrincipal)
         {
             _userContextServiceMock
@@ -717,16 +697,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Returns(claimsPrincipal);
         }
 
-        /// <summary>
-        ///     Sets up a mock for retrieving a user ID from a specified <see cref="ClaimsPrincipal"/> 
-        ///     in the user context service.
-        /// </summary>
-        /// <param name="currentUserId">
-        ///     The user ID that should be returned by the mock.
-        /// </param>
-        /// <param name="claimsPrincipal">
-        ///     The <see cref="ClaimsPrincipal"/> used to identify the user.
-        /// </param>
         private void ArrangeGetUserIdFromClaims(string currentUserId, ClaimsPrincipal claimsPrincipal)
         {
             _userContextServiceMock
@@ -734,16 +704,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Returns(currentUserId);
         }
 
-        /// <summary>
-        ///     Sets up a mock for retrieving a role associated with a specified <see cref="ClaimsPrincipal"/> 
-        ///     in the user context service.
-        /// </summary>
-        /// <param name="claimsPrincipal">
-        ///     The <see cref="ClaimsPrincipal"/> for which roles will be retrieved.
-        /// </param>
-        /// <param name="role">
-        ///     The role to be returned by the mock.
-        /// </param>
         private void ArrangeGetRolesForClaimsPrincipal(ClaimsPrincipal claimsPrincipal, string role)
         {
             _userContextServiceMock
@@ -751,16 +711,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Returns(new List<string> { role });
         }
 
-        /// <summary>
-        ///     Sets up a mock for retrieving roles assigned to a specific <see cref="User"/> 
-        ///     in the user manager service.
-        /// </summary>
-        /// <param name="targetUser">
-        ///     The <see cref="User"/> for whom roles will be retrieved.
-        /// </param>
-        /// <param name="role">
-        ///     The role to be returned by the mock.
-        /// </param>
         private void ArrangeGetRolesForUser(User targetUser, string role)
         {
             _userManagerMock
@@ -768,12 +718,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .ReturnsAsync(new List<string> { role });
         }
 
-        /// <summary>
-        ///     Prepares a mock result for the user lookup service to return a successful user lookup operation.
-        /// </summary>
-        /// <param name="user">
-        ///     The <see cref="User"/> object representing the user to be returned by the mock service.
-        /// </param>
         private void ArrangeUserLookupResult(User user)
         {
             var result = new UserLookupServiceResult
@@ -787,38 +731,17 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .ReturnsAsync(result);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="_userContextServiceMock"/> mock methods were called as expected
-        ///     when retrieving the claims principal and user ID.
-        /// </summary>
-        /// <param name="claimsPrincipal">
-        ///     The <see cref="ClaimsPrincipal"/> instance representing the user's identity in the test context.
-        /// </param>
         private void VerifyCallsToUserContextService(ClaimsPrincipal claimsPrincipal)
         {
             _userContextServiceMock.Verify(p => p.GetClaimsPrincipal(), Times.Once);
             _userContextServiceMock.Verify(u => u.GetUserId(claimsPrincipal), Times.Once);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="_userContextServiceMock"/> mock method for retrieving user roles
-        ///     was called exactly once.
-        /// </summary>
-        /// <param name="claimsPrincipal">
-        ///     The <see cref="ClaimsPrincipal"/> instance representing the user's identity in the test context.
-        /// </param>
         private void VerifyCallsToUserContextServiceForRoles(ClaimsPrincipal claimsPrincipal)
         {
             _userContextServiceMock.Verify(r => r.GetRoles(claimsPrincipal), Times.Once);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="_userLookupServiceMock"/> mock method for finding a user by ID
-        ///     was called exactly once.
-        /// </summary>
-        /// <param name="id">
-        ///     The unique identifier of the user to be retrieved.
-        /// </param>
         private void VerifyCallsToUserLookupService(string id)
         {
             _userLookupServiceMock.Verify(x => x.FindUserById(id), Times.Once);

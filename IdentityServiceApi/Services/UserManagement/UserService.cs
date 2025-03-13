@@ -368,14 +368,6 @@ namespace IdentityServiceApi.Services.UserManagement
             return _userServiceResultFactory.GeneralOperationSuccess();
         }
 
-        /// <summary>
-        ///     Validates the properties of the provided <see cref="UserDTO"/> object to ensure
-        ///     it is properly initialized and contains all required data.
-        /// </summary>
-        /// <param name="user">
-        ///     The <see cref="UserDTO"/> instance to validate. Expected to contain
-        ///     values for properties such as UserName, FirstName, LastName, Email, PhoneNumber, and Country.
-        /// </param>
         private void ValidateUserDTO(UserDTO user)
         {
             _parameterValidator.ValidateObjectNotNull(user, nameof(user));

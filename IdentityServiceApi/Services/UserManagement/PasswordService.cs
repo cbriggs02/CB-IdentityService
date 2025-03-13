@@ -168,16 +168,6 @@ namespace IdentityServiceApi.Services.UserManagement
             return _serviceResultFactory.GeneralOperationSuccess();
         }
 
-        /// <summary>
-        ///     Asynchronously records the current password of the user in the password history.
-        /// </summary>
-        /// <param name="user">
-        ///     The user whose password history is being recorded. This object should contain the user's ID and the current password hash.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation. The task completes when the password history record has
-        ///     been successfully added to the database.
-        /// </returns>
         private async Task CreatePasswordHistory(User user)
         {
             var passwordHistoryRequest = new StorePasswordHistoryRequest
@@ -189,21 +179,6 @@ namespace IdentityServiceApi.Services.UserManagement
             await _historyService.AddPasswordHistory(passwordHistoryRequest);
         }
 
-        /// <summary>
-        ///     Asynchronously checks if the specified password has been used previously by the specified user.
-        /// </summary>
-        /// <param name="userId">
-        ///     The ID of the user whose password history is being checked.
-        /// </param>
-        /// <param name="password">
-        ///     The password to check against the user's password history.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation. The result is a boolean indicating whether the password
-        ///     has been previously used:
-        ///     - true if the password is found in the user's history, indicating potential re-use.
-        ///     - false if the password is not found, indicating no re-use.
-        /// </returns>
         private async Task<bool> IsPasswordReused(string userId, string password)
         {
             var request = new SearchPasswordHistoryRequest

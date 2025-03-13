@@ -324,18 +324,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             VerifyCallsToParameterService(2);
         }
 
-        /// <summary>
-        ///     Sets up the configuration mock with the given JWT settings.
-        /// </summary>
-        /// <param name="issuer">
-        ///     The valid issuer value.
-        /// </param>
-        /// <param name="audience">
-        ///     The valid audience value.
-        /// </param>
-        /// <param name="secretKey">
-        ///     The secret key value.
-        /// </param>
         private void SetupConfiguration(string issuer, string audience, string secretKey)
         {
             _configurationMock
@@ -349,46 +337,17 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
                 .Returns(secretKey);
         }
 
-        /// <summary>
-        ///     Creates a new <see cref="LoginRequest"/> object with the specified password and user information.
-        /// </summary>
-        /// <param name="password">
-        ///     The password to use for the login request.
-        /// </param>
-        /// <param name="user">
-        ///     The user object containing the username to be included in the login request.
-        /// </param>
-        /// <returns>
-        ///     A <see cref="LoginRequest"/> object initialized with the provided username and password.
-        /// </returns>
         private static LoginRequest CreateRequestObject(string password, User user)
         {
             return new LoginRequest { UserName = user.UserName, Password = password };
         }
 
-        /// <summary>
-        ///     Creates a mock <see cref="User"/> object with the specified account status.
-        /// </summary>
-        /// <param name="accountStatus">
-        ///     The account status to set for the mock user. This could indicate whether the user is active or inactive.
-        /// </param>
-        /// <returns>
-        ///     A <see cref="User"/> object initialized with the specified account status and a predefined username.
-        /// </returns>
         private static User CreateMockUser(bool accountStatus)
         {
             const string mockUserName = "test-user";
             return new User { UserName = mockUserName, AccountStatus = accountStatus ? 1 : 0};
         }
 
-        /// <summary>
-        ///     Sets up the mock service factory result to return a 
-        ///     <see cref="LoginServiceResult"/> indicating a failure with the specified error message.
-        /// </summary>
-        /// <param name="expectedErrorMessage">
-        ///     The expected error message to be included in the 
-        ///     <see cref="LoginServiceResult"/> indicating the reason for failure.
-        /// </param>
         private void ArrangeServiceResult(string expectedErrorMessage)
         {
             var result = new LoginServiceResult
@@ -402,12 +361,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
                 .Returns(result);
         }
 
-        /// <summary>
-        ///     Prepares a mock result for the user lookup service to return a successful user lookup operation.
-        /// </summary>
-        /// <param name="user">
-        ///     The <see cref="User"/> object representing the user to be returned by the mock service.
-        /// </param>
         private void ArrangeUserLookupResult(User user)
         {
             var result = new UserLookupServiceResult
@@ -421,26 +374,12 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
                 .ReturnsAsync(result);
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="_parameterValidatorMock"/> mock was called with 
-        ///     expected validation methods during test execution.
-        /// </summary>
-        /// <param name="numberOfTimes">
-        ///     number of times <see cref="IParameterValidator.ValidateNotNullOrEmpty"/> is expected to be called.
-        /// </param>
         private void VerifyCallsToParameterService(int numberOfTimes)
         {
             _parameterValidatorMock.Verify(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(numberOfTimes));
         }
 
-        /// <summary>
-        ///     Verifies that the <see cref="_userLookupServiceMock"/> mock was called once
-        ///     to find a user by the specified username.
-        /// </summary>
-        /// <param name="username">
-        ///     The username string used as the parameter to look up the user in the test.
-        /// </param>
         private void VerifyCallsToLookupService(string username)
         {
             _userLookupServiceMock.Verify(l => l.FindUserByUsername(username), Times.Once);

@@ -83,16 +83,6 @@ namespace IdentityServiceApi.Services.UserManagement
             return HandleLookupResult(user);
         }
 
-        /// <summary>
-        ///     Handles the result of a user lookup operation.
-        /// </summary>
-        /// <param name="user">
-        ///     The user object retrieved from the user manager. If null, it indicates that the user was not found.
-        /// </param>
-        /// <returns>
-        ///     A UserLookupServiceResult indicating the success or failure of the operation,
-        ///     along with user information if found, or error details if not.
-        /// </returns>
         private UserLookupServiceResult HandleLookupResult(User user)
         {
             if (user == null)

@@ -126,12 +126,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
             VerifyCallsToUserContextService();
         }
 
-        /// <summary>
-        ///     Sets up the mock behavior for retrieving user context data.
-        /// </summary>
-        /// <param name="input">
-        ///     The context data to be returned by the mock setup.
-        /// </param>
         private void ArrangeContextDataMock(string input)
         {
             var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
@@ -152,12 +146,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .Returns(input);
         }
 
-        /// <summary>
-        ///     Sets up the mock behavior for retrieving the user's IP address.
-        /// </summary>
-        /// <param name="address">
-        ///     The IP address to be returned by the mock setup.
-        /// </param>
         private void ArrangeContextIpAddressMock(IPAddress address)
         {
             _userContextServiceMock
@@ -165,9 +153,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .Returns(address);
         }
 
-        /// <summary>
-        ///     Sets up the mock behavior for validating context data.
-        /// </summary>
         private void ArrangeLoggingValidatorMock()
         {
             _loggingValidatorMock
@@ -175,20 +160,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .Throws<InvalidOperationException>();
         }
 
-        /// <summary>
-        ///     Verifies the number of times the logging validator was called.
-        /// </summary>
-        /// <param name="numOfTimes">
-        ///     The expected number of times the validator method was called.
-        /// </param>
         private void VerifyCallsToLoggingValidator(int numOfTimes)
         {
             _loggingValidatorMock.Verify(v => v.ValidateContextData(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(numOfTimes));
         }
 
-        /// <summary>
-        ///     Verifies the number of times methods on the user context service were called.
-        /// </summary>
         private void VerifyCallsToUserContextService()
         {
             _userContextServiceMock.Verify(p => p.GetClaimsPrincipal(), Times.Once());

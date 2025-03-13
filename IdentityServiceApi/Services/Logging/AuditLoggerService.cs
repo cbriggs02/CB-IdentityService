@@ -151,15 +151,6 @@ namespace IdentityServiceApi.Services.Logging
             await _context.SaveChangesAsync();
         }
 
-        /// <summary>
-        ///     Validates the timestamp to ensure it matches the current UTC time.
-        /// </summary>
-        /// <param name="timeStamp">
-        ///     The timestamp to validate.
-        /// </param>
-        /// <exception cref="ArgumentException">
-        ///     Thrown if the timestamp is not UTC now.
-        /// </exception>
         private static void ValidateTimestamp(DateTime timeStamp)
         {
             if (Math.Abs((DateTime.UtcNow - timeStamp).TotalSeconds) > 30)  // Allow up to 30 seconds tolerance
@@ -168,15 +159,6 @@ namespace IdentityServiceApi.Services.Logging
             }
         }
 
-        /// <summary>
-        ///     Validates the audit action to ensure it is a defined value.
-        /// </summary>
-        /// <param name="action">
-        ///     The action to validate.
-        /// </param>
-        /// <exception cref="ArgumentException">
-        ///     Thrown if the action is not defined in the enum.
-        /// </exception>
         private static void ValidateAuditAction(AuditAction action)
         {
             if (!Enum.IsDefined(typeof(AuditAction), action))

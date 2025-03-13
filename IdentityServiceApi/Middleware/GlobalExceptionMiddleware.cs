@@ -64,16 +64,6 @@ namespace IdentityServiceApi.Middleware
             }
         }
 
-        /// <summary>
-        ///     Logs detailed information about an exception, including the exception type, message, stack trace,
-        ///     and HTTP request details, such as method and path. This helps diagnose issues effectively.
-        /// </summary>
-        /// <param name="context">
-        ///     The <see cref="HttpContext"/> for the current request, used to extract details like the request path and method.
-        /// </param>
-        /// <param name="ex">
-        ///     The <see cref="Exception"/> that was thrown, including details like message, stack trace, and inner exception.
-        /// </param>
         private void ConsoleLogExceptionDetails(HttpContext context, Exception ex)
         {
             var exceptionType = ex.GetType().Name;
@@ -91,16 +81,6 @@ namespace IdentityServiceApi.Middleware
                 innerExceptionMessage, stackTrace);
         }
 
-        /// <summary>
-        ///     Asynchronously writes a standardized error response to the client with a 500 status code (Internal Server Error)
-        ///     and a JSON body containing a generic error message.
-        /// </summary>
-        /// <param name="context">
-        ///     The <see cref="HttpContext"/> for the current request, used to manipulate the HTTP response.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation of writing the error response to the client.
-        /// </returns>
         private static async Task WriteServerErrorResponse(HttpContext context)
         {
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
