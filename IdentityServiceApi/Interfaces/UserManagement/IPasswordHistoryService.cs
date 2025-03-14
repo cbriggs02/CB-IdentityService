@@ -38,19 +38,5 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     - false if the password hash is not found in the user's history, indicating that the password is not reused.
         /// </returns>
         Task<bool> FindPasswordHash(SearchPasswordHistoryRequest request);
-
-        /// <summary>
-        ///     Asynchronously removes the password history for a specified user.
-        /// </summary>
-        /// <param name="userId">
-        ///     The unique identifier of the user whose password history is being removed.
-        /// </param>
-        /// <returns>
-        ///     A task that represents the asynchronous operation. The task result is a boolean value indicating whether
-        ///     the password history has been successfully deleted.
-        ///     - true if the password history was successfully deleted for the specified user ID.
-        ///     - false if the password history could not be deleted for the specified user ID.
-        /// </returns>
-        Task<bool> DeletePasswordHistory(string userId);
     }
 }

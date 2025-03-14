@@ -18,6 +18,7 @@ namespace IdentityServiceApi.Services.UserManagement
     public class PasswordHistoryService : IPasswordHistoryService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPasswordHistoryCleanupService _cleanupService;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IParameterValidator _parameterValidator;
 
@@ -27,6 +28,9 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <param name="context">
         ///     The application database context used for accessing password history data.
         /// </param>
+        /// <param name="cleanupService">
+        ///     This is used to clean password history records like removing old password records for a user.
+        /// </param>
         /// <param name="passwordHasher">
         ///     This is used for comparing hashed passwords and ensuring password security.
         /// </param>
@@ -34,11 +38,12 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     The parameter validator service used for defense checking service parameters.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        ///     Thrown if the <paramref name="context"/> parameter is null.
+        ///     Thrown if any parameters are null.
         /// </exception>
-        public PasswordHistoryService(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, IParameterValidator parameterValidator)
+        public PasswordHistoryService(ApplicationDbContext context, IPasswordHistoryCleanupService cleanupService, IPasswordHasher<User> passwordHasher, IParameterValidator parameterValidator)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
             _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
         }
@@ -69,7 +74,7 @@ namespace IdentityServiceApi.Services.UserManagement
 
             _context.PasswordHistories.Add(passwordHistory);
 
-            await RemoveOldPasswordHistories(passwordHistory.UserId);
+            await _cleanupService.RemoveOldPasswords(passwordHistory.UserId);
             await _context.SaveChangesAsync();
         }
 
@@ -101,64 +106,6 @@ namespace IdentityServiceApi.Services.UserManagement
             // Check if any stored hash matches the provided password
             return passwordHistories.Any(storedHash =>
                 _passwordHasher.VerifyHashedPassword(dummyUser, storedHash, request.Password) == PasswordVerificationResult.Success);
-        }
-
-        /// <summary>
-        ///     Asynchronously deletes all password history entries for the user matching the provided user ID.
-        /// </summary>
-        /// <param name="userId">
-        ///     The user ID whose password history is to be deleted.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation. The task result indicates whether the password history was successfully deleted.
-        /// </returns>
-        public async Task<bool> DeletePasswordHistory(string userId)
-        {
-            _parameterValidator.ValidateNotNullOrEmpty(userId, nameof(userId));
-
-            var passwordHistories = await _context.PasswordHistories
-               .Where(x => x.UserId == userId)
-               .OrderBy(x => x.Id)
-               .AsNoTracking()
-               .ToListAsync();
-
-            if (passwordHistories.Any())
-            {
-                _context.PasswordHistories.RemoveRange(passwordHistories);
-                await _context.SaveChangesAsync();
-            }
-
-            return true;
-        }
-        
-        /// <summary>
-        ///     Asynchronously removes old password entries for a user, keeping only the most recent five.
-        /// </summary>
-        /// <param name="id">
-        ///     The ID of the user whose password history is being cleaned up.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation of removing old password histories.
-        /// </returns>
-        private async Task RemoveOldPasswordHistories(string id)
-        {
-            var totalCount = await _context.PasswordHistories.CountAsync(x => x.UserId == id);
-            var recordsToTake = Math.Max(totalCount - 5, 0);
-
-            var oldPasswordHistories = await _context.PasswordHistories
-                .Where(x => x.UserId == id)
-                .OrderBy(x => x.CreatedDate)
-                .Take(recordsToTake)
-                .Select(x => x.Id)
-                .AsNoTracking()
-                .ToListAsync();
-
-            if (oldPasswordHistories.Count > 0)
-            {
-                _context.PasswordHistories
-                    .RemoveRange(_context.PasswordHistories
-                    .Where(x => oldPasswordHistories.Contains(x.Id)));
-            }
         }
     }
 }

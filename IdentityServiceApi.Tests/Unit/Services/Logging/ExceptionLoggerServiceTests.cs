@@ -3,6 +3,7 @@ using IdentityServiceApi.Data;
 using IdentityServiceApi.Interfaces.Authentication;
 using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.Utilities;
+using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Services.Logging.Implementations;
 using Moq;
 using System.Net;
@@ -56,7 +57,8 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         }
 
         /// <summary>
-        ///     Verifies that LogException throws an ArgumentNullException when the provided exception is null.
+        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method throws an 
+        ///     ArgumentNullException when the provided exception is null.
         /// </summary>
         /// <returns>
         ///     A task representing the asynchronous operation.
@@ -78,7 +80,8 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         }
 
         /// <summary>
-        ///     Verifies that LogException throws an InvalidOperationException when the context data is invalid.
+        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method  throws 
+        ///     an InvalidOperationException when the context data is invalid.
         /// </summary>
         /// <param name="input">
         /// The invalid context data input (null or empty).
@@ -106,7 +109,8 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         }
 
         /// <summary>
-        ///     Verifies that LogException throws an InvalidOperationException when the IP address is invalid.
+        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method throws an
+        ///     InvalidOperationException when the IP address is invalid.
         /// </summary>
         /// <returns>
         ///     A task representing the asynchronous operation.
@@ -129,20 +133,32 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         }
 
         /// <summary>
-        /// 
+        ///     Unit test to verify that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method 
+        ///     successfully logs an exception under successful conditions, including logging the exception details 
+        ///     and saving them to the audit log in the database.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        ///     A Task representing the asynchronous operation of the unit test.
+        /// </returns>
         [Fact]
         public async Task LogException_SuccessConditions_SuccessfullyLogsException()
         {
+            // Arrange
             ArrangeContextDataMock("context data");
             ArrangeContextIpAddressMock(IPAddress.Parse("127.0.0.1"));
 
             Exception ex = new("Test exception");
 
+            _dbContextMock.Setup(s => s.AuditLogs.Add(It.IsAny<AuditLog>()));
+            _dbContextMock.Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            // Act
             await _exceptionLoggerService.LogException(ex);
 
+            // Assert
             VerifyCallsToUserContextService();
+
+            _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         private void ArrangeContextDataMock(string input)

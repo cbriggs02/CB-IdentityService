@@ -4,6 +4,7 @@ using IdentityServiceApi.Data;
 using IdentityServiceApi.Interfaces.Authentication;
 using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.Utilities;
+using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Services.Logging.Implementations;
 using Moq;
 using System.Net;
@@ -150,11 +151,16 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
             ArrangeContextDataMock("Valid User Data");
             ArrangeContextIpAddressMock(IPAddress.Parse("127.0.0.1"));
 
+            _dbContextMock.Setup(s => s.AuditLogs.Add(It.IsAny<AuditLog>()));
+            _dbContextMock.Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
             // Act
             await _performanceLoggerService.LogSlowPerformance(ValidResponseTime);
 
             // Assert
             VerifyCallsToUserContextService();
+
+            _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         private void ArrangeContextDataMock(string input)

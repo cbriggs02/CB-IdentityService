@@ -1,8 +1,10 @@
 ﻿using IdentityServiceApi.Data;
+using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Models.RequestModels.UserManagement;
 using IdentityServiceApi.Services.UserManagement;
+using IdentityServiceApi.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -22,6 +24,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
     public class PasswordHistoryServiceTests
     {
         private readonly Mock<ApplicationDbContext> _dbContextMock;
+        private readonly Mock<IPasswordHistoryCleanupService> _cleanupServiceMock;
         private readonly Mock<IPasswordHasher<User>> _passwordHasherMock;
         private readonly Mock<IParameterValidator> _parameterValidatorMock;
         private readonly PasswordHistoryService _passwordHistoryService;
@@ -32,10 +35,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         public PasswordHistoryServiceTests()
         {
             _dbContextMock = new Mock<ApplicationDbContext>();
+            _cleanupServiceMock = new Mock<IPasswordHistoryCleanupService>();
             _passwordHasherMock = new Mock<IPasswordHasher<User>>();
             _parameterValidatorMock = new Mock<IParameterValidator>();
+
             _passwordHistoryService = new PasswordHistoryService(
-                _dbContextMock.Object, 
+                _dbContextMock.Object,
+                _cleanupServiceMock.Object,
                 _passwordHasherMock.Object, 
                 _parameterValidatorMock.Object
             );
@@ -49,7 +55,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         public void PasswordHistoryService_NullDependencies_ThrowsArgumentNullException()
         {
             //Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new PasswordHistoryService(null, null, null));
+            Assert.Throws<ArgumentNullException>(() => new PasswordHistoryService(null, null, null, null));
         }
 
         /// <summary>
@@ -110,7 +116,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         ///     A task representing the asynchronous operation.
         /// </returns>
         [Fact]
-        public async Task AddPasswordHistory_validStorePasswordHistoryRequestData_SuccessfullyAddsPasswordHistoryRecord()
+        public async Task AddPasswordHistory_MoreThanFivePasswords_RemovesOldPasswordHistories()
         {
             // Arrange
             var passwordHasher = new PasswordHasher<User>();
@@ -120,25 +126,22 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 
             var request = new StorePasswordHistoryRequest { UserId = UserId, PasswordHash = passwordHash };
 
-            var passwordHistory = new PasswordHistory
-            {
-                UserId = request.UserId,
-                PasswordHash = request.PasswordHash,
-                CreatedDate = DateTime.UtcNow
-            };
-
-            _dbContextMock.Setup(a => a.Add(passwordHistory));
+            _dbContextMock
+                .Setup(s => s.PasswordHistories
+                .Add(It.IsAny<PasswordHistory>()));
+            _cleanupServiceMock
+                .Setup(c => c.RemoveOldPasswords(UserId))
+                .Returns(Task.CompletedTask);
+            _dbContextMock
+                .Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             await _passwordHistoryService.AddPasswordHistory(request);
 
             // Assert
-            using var context = new ApplicationDbContext();
-            var historyRecord = context.PasswordHistories.FirstAsync(x => x.UserId == UserId);
-
-            Assert.NotNull(historyRecord);
-
-            _dbContextMock.Verify(a => a.Add(passwordHistory), Times.Once());
+            _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _cleanupServiceMock.Verify(c => c.RemoveOldPasswords(UserId), Times.Once);
         }
 
         /// <summary>
@@ -191,11 +194,108 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             VerifyCallsToParameterService(1);
         }
 
-        //[Fact]
-        //public async Task FindPasswordHash_ValidRequestObjectParameter_ReturnsTrueOrFalse()
-        //{
+        /// <summary>
+        ///     Tests that the <see cref="PasswordHistoryService.FindPasswordHash"/> method returns true when the 
+        ///     provided password matches the stored hash in the password history. This simulates a scenario where 
+        ///     the password verification is successful and the provided password matches the stored hash.
+        /// </summary>
+        /// <returns> 
+        ///     A task representing the asynchronous operation. 
+        /// </returns
+        [Fact]
+        public async Task FindPasswordHash_CorrectPassword_ReturnsTrue()
+        {
+            // Arrange
+            const string UserId = "User-id";
+            const string Password = "password123";
 
-        //}
+            string passwordHash = SetupMockPasswordHistory(UserId, Password);
+
+            _passwordHasherMock.Setup(ph => ph.VerifyHashedPassword(It.Is<User>(u => u.Id == UserId), passwordHash, Password))
+                .Returns(PasswordVerificationResult.Success);
+
+            var request = ArrangeSearchPasswordHistoryRequest(UserId, Password);
+
+            // Act
+            var result = await _passwordHistoryService.FindPasswordHash(request);
+
+            // Assert
+            Assert.True(result);
+
+            VerifyCallsToParameterService(2);
+        }
+
+        /// <summary>
+        ///     Tests that the <see cref="PasswordHistoryService.FindPasswordHash"/> method returns false when the provided
+        ///     password does not match the stored hash in the password history.This simulates a scenario where the password 
+        ///     verification fails and the provided password does not match the stored hash.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous operation. 
+        /// </returns>
+        [Fact]
+        public async Task FindPasswordHash_IncorrectPassword_ReturnsFalse()
+        {
+            // Arrange
+            const string UserId = "User-id";
+            const string Password = "password123";
+
+            string passwordHash = SetupMockPasswordHistory(UserId, Password);
+
+            _passwordHasherMock.Setup(ph => ph.VerifyHashedPassword(It.Is<User>(u => u.Id == UserId), passwordHash, Password))
+                .Returns(PasswordVerificationResult.Failed);
+
+            var request = ArrangeSearchPasswordHistoryRequest(UserId, Password);
+
+            // Act
+            var result = await _passwordHistoryService.FindPasswordHash(request);
+
+            // Assert
+            Assert.False(result);
+
+            VerifyCallsToParameterService(2);
+        }
+
+        private string SetupMockPasswordHistory(string UserId, string Password)
+        {
+            var passwordHasher = new PasswordHasher<User>();
+            string passwordHash = passwordHasher.HashPassword(null, Password);
+
+            var passwords = new List<PasswordHistory>
+            {
+                new() { Id = "id-1", UserId = UserId, PasswordHash = passwordHash, CreatedDate = DateTime.UtcNow},
+            }.AsQueryable();
+
+            var passwordHistoryDbSetMock = new Mock<DbSet<PasswordHistory>>();
+
+            passwordHistoryDbSetMock.As<IQueryable<PasswordHistory>>()
+                .Setup(m => m.Provider)
+                .Returns(new TestAsyncQueryProvider<PasswordHistory>(passwords.Provider));
+
+            passwordHistoryDbSetMock.As<IQueryable<PasswordHistory>>()
+                .Setup(m => m.Expression)
+                .Returns(passwords.Expression);
+
+            passwordHistoryDbSetMock.As<IQueryable<PasswordHistory>>()
+                .Setup(m => m.ElementType)
+                .Returns(passwords.ElementType);
+
+            passwordHistoryDbSetMock.As<IQueryable<PasswordHistory>>()
+                .Setup(m => m.GetEnumerator())
+                .Returns(passwords.GetEnumerator());
+
+            passwordHistoryDbSetMock.As<IAsyncEnumerable<PasswordHistory>>()
+                .Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>()))
+                .Returns(new TestAsyncEnumerator<PasswordHistory>(passwords.GetEnumerator()));
+
+            _dbContextMock.Setup(c => c.PasswordHistories).Returns(passwordHistoryDbSetMock.Object);
+            return passwordHash;
+        }
+
+        private static SearchPasswordHistoryRequest ArrangeSearchPasswordHistoryRequest(string UserId, string Password)
+        {
+            return new SearchPasswordHistoryRequest { UserId = UserId, Password = Password };
+        }
 
         /// <summary>
         ///     Ensures that calling the <see cref="PasswordHistoryService.DeletePasswordHistory(string)"/> 
@@ -207,22 +307,22 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation.
         /// </returns>
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public async Task DeletePasswordHistory_InvalidUserId_ThrowsArgumentNullException(string input)
-        {
-            // Arrange
-            _parameterValidatorMock
-                .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
-                .Throws<ArgumentNullException>();
+        //[Theory]
+        //[InlineData(null)]
+        //[InlineData("")]
+        //[InlineData(" ")]
+        //public async Task DeletePasswordHistory_InvalidUserId_ThrowsArgumentNullException(string input)
+        //{
+        //    // Arrange
+        //    _parameterValidatorMock
+        //        .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+        //        .Throws<ArgumentNullException>();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.DeletePasswordHistory(input));
+        //    // Act & Assert
+        //    await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.DeletePasswordHistory(input));
 
-            _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        }
+        //    _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        //}
 
         private void VerifyCallsToParameterService(int numberOfTimes)
         {

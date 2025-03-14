@@ -25,7 +25,7 @@ namespace IdentityServiceApi.Services.UserManagement
     {
         private readonly UserManager<User> _userManager;
         private readonly IUserServiceResultFactory _userServiceResultFactory;
-        private readonly IPasswordHistoryService _passwordHistoryService;
+        private readonly IPasswordHistoryCleanupService _cleanupService;
         private readonly IPermissionService _permissionService;
         private readonly IParameterValidator _parameterValidator;
         private readonly IUserLookupService _userLookupService;
@@ -40,8 +40,8 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <param name="userServiceResultFactory">
         ///     The service used for creating the result objects being returned in operations.
         /// </param>
-        /// <param name="passwordHistoryService">
-        ///     Service for managing password history, such as removing old passwords after a user is deleted.
+        /// <param name="cleanupService">
+        ///     Service for cleaning up password history, such as removing old passwords after a user is deleted.
         /// </param>
         /// <param name="permissionService">
         ///     Service for validating and checking user permissions within the system.
@@ -58,11 +58,11 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <exception cref="ArgumentNullException">
         ///     Thrown when any of the provided service parameters are null.
         /// </exception>
-        public UserService(UserManager<User> userManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryService passwordHistoryService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, IMapper mapper)
+        public UserService(UserManager<User> userManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, IMapper mapper)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _userServiceResultFactory = userServiceResultFactory ?? throw new ArgumentNullException(nameof(userServiceResultFactory));
-            _passwordHistoryService = passwordHistoryService ?? throw new ArgumentNullException(nameof(passwordHistoryService));
+            _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
             _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
             _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
@@ -276,7 +276,7 @@ namespace IdentityServiceApi.Services.UserManagement
             }
 
             // delete all stored passwords for user once user is deleted for data clean up.
-            await _passwordHistoryService.DeletePasswordHistory(id);
+            await _cleanupService.DeletePasswordHistory(id);
             return _userServiceResultFactory.GeneralOperationSuccess();
         }
 
