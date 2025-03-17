@@ -60,7 +60,6 @@ namespace IdentityServiceApi.Services.UserManagement
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
             var user = await _userManager.FindByIdAsync(id);
-
             return HandleLookupResult(user);
         }
 
@@ -79,7 +78,6 @@ namespace IdentityServiceApi.Services.UserManagement
         {
             _parameterValidator.ValidateNotNullOrEmpty(userName, nameof(userName));
             var user = await _userManager.FindByNameAsync(userName);
-
             return HandleLookupResult(user);
         }
 
