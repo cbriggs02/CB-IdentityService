@@ -254,6 +254,8 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.False(result);
 
             VerifyCallsToParameterService(2);
+
+            _dbContextMock.Verify(c => c.PasswordHistories, Times.Once());
         }
 
         private string SetupMockPasswordHistory(string UserId, string Password)
@@ -296,33 +298,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         {
             return new SearchPasswordHistoryRequest { UserId = UserId, Password = Password };
         }
-
-        /// <summary>
-        ///     Ensures that calling the <see cref="PasswordHistoryService.DeletePasswordHistory(string)"/> 
-        ///     with an invalid user id (null, empty, or whitespace values) throws an ArgumentNullException.
-        /// </summary>
-        /// <param name="input">
-        ///     The input value for UserId.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation.
-        /// </returns>
-        //[Theory]
-        //[InlineData(null)]
-        //[InlineData("")]
-        //[InlineData(" ")]
-        //public async Task DeletePasswordHistory_InvalidUserId_ThrowsArgumentNullException(string input)
-        //{
-        //    // Arrange
-        //    _parameterValidatorMock
-        //        .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
-        //        .Throws<ArgumentNullException>();
-
-        //    // Act & Assert
-        //    await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.DeletePasswordHistory(input));
-
-        //    _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        //}
 
         private void VerifyCallsToParameterService(int numberOfTimes)
         {
