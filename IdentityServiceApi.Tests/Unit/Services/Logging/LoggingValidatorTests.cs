@@ -26,7 +26,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         }
 
         /// <summary>
-        ///     Tests that an ArgumentNullException is thrown when an invalid (null, empty) field name is provided.
+        ///     Tests that an ArgumentException is thrown when an invalid (null, empty) field name is provided.
         /// </summary>
         /// <param name="input">
         ///     The invalid field name (null, empty).
@@ -37,7 +37,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         public void ValidateContextData_InvalidFieldName_ThrowsArgumentNullException(string input)
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _validator.ValidateContextData("data", input));
+            Assert.Throws<ArgumentException>(() => _validator.ValidateContextData("data", input));
         }
 
         /// <summary>
