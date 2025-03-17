@@ -25,13 +25,20 @@ namespace IdentityServiceApi.Services.Logging
         /// <param name="fieldName">
         ///     The name of the field being validated (for error reporting purposes).
         /// </param>
+        /// <exception cref="ArgumentException">
+        ///     Thrown when the <paramref name="fieldName"/> is null or empty. This ensures that all required
+        ///     data is provided before throwing the intended exception. 
+        /// </exception>
         /// <exception cref="InvalidOperationException">
         ///     Thrown when the <paramref name="value"/> is null or empty. This ensures that all required 
         ///     logging context data is available before logging occurs.
         /// </exception>
         public void ValidateContextData(string value, string fieldName)
-        {   
-            ValidateNotNullOrEmpty(fieldName, nameof(fieldName));
+        {
+            if (string.IsNullOrEmpty(fieldName))
+            {
+                throw new ArgumentException("Field name cannot be null or empty.", nameof(fieldName));
+            }
 
             if (string.IsNullOrEmpty(value))
             {
