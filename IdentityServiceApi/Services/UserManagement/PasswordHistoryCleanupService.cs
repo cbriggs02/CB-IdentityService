@@ -72,6 +72,8 @@ namespace IdentityServiceApi.Services.UserManagement
         /// </returns>
         public async Task RemoveOldPasswords(string id)
         {
+            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+
             var totalCount = await _context.PasswordHistories.CountAsync(x => x.UserId == id);
             var recordsToTake = Math.Max(totalCount - 5, 0);
 
