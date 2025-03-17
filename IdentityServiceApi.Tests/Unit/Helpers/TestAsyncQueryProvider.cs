@@ -114,7 +114,7 @@ namespace IdentityServiceApi.Tests.Unit.Helpers
         /// <returns>
         ///     An <see cref="IAsyncEnumerable{TResult}"/> representing the asynchronous result.
         /// </returns>
-        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression expression)
+        public static IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression expression)
         {
             return new TestAsyncEnumerable<TResult>(expression);
         }
