@@ -119,7 +119,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.GetUser(input));
 
-            VerifyCallsToParameterValidator();
+            VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.False(result.Success);
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
-            VerifyCallsToParameterValidator();
+            VerifyCallsToParameterValidatorForString();
             _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
         }
 
@@ -196,7 +196,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
             VerifyCallsToLookupService(UserId);
-            VerifyCallsToParameterValidator();
+            VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
@@ -233,7 +233,154 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.True(result.Success);
 
             VerifyCallsToLookupService(UserId);
-            VerifyCallsToParameterValidator();
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.CreateUser"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when the provided 
+        ///     <paramref name="user"/> parameter is null.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task CreateUser_NullRequestParameterObject_ThrowsArgumentNullException()
+        {
+            // Arrange 
+            _parameterValidatorMock
+                .Setup(x => x.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()))
+                .Throws<ArgumentNullException>();
+
+            // Act & Assert
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.CreateUser(null));
+
+            VerifyCallsToParameterValidatorForObject();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.CreateUser"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when one or more 
+        ///     required user properties contain a null or empty value.
+        /// </summary>
+        /// <param name="input">
+        ///     The invalid input value used to test user properties. 
+        ///     This can be null, an empty string, or a whitespace string.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task CreateUser_InvalidUserProperties_ThrowsArgumentNullException(string input)
+        {
+            // Arrange
+            _parameterValidatorMock
+                .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws<ArgumentNullException>();
+
+            var user = new UserDTO
+            {
+                UserName = input,
+                FirstName = input,
+                LastName = input,
+                Email = input,
+                PhoneNumber = input,
+                Country = input
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.CreateUser(user));
+
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.CreateUser"/> method 
+        ///     returns a failure result when the user creation process fails.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task CreateUser_CreateAsyncFails_ReturnsUserOperationFailureResult()
+        {
+            // Arrange
+            const string ExpectedErrorMessage = "User creation failed";
+
+            var user = new UserDTO
+            {
+                UserName = "user123",
+                FirstName = "Joe",
+                LastName = "Doe",
+                Email = "doe@gmail.com",
+                PhoneNumber = "613-123-1234",
+                Country = "Canada"
+            };
+
+            _userManagerMock
+                .Setup(c => c.CreateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
+
+            ArrangeUserOperationFailureResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.CreateUser(user);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToParameterValidatorForObject();
+
+            _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(6));
+            _userManagerMock.Verify(c => c.CreateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.CreateUser"/> method 
+        ///     returns a success result when the user creation process succeeds.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task CreateUser_CreateAsyncSucceeds_ReturnsUserOperationSuccessResult()
+        {
+            // Arrange
+            var user = new UserDTO
+            {
+                UserName = "user123",
+                FirstName = "Joe",
+                LastName = "Doe",
+                Email = "doe@gmail.com",
+                PhoneNumber = "613-123-1234",
+                Country = "Canada"
+            };
+
+            _userManagerMock
+                .Setup(c => c.CreateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            _userServiceResultFactoryMock
+                .Setup(f => f.UserOperationSuccess(It.IsAny<UserDTO>()))
+                .Returns((UserDTO u) => new UserServiceResult { Success = true, User = u });
+
+            // Act
+            var result = await _userService.CreateUser(user);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.User);
+            Assert.True(result.Success);
+
+            VerifyCallsToParameterValidatorForObject();
+
+            _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(6));
+            _userManagerMock.Verify(c => c.CreateAsync(It.IsAny<User>()), Times.Once);
         }
 
         private static User ArrangeMockUser(string userId)
@@ -284,9 +431,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                     });
         }
 
-        private void VerifyCallsToParameterValidator()
+        private void VerifyCallsToParameterValidatorForString()
         {
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        private void VerifyCallsToParameterValidatorForObject()
+        {
+            _parameterValidatorMock.Verify(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
         }
 
         private void VerifyCallsToLookupService(string id)
