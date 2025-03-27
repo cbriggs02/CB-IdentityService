@@ -39,7 +39,6 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement
         {
             ValidateErrors(errors);
             return new UserLookupServiceResult { Success = false, Errors = errors.ToList() };
-
         }
 
         /// <summary>
