@@ -136,7 +136,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         [Theory]
         [InlineData(Roles.Admin)]
         [InlineData(Roles.User)]
-        public async Task GetUser_TryingToGetOtherUser_ReturnsForbiddenFailureResult(string roleName)
+        public async Task GetUser_UserTryingToGetOtherUser_ReturnsForbiddenFailureResult(string roleName)
         {
             // Arrange
             const string ExpectedErrorMessage = ErrorMessages.Authorization.Forbidden;
@@ -174,11 +174,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         ///     A task that represents the asynchronous unit test operation.
         /// </returns>
         [Fact]
-        public async Task GetUser_NonExistentUserId_ReturnsInvalidCredentialsFailureResult()
+        public async Task GetUser_NonExistentUserId_ReturnsNotFoundFailureResult()
         {
             // Arrange 
             const string UserId = "non-existent-id";
-            const string ExpectedErrorMessage = ErrorMessages.Password.InvalidCredentials;
+            const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
 
             _permissionServiceMock
                 .Setup(p => p.ValidatePermissions(UserId))
@@ -310,15 +310,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             // Arrange
             const string ExpectedErrorMessage = "User creation failed";
 
-            var user = new UserDTO
-            {
-                UserName = "user123",
-                FirstName = "Joe",
-                LastName = "Doe",
-                Email = "doe@gmail.com",
-                PhoneNumber = "613-123-1234",
-                Country = "Canada"
-            };
+            var user = ArrangeMockUserDTO();
 
             _userManagerMock
                 .Setup(c => c.CreateAsync(It.IsAny<User>()))
@@ -351,15 +343,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         public async Task CreateUser_CreateAsyncSucceeds_ReturnsUserOperationSuccessResult()
         {
             // Arrange
-            var user = new UserDTO
-            {
-                UserName = "user123",
-                FirstName = "Joe",
-                LastName = "Doe",
-                Email = "doe@gmail.com",
-                PhoneNumber = "613-123-1234",
-                Country = "Canada"
-            };
+            var user = ArrangeMockUserDTO();
 
             _userManagerMock
                 .Setup(c => c.CreateAsync(It.IsAny<User>()))
@@ -381,6 +365,275 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(6));
             _userManagerMock.Verify(c => c.CreateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when provided 
+        ///     with an invalid user ID.
+        /// </summary>
+        /// <param name="input">
+        ///     The invalid user ID to test, which may be null, empty, or whitespace.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task UpdateUser_InvalidId_ThrowsArgumentNullException(string input)
+        {
+            // Arrange
+            _parameterValidatorMock
+                .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws<ArgumentNullException>();
+
+            var user = ArrangeMockUserDTO();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUser(input, user));
+
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when the user object is null.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task UpdateUser_NullUserObject_ThrowsArgumentNullException()
+        {
+            // Arrange
+            _parameterValidatorMock
+                .Setup(x => x.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()))
+                .Throws<ArgumentNullException>();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUser("id-123", null));
+
+            VerifyCallsToParameterValidatorForObject();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when the user object 
+        ///     contains invalid properties (e.g., null, empty, or whitespace values).
+        /// </summary>
+        /// <param name="input">
+        ///     The invalid value used for user properties, which may be null, empty, or whitespace.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task UpdateUser_InvalidUserProperties_ThrowsArgumentNullException(string input)
+        {
+            // Arrange
+            _parameterValidatorMock
+                .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws<ArgumentNullException>();
+
+            var user = new UserDTO
+            {
+                UserName = input,
+                FirstName = input,
+                LastName = input,
+                Email = input,
+                PhoneNumber = input,
+                Country = input
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUser("id-123", user));
+
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     returns a failure result with a forbidden error when a user 
+        ///     attempts to update another user's information without proper authorization.
+        /// </summary>
+        /// <param name="roleName">
+        ///     The role of the user attempting to perform the update.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(Roles.Admin)]
+        [InlineData(Roles.User)]
+        public async Task UpdateUser_UserTryingToUpdateOtherUser_ReturnsForbiddenFailureResult(string roleName)
+        {
+            // Arrange
+            const string ExpectedErrorMessage = ErrorMessages.Authorization.Forbidden;
+            const string UserId = "id-123";
+            const string OtherUserId = "id-999";
+
+            var user = ArrangeMockUser(OtherUserId);
+
+            _userManagerMock
+                .Setup(a => a.AddToRoleAsync(user, roleName))
+                .ReturnsAsync(IdentityResult.Success);
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            var userDTO = ArrangeMockUserDTO();
+
+            // Act
+            var result = await _userService.UpdateUser(UserId, userDTO);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(7));
+            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     returns a failure result with a not found error when attempting 
+        ///     to update a user that does not exist.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task UpdateUser_NonExistentUserId_ReturnsNotFoundFailureResult()
+        {
+            // Arrange 
+            const string UserId = "non-existent-id";
+            const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            var userDTO = ArrangeMockUserDTO();
+
+            // Act
+            var result = await _userService.UpdateUser(UserId, userDTO);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+
+            _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(7));
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     returns a failure result when <see cref="UserManager{TUser}.UpdateAsync"/> fails.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task UpdateUser_UpdateAsyncFails_ReturnsOperationFailureResult()
+        {
+            // Arrange 
+            const string ExpectedErrorMessage = "User creation failed";
+            const string UserId = "id-123";
+
+            var user = ArrangeMockUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(c => c.UpdateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            var userDTO = ArrangeMockUserDTO();
+
+            // Act
+            var result = await _userService.UpdateUser(UserId, userDTO);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
+            _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(7));
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     successfully updates an existing user and returns a success result.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task UpdateUser_UserFound_ReturnsSuccessOperationResult()
+        {
+            // Arrange 
+            const string UserId = "id-123";
+
+            var user = ArrangeMockUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(u => u.UpdateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            ArrangeGeneralOperationSuccessServiceResult();
+
+            var userDTO = ArrangeMockUserDTO();
+
+            // Act
+            var result = await _userService.UpdateUser(UserId, userDTO);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+
+            VerifyCallsToLookupService(UserId);
+            _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
+            _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(7));
+        }
+
+        private static UserDTO ArrangeMockUserDTO()
+        {
+            return new UserDTO
+            {
+                UserName = "user123",
+                FirstName = "Joe",
+                LastName = "Doe",
+                Email = "doe@Gmail.com",
+                PhoneNumber = "613-123-1234",
+                Country = "Canada"
+            };
         }
 
         private static User ArrangeMockUser(string userId)
@@ -411,6 +664,31 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 
             _userServiceResultFactoryMock
                 .Setup(r => r.UserOperationSuccess(user))
+                .Returns(result);
+        }
+
+        private void ArrangeGeneralOperationFailureServiceResult(string expectedErrorMessage)
+        {
+            var result = new ServiceResult
+            {
+                Success = false,
+                Errors = new List<string> { expectedErrorMessage }
+            };
+
+            _userServiceResultFactoryMock
+                .Setup(x => x.GeneralOperationFailure(new[] { expectedErrorMessage }))
+                .Returns(result);
+        }
+
+        private void ArrangeGeneralOperationSuccessServiceResult()
+        {
+            var result = new ServiceResult
+            {
+                Success = true,
+            };
+
+            _userServiceResultFactoryMock
+                .Setup(x => x.GeneralOperationSuccess())
                 .Returns(result);
         }
 
