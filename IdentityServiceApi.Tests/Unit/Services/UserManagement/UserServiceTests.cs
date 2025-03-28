@@ -811,6 +811,270 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             _userManagerMock.Verify(d => d.DeleteAsync(It.IsAny<User>()), Times.Once);
         }
 
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.ActivateUser"/> method throws 
+        ///     an <see cref="ArgumentNullException"/> when an invalid user ID (null, 
+        ///     empty, or whitespace) is provided.
+        /// </summary>
+        /// <param name="input">
+        ///     The user ID input that will be tested for invalid values.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task ActivateUser_InvalidId_ThrowsArgumentNullException(string input)
+        {
+            // Arrange
+            _parameterValidatorMock
+                .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws<ArgumentNullException>();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.ActivateUser(input));
+
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.ActivateUser"/> method returns a forbidden result 
+        ///     when a user attempts to activate another user, an admin, or a super admin. Admins are also 
+        ///     restricted from activating other admins or super admins.
+        /// </summary>
+        /// <param name="roleName">
+        ///     The role of the user attempting to activate another user. This test is focused on ensuring that users 
+        ///     with insufficient privileges (e.g., standard users or admins) cannot activate other users or users 
+        ///     with higher privileges.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(Roles.User)]
+        [InlineData(Roles.Admin)]
+        public async Task ActivateUser_UserTryingToActivateOtherUser_ReturnsForbiddenFailureResult(string roleName)
+        {
+            // Arrange
+            const string ExpectedErrorMessage = ErrorMessages.Authorization.Forbidden;
+            const string UserId = "id-123";
+            const string OtherUserId = "id-999";
+
+            var user = ArrangeMockUser(OtherUserId);
+
+            _userManagerMock
+                .Setup(a => a.AddToRoleAsync(user, roleName))
+                .ReturnsAsync(IdentityResult.Success);
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.ActivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToParameterValidatorForString();
+            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.ActivateUser"/> method returns a forbidden result when a user 
+        ///     attempts to activate their own account with insufficient privileges. This test ensures that users cannot 
+        ///     activate their own account if they don't have the required permissions.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous operation of the unit test.
+        /// </returns>
+        [Fact]
+        public async Task ActivateUser_UserTryingToActivateItselfWithInsufficientPrivileges_ReturnsForbiddenFailureResult()
+        {
+            // Arrange
+            const string ExpectedErrorMessage = ErrorMessages.Authorization.Forbidden;
+            const string UserId = "id-123";
+
+            var user = ArrangeMockUser(UserId);
+
+            _userManagerMock
+                .Setup(a => a.AddToRoleAsync(user, Roles.User))
+                .ReturnsAsync(IdentityResult.Success);
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.ActivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToParameterValidatorForString();
+            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.ActivateUser"/> method 
+        ///     returns a not found failure result when the user does not exist.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task ActivateUser_NonExistentUserId_ReturnsNotFoundFailureResult()
+        {
+            // Arrange 
+            const string UserId = "non-existent-id";
+            const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
+            ArrangeUserOperationFailureResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.ActivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.ActivateUser"/> method 
+        ///     returns an operation failure result when the user is already activated.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task ActivateUser_UserAlreadyActivated_ReturnsOperationFailureResult()
+        {
+            // Arrange 
+            const string ExpectedErrorMessage = ErrorMessages.User.AlreadyActivated;
+            const string UserId = "id-123";
+
+            var user = new User { Id = UserId, UserName = "user123", AccountStatus = 1 };
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.ActivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.ActivateUser"/> method 
+        ///     returns an operation failure result when <see cref="UserManager{TUser}.UpdateAsync"/> 
+        ///     fails to update the user.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task ActivateUser_UpdateAsyncFails_ReturnsOperationFailureResult()
+        {
+            // Arrange 
+            const string ExpectedErrorMessage = "User update failed";
+            const string UserId = "id-123";
+
+            var user = ArrangeMockUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(u => u.UpdateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.ActivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+
+            _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.ActivateUser"/> method 
+        ///     successfully activates a user who is found and not already activated, 
+        ///     returning a success operation result.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task ActivateUser_UserFoundAndNotActivated_ReturnsSuccessOperationResult()
+        {
+            // Arrange 
+            const string UserId = "id-123";
+
+            var user = ArrangeMockUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(u => u.UpdateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            ArrangeGeneralOperationSuccessServiceResult();
+
+            // Act
+            var result = await _userService.ActivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+
+            _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
         private static UserDTO ArrangeMockUserDTO()
         {
             return new UserDTO
