@@ -550,7 +550,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         public async Task UpdateUser_UpdateAsyncFails_ReturnsOperationFailureResult()
         {
             // Arrange 
-            const string ExpectedErrorMessage = "User creation failed";
+            const string ExpectedErrorMessage = "User update failed";
             const string UserId = "id-123";
 
             var user = ArrangeMockUser(UserId);
@@ -562,7 +562,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeUserLookupServiceMock(user, UserId, "");
 
             _userManagerMock
-                .Setup(c => c.UpdateAsync(It.IsAny<User>()))
+                .Setup(u => u.UpdateAsync(It.IsAny<User>()))
                 .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
 
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
@@ -621,6 +621,194 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             VerifyCallsToLookupService(UserId);
             _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(7));
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when an invalid 
+        ///     user ID (null, empty, or whitespace) is provided.
+        /// </summary>
+        /// <param name="input">
+        ///     The invalid user ID to be tested.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task DeleteUser_InvalidId_ThrowsArgumentNullException(string input)
+        {
+            // Arrange
+            _parameterValidatorMock
+                .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws<ArgumentNullException>();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.DeleteUser(input));
+
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     returns a forbidden failure result when a user attempts to delete 
+        ///     another user without the necessary permissions.
+        /// </summary>
+        /// <param name="roleName">
+        ///     The role of the user attempting to delete another user.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(Roles.Admin)]
+        [InlineData(Roles.User)]
+        public async Task DeleteUser_UserTryingToDeleteOtherUser_ReturnsForbiddenFailureResult(string roleName)
+        {
+            // Arrange
+            const string ExpectedErrorMessage = ErrorMessages.Authorization.Forbidden;
+            const string UserId = "id-123";
+            const string OtherUserId = "id-999";
+
+            var user = ArrangeMockUser(OtherUserId);
+
+            _userManagerMock
+                .Setup(a => a.AddToRoleAsync(user, roleName))
+                .ReturnsAsync(IdentityResult.Success);
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.DeleteUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToParameterValidatorForString();
+            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     returns a not found failure result when attempting to delete a 
+        ///     user that does not exist.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task DeleteUser_NonExistentUserId_ReturnsNotFoundFailureResult()
+        {
+            // Arrange 
+            const string UserId = "non-existent-id";
+            const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
+            ArrangeUserOperationFailureResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.DeleteUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     returns an operation failure result when the user deletion process fails.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task DeleteUser_DeleteAsyncFails_ReturnsOperationFailureResult()
+        {
+            // Arrange 
+            const string ExpectedErrorMessage = "User deletion failed";
+            const string UserId = "id-123";
+
+            var user = ArrangeMockUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(d => d.DeleteAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.DeleteUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+            _userManagerMock.Verify(d => d.DeleteAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     successfully deletes an existing user and returns a success operation result.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task DeleteUser_UserFound_ReturnsSuccessOperationResult()
+        {
+            // Arrange 
+            const string UserId = "id-123";
+
+            var user = ArrangeMockUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(d => d.DeleteAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            ArrangeGeneralOperationSuccessServiceResult();
+
+            // Act
+            var result = await _userService.DeleteUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+
+            _userHistoryCleanupServiceMock.Verify(d => d.DeletePasswordHistory(UserId), Times.Once);
+            _userManagerMock.Verify(d => d.DeleteAsync(It.IsAny<User>()), Times.Once);
         }
 
         private static UserDTO ArrangeMockUserDTO()
