@@ -118,7 +118,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
         }
 
         /// <summary>
-        ///     Verifies that calling the login method with null credentials throws an ArgumentNullException.
+        ///     Verifies that calling the <see cref="LoginService.Login(LoginRequest)"/> with null credentials throws an ArgumentNullException.
         /// </summary>
         /// <returns>
         ///     A task representing the asynchronous test operation.
@@ -138,7 +138,8 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
         }
 
         /// <summary>
-        ///     Verifies that calling the login method with null, empty or whitespace username or password throws an ArgumentNullException.
+        ///     Verifies that calling the <see cref="LoginService.Login(LoginRequest)"/> with null, empty or whitespace username 
+        ///     or password throws an ArgumentNullException.
         /// </summary>
         /// <param name="input">
         ///     Used to test for invalid data like ( null, empty or whitespace )
@@ -269,6 +270,53 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             Assert.Contains(expectedErrorMessage, result.Errors);
 
             VerifyCallsToLookupService(user.UserName);
+            VerifyCallsToParameterService(2);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="LoginService.Login"/> method returns a failure result when 
+        ///     <see cref="SignInManager.PasswordSignInAsync"/> fails due to invalid credentials. 
+        ///     The method checks that the appropriate error message is returned indicating invalid credentials.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation, with the result being 
+        ///     a failure containing the specified error message for invalid credentials.
+        /// </returns>
+        [Fact]
+        public async Task Login_PasswordSignInAsyncFails_ReturnsLoginOperationFailureResult()
+        {
+            // Arrange
+            const string expectedErrorMessage = ErrorMessages.Password.InvalidCredentials;
+            const string correctPassword = "correct-password";
+            const string validIssuer = "issuer";
+            const string validAudience = "audience";
+            const string secretKey = "superSecretKey123!";
+
+            var mockUser = CreateMockUser(true);
+
+            ArrangeUserLookupResult(mockUser);
+
+            _signInManagerMock
+                .Setup(j => j.PasswordSignInAsync(mockUser, correctPassword, false, true))
+                 .ReturnsAsync(SignInResult.Failed);
+
+            SetupConfiguration(validIssuer, validAudience, secretKey);
+
+            ArrangeServiceResult(expectedErrorMessage);
+
+            var request = CreateRequestObject(correctPassword, mockUser);
+
+            // Act
+            var result = await _loginService.Login(request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(expectedErrorMessage, result.Errors);
+
+            _signInManagerMock.Verify(s => s.PasswordSignInAsync(mockUser, correctPassword, false, true), Times.Once);
+
+            VerifyCallsToLookupService(mockUser.UserName);
             VerifyCallsToParameterService(2);
         }
 
