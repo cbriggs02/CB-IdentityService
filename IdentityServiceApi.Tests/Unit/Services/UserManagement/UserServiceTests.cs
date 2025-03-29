@@ -1075,6 +1075,279 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
         }
 
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when provided with 
+        ///     an invalid user ID (null, empty, or whitespace).
+        /// </summary>
+        /// <param name="input">
+        ///     The invalid user ID to be tested, which can be null, empty, or whitespace.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task DeactivateUser_InvalidId_ThrowsArgumentNullException(string input)
+        {
+            // Arrange
+            _parameterValidatorMock
+                .Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws<ArgumentNullException>();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.DeactivateUser(input));
+
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     returns a failure result with a forbidden error when a user 
+        ///     attempts to deactivate another user without the necessary permissions.
+        /// </summary>
+        /// <param name="roleName">
+        ///     The role of the user attempting the deactivation (e.g., User or Admin).
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
+        [InlineData(Roles.User)]
+        [InlineData(Roles.Admin)]
+        public async Task DeactivateUser_UserTryingToDeactivateOtherUser_ReturnsForbiddenFailureResult(string roleName)
+        {
+            // Arrange
+            const string ExpectedErrorMessage = ErrorMessages.Authorization.Forbidden;
+            const string UserId = "id-123";
+            const string OtherUserId = "id-999";
+
+            var user = ArrangeMockActivatedUser(OtherUserId);
+
+            _userManagerMock
+                .Setup(a => a.AddToRoleAsync(user, roleName))
+                .ReturnsAsync(IdentityResult.Success);
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.DeactivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToParameterValidatorForString();
+            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     returns a failure result with a forbidden error when a user 
+        ///     attempts to deactivate their own account without sufficient privileges.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task DeactivateUser_UserTryingToDeactivateItselfWithInsufficientPrivileges_ReturnsForbiddenFailureResult()
+        {
+            // Arrange
+            const string ExpectedErrorMessage = ErrorMessages.Authorization.Forbidden;
+            const string UserId = "id-123";
+
+            var user = ArrangeMockActivatedUser(UserId);
+
+            _userManagerMock
+                .Setup(a => a.AddToRoleAsync(user, Roles.User))
+                .ReturnsAsync(IdentityResult.Success);
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.DeactivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToParameterValidatorForString();
+            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     returns a failure result with a not found error when attempting 
+        ///     to deactivate a user that does not exist.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task DeactivateUser_NonExistentUserId_ReturnsNotFoundFailureResult()
+        {
+            // Arrange 
+            const string UserId = "non-existent-id";
+            const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
+            ArrangeUserOperationFailureResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.DeactivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     returns a failure result when attempting to deactivate a user 
+        ///     who is already deactivated.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task DeactivateUser_UserAlreadyDeactivated_ReturnsOperationFailureResult()
+        {
+            // Arrange 
+            const string ExpectedErrorMessage = ErrorMessages.User.NotActivated;
+            const string UserId = "id-123";
+
+            var user = ArrangeMockUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.DeactivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     returns a failure result when updating the user fails.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task DeactivateUser_UpdateAsyncFails_ReturnsOperationFailureResult()
+        {
+            // Arrange 
+            const string ExpectedErrorMessage = "User update failed";
+            const string UserId = "id-123";
+
+            var user = ArrangeMockActivatedUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(u => u.UpdateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
+
+            ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _userService.DeactivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+
+            _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     successfully deactivates a user when the user is found and not already deactivated, 
+        ///     returning a success operation result.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task DeactivateUser_UserFoundAndNotDeactivated_ReturnsSuccessOperationResult()
+        {
+            // Arrange 
+            const string UserId = "id-123";
+
+            var user = ArrangeMockActivatedUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(u => u.UpdateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            ArrangeGeneralOperationSuccessServiceResult();
+
+            // Act
+            var result = await _userService.DeactivateUser(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+
+            _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        private static User ArrangeMockActivatedUser(string UserId)
+        {
+            return new User { Id = UserId, UserName = "user123", AccountStatus = 1 };
+        }
+
+        private static User ArrangeMockUser(string userId)
+        {
+            return new User { Id = userId, UserName = "user123" };
+        }
+
         private static UserDTO ArrangeMockUserDTO()
         {
             return new UserDTO
@@ -1086,11 +1359,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 PhoneNumber = "613-123-1234",
                 Country = "Canada"
             };
-        }
-
-        private static User ArrangeMockUser(string userId)
-        {
-            return new User { Id = userId, UserName = "user123" };
         }
 
         private void ArrangeUserOperationFailureResult(string expectedErrorMessage)
