@@ -274,6 +274,46 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
+        ///     Verifies that the <see cref="PasswordService.SetPassword"/> method 
+        ///     returns a general failure result when <see cref="UserManager{TUser}.AddPasswordAsync"/> 
+        ///     fails while attempting to set a new password.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task SetPassword_AddPasswordAsyncFails_ReturnsGeneralFailureResult()
+        {
+            // Arrange 
+            const string UserId = "id-123";
+            const string ExpectedErrorMessage = "Failed to set password.";
+
+            var request = ArrangeSetPasswordRequest();
+            var user = new User { Id = UserId, UserName = "user123", PasswordHash = null };
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(a => a.AddPasswordAsync(user, request.Password))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
+
+            ArrangeFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _passwordService.SetPassword(UserId, request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterService(3);
+
+            _userManagerMock.Verify(a => a.AddPasswordAsync(user, request.Password), Times.Once);
+        }
+
+        /// <summary>
         ///     Tests the <see cref="PasswordService.SetPassword"/> method to ensure 
         ///     it returns a general success result when all conditions are met.
         /// </summary>
@@ -601,6 +641,58 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             VerifyCallsToParameterService(3);
 
             _passwordHistoryServiceMock.Verify(f => f.FindPasswordHash(It.IsAny<SearchPasswordHistoryRequest>()), Times.Once());
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="PasswordService.UpdatePassword"/> method 
+        ///     returns a general operation failure when <see cref="UserManager{TUser}.ChangePasswordAsync"/> 
+        ///     fails during the password update process.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task UpdatePassword_ChangePasswordAsyncFails_ReturnsGeneralOperationFailure()
+        {
+            // Arrange 
+            const string ExpectedErrorMessage = "Password update failed.";
+            const string UserId = "id-123";
+
+            var request = ArrangeUpdatePasswordRequest();
+            var user = ArrangeMockUser(UserId, request.CurrentPassword);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissions(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(c => c.CheckPasswordAsync(user, request.CurrentPassword))
+                .ReturnsAsync(true);
+            _passwordHistoryServiceMock
+                .Setup(f => f.FindPasswordHash(It.Is<SearchPasswordHistoryRequest>(
+                    req => req.UserId == UserId && req.Password == request.NewPassword
+                )))
+                .ReturnsAsync(false);
+            _userManagerMock
+                .Setup(c => c.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
+
+            ArrangeFailureServiceResult(ExpectedErrorMessage);
+
+            // Act
+            var result = await _passwordService.UpdatePassword(UserId, request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(ExpectedErrorMessage, result.Errors);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterService(3);
+
+            _userManagerMock.Verify(c => c.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword), Times.Once);
         }
 
         /// <summary>
