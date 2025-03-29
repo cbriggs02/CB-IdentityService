@@ -169,6 +169,42 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
+        ///     Tests the behavior of the <see cref="RoleService.CreateRole"/> method when the role creation operation fails.
+        ///     It verifies that the operation returns a failure result with the appropriate error message when the role cannot be created.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous operation. The result will indicate whether the operation was successful or not.
+        /// </returns>
+        [Fact]
+        public async Task CreateRole_CreateAsyncFails_ReturnsGeneralOperationFailureResult()
+        {
+            // Arrange
+            const string expectedErrorMessage = "role creation failed";
+            const string roleName = "new-role";
+
+            _roleManagerMock
+                .Setup(r => r.RoleExistsAsync(roleName))
+                .ReturnsAsync(false);
+            _roleManagerMock
+                .Setup(c => c.CreateAsync(It.Is<IdentityRole>(role => role.Name == roleName)))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = expectedErrorMessage }));
+
+            ArrangeFailureServiceResult(expectedErrorMessage);
+
+            // Act
+            var result = await _roleService.CreateRole(roleName);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(expectedErrorMessage, result.Errors);
+
+            _roleManagerMock.Verify(c => c.CreateAsync(It.Is<IdentityRole>(role => role.Name == roleName)), Times.Once);
+
+            VerifyCallsToParameterService(1);
+        }
+
+        /// <summary>
         ///     Tests that the <see cref="RoleService.CreateRole"/> returns a <see cref="ServiceResult"/>
         ///     with success set to true when providing role to the creation method that doesn't already exist.
         /// </summary>
@@ -229,7 +265,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
 
             VerifyCallsToParameterService(1);
         }
-        
+
         /// <summary>
         ///     Tests that the <see cref="RoleService.DeleteRole"/> returns a <see cref="ErrorMessages.Role.NotFound"/> 
         ///     when providing a invalid role id to the deletion method.
@@ -259,6 +295,43 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             Assert.Contains(expectedErrorMessage, result.Errors);
 
             _roleManagerMock.Verify(f => f.FindByIdAsync(roleId), Times.Once);
+
+            VerifyCallsToParameterService(1);
+        }
+
+        /// <summary>
+        ///     Tests the behavior of the <see cref="RoleService.DeleteRole"/> method when the role deletion operation fails.
+        ///     It verifies that the operation returns a failure result with the appropriate error message when the role cannot be deleted.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous operation. The result will indicate whether the operation was successful or not.
+        /// </returns>
+        [Fact]
+        public async Task DeleteRole_DeleteAsyncFails_ReturnsGeneralOperationFailureResult()
+        {
+            // Arrange
+            const string expectedErrorMessage = "role deletion failed";
+            const string roleId = "valid-id";
+            var role = new IdentityRole { Id = roleId };
+
+            _roleManagerMock
+                .Setup(f => f.FindByIdAsync(roleId))
+                .ReturnsAsync(role);
+            _roleManagerMock
+                .Setup(c => c.DeleteAsync(It.Is<IdentityRole>(role => role.Id == roleId)))
+                          .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = expectedErrorMessage }));
+
+            ArrangeFailureServiceResult(expectedErrorMessage);
+
+            // Act
+            var result = await _roleService.DeleteRole(roleId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(expectedErrorMessage, result.Errors);
+
+            _roleManagerMock.Verify(c => c.DeleteAsync(It.Is<IdentityRole>(role => role.Id == roleId)), Times.Once);
 
             VerifyCallsToParameterService(1);
         }
@@ -468,6 +541,57 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
+        ///     Tests the behavior of the <see cref="RoleService.AssignRole"/> method when the role assignment operation fails.
+        ///     It verifies that the operation returns a failure result with the appropriate error message when the user cannot be assigned to a role.
+        /// </summary>
+        /// <param name="roleName">
+        ///     The role to be assigned to the user.
+        ///     This can be any valid role name such as <see cref="Roles.SuperAdmin"/>, <see cref="Roles.Admin"/>, or <see cref="Roles.User"/>.
+        /// </param>
+        /// <returns>
+        ///     A task representing the asynchronous operation. The result will indicate whether the operation was successful or not.
+        /// </returns>
+        [Theory]
+        [InlineData(Roles.SuperAdmin)]
+        [InlineData(Roles.Admin)]
+        [InlineData(Roles.User)]
+        public async Task AssignRole_AddToRoleAsyncFails_ReturnsGeneralOperationFailureResult(string roleName)
+        {
+            // Arrange 
+            const string expectedErrorMessage = "Failed to add role to user.";
+            const string userId = "existing-id";
+
+            var user = CreateMockUser(true);
+
+            ArrangeUserLookupServiceMock(user, userId, "");
+
+            _roleManagerMock
+                .Setup(r => r.RoleExistsAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _userManagerMock
+                .Setup(u => u.GetRolesAsync(user))
+                .ReturnsAsync(new List<string>());
+            _userManagerMock
+                .Setup(a => a.AddToRoleAsync(user, roleName))
+               .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = expectedErrorMessage }));
+
+            ArrangeFailureServiceResult(expectedErrorMessage);
+
+            // Act
+            var result = await _roleService.AssignRole(userId, roleName);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(expectedErrorMessage, result.Errors);
+
+            VerifyCallsToParameterService(2);
+            VerifyCallsToLookupService(userId);
+
+            _userManagerMock.Verify(a => a.AddToRoleAsync(user, roleName), Times.Once);
+        }
+
+        /// <summary>
         ///     Tests that the <see cref="RoleService.AssignRole"/> returns success when 
         ///     assigning a role to a user.
         /// </summary>
@@ -650,6 +774,106 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             VerifyCallsToParameterService(2);
 
             _userManagerMock.Verify(u => u.RemoveFromRoleAsync(It.IsAny<User>(), It.IsAny<string>()), Times.Never);
+        }
+
+        /// <summary>
+        ///     Tests the behavior of the <see cref="RoleService.RemoveRole"/> method when the role removal operation fails.
+        ///     It verifies that the operation returns a failure result with the appropriate error message when the user cannot be removed from the role.
+        /// </summary>
+        /// <param name="roleName">
+        ///     The role to be removed from the user.
+        ///     This can be any valid role name such as <see cref="Roles.SuperAdmin"/>, <see cref="Roles.Admin"/>, or <see cref="Roles.User"/>.
+        /// </param>
+        /// <returns>
+        ///     A task representing the asynchronous operation. The result will indicate whether the operation was successful or not.
+        /// </returns>
+        [Theory]
+        [InlineData(Roles.SuperAdmin)]
+        [InlineData(Roles.Admin)]
+        [InlineData(Roles.User)]
+        public async Task RemoveRole_RemoveFromRoleAsyncFails_ReturnsGeneralOperationFailureResult(string roleName)
+        {
+            // Arrange 
+            const string expectedErrorMessage = "Failed to remove role from user.";
+            const string userId = "existing-id";
+
+            var user = CreateMockUser(true);
+
+            ArrangeUserLookupServiceMock(user, userId, "");
+
+            _roleManagerMock
+                .Setup(r => r.RoleExistsAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _userManagerMock
+                .Setup(u => u.GetRolesAsync(user))
+                .ReturnsAsync(new List<string>() { roleName });
+            _userManagerMock
+                .Setup(r => r.RemoveFromRoleAsync(user, roleName))
+               .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = expectedErrorMessage }));
+
+            ArrangeFailureServiceResult(expectedErrorMessage);
+
+            // Act
+            var result = await _roleService.RemoveRole(userId, roleName);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.Success);
+            Assert.Contains(expectedErrorMessage, result.Errors);
+
+            VerifyCallsToParameterService(2);
+            VerifyCallsToLookupService(userId);
+
+            _userManagerMock.Verify(r => r.RemoveFromRoleAsync(user, roleName), Times.Once);
+        }
+
+        /// <summary>
+        ///     Tests the behavior of the <see cref="RoleService.RemoveRole"/> method when the role removal operation succeeds.
+        ///     It verifies that the operation returns a success result when the user is successfully removed from a role.
+        /// </summary>
+        /// <param name="roleName">
+        ///     The role to be removed from the user.
+        ///     This can be any valid role name such as <see cref="Roles.SuperAdmin"/>, <see cref="Roles.Admin"/>, or <see cref="Roles.User"/>.
+        /// </param>
+        /// <returns>
+        ///     A task representing the asynchronous operation. The result will indicate whether the operation was successful or not.
+        /// </returns>
+        [Theory]
+        [InlineData(Roles.SuperAdmin)]
+        [InlineData(Roles.Admin)]
+        [InlineData(Roles.User)]
+        public async Task RemoveRole_RemoveFromRoleAsyncSucceeds_ReturnsGeneralOperationSuccessResult(string roleName)
+        {
+            // Arrange 
+            const string userId = "existing-id";
+
+            var user = CreateMockUser(true);
+
+            ArrangeUserLookupServiceMock(user, userId, "");
+
+            _roleManagerMock
+                .Setup(r => r.RoleExistsAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _userManagerMock
+                .Setup(u => u.GetRolesAsync(user))
+                .ReturnsAsync(new List<string>() { roleName });
+            _userManagerMock
+                .Setup(r => r.RemoveFromRoleAsync(user, roleName))
+               .ReturnsAsync(IdentityResult.Success);
+
+            ArrangeSuccessServiceResult();
+
+            // Act
+            var result = await _roleService.RemoveRole(userId, roleName);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+
+            VerifyCallsToParameterService(2);
+            VerifyCallsToLookupService(userId);
+
+            _userManagerMock.Verify(r => r.RemoveFromRoleAsync(user, roleName), Times.Once);
         }
 
         private void ArrangeUserLookupServiceMock(User user, string userId, string expectedErrorMessage)
