@@ -6,3 +6,4 @@
 **/.vs/
 **appsettings.Development.json
 **appsettings.json
+IdentityServiceApi.Tests/Integration/Helpers/
