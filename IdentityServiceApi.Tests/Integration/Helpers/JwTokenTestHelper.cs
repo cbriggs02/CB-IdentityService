@@ -21,7 +21,7 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
             {
                 {"JwtSettings:ValidIssuer", "https://localhost:7234"},
                 {"JwtSettings:ValidAudience", "https://localhost:3000"},
-                {"JwtSettings:SecretKey", "NjwQN0JTxC1^Rd5VEFf&&@e$$q4B0BaR^y8Q%1t&!FHo)a%@w&1pi)WJKjbaMVlk"}
+                {"JwtSettings:SecretKey", ""}
             })
             .Build();
 
