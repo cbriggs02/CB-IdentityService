@@ -56,65 +56,64 @@ namespace IdentityServiceApi.Middleware
         /// </returns>
         public async Task Invoke(HttpContext context)
         {
-            using var scope = _scopeFactory.CreateScope();
-            var loggerService = scope.ServiceProvider.GetRequiredService<ILoggerService>();
-
-            if (context.User.Identity.IsAuthenticated)
+            try
             {
-                var userId = GetUserIdFromClaims(context.User);
-
-                if (userId == null)
+                if (context.User.Identity.IsAuthenticated)
                 {
-                    string reason = ErrorMessages.Authorization.MissingUserIdClaim;
-                    await HandleAuthorizationBreach(context, loggerService, reason, "Anonymous");
-                    return;
+                    var userId = GetUserIdFromClaims(context.User);
+
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        await HandleAuthorizationBreach(context, ErrorMessages.Authorization.MissingUserIdClaim, "Anonymous");
+                        return;
+                    }
+
+                    using var scope = _scopeFactory.CreateScope();
+                    var userLookupService = scope.ServiceProvider.GetRequiredService<IUserLookupService>();
+                    var userLookupResult = await userLookupService.FindUserById(userId);
+
+                    // Validate tokens that are still active/valid but user has recently removed account
+                    if (!userLookupResult.Success)
+                    {
+                        await HandleAuthorizationBreach(context, $"User with ID {userId} no longer exists in the system.", userId);
+                        return;
+                    }
                 }
 
-                var userLookupService = scope.ServiceProvider.GetRequiredService<IUserLookupService>();
-                var userLookupResult = await userLookupService.FindUserById(userId);
-
-                // Validate tokens that are still active/valid but user has recently removed account
-                if (!userLookupResult.Success)
-                {
-                    string reason = $"User with ID {userId} no longer exists in the system.";
-                    await HandleAuthorizationBreach(context, loggerService, reason, userLookupResult.UserFound.Id);
-                    return;
-                }
+                await _next(context);
             }
-            await _next(context);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred during token validation.");
+                await WriteServerUnauthorizedResponse(context);
+            }
         }
 
         private static string GetUserIdFromClaims(ClaimsPrincipal principal)
         {
-            var identity = principal.Identity as ClaimsIdentity;
-            var userClaim = identity?.FindFirst(ClaimTypes.NameIdentifier);
-            return userClaim?.Value;
+            return principal?.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
-        private async Task HandleAuthorizationBreach(HttpContext context, ILoggerService loggerService, string reason, string userId)
-        {
-            var correlationId = Guid.NewGuid().ToString();
-            await loggerService.LogAuthorizationBreach(); // Log auth breach in DB using audit logger
-            ConsoleLogAuthorizationBreach(reason, userId);
-            await WriteServerUnauthorizedResponse(context, correlationId); // Return 401 status to client
-        }
-
-        private void ConsoleLogAuthorizationBreach(string reason, string userId)
+        private async Task HandleAuthorizationBreach(HttpContext context, string reason, string userId)
         {
             _logger.LogWarning($"Unauthorized access attempt: Reason: {reason}, UserId: {userId}");
+            await LogAuthorizationBreachToDatabase();
+            await WriteServerUnauthorizedResponse(context);
         }
 
-        private static async Task WriteServerUnauthorizedResponse(HttpContext context, string correlationId)
+        private async Task LogAuthorizationBreachToDatabase()
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var loggerService = scope.ServiceProvider.GetRequiredService<ILoggerService>();
+            await loggerService.LogAuthorizationBreach();
+        }
+
+        private static async Task WriteServerUnauthorizedResponse(HttpContext context)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "application/json";
 
-            var response = new
-            {
-                error = ErrorMessages.Authorization.Unauthorized,
-                correlationId
-            };
-
+            var response = new { error = ErrorMessages.Authorization.Unauthorized };
             var jsonResponse = JsonConvert.SerializeObject(response);
             await context.Response.WriteAsync(jsonResponse);
         }
