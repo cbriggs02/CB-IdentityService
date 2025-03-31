@@ -22,6 +22,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
     public class AuditLogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
+        private const string BaseUri = "/api/v1/AuditLogs";
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="AuditLogsControllerTests"/> class.
@@ -47,7 +48,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         {
             // Arrange
             AuthenticateClient();
-            var requestUri = "/api/v1/AuditLogs?Page=1&PageSize=5&Action=0";
+            var requestUri = $"{BaseUri}?Page=1&PageSize=5&Action=0";
 
             // Act
             var response = await _client.GetAsync(requestUri);
@@ -71,7 +72,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         public async Task GetLogs_ReturnsUnauthorized_WhenNotAuthenticated()
         {
             // Arrange
-            var requestUri = "/api/v1/AuditLogs?PageNumber=1&PageSize=5&AuditLogs?Page=1&PageSize=5&Action=0";
+            var requestUri = $"{BaseUri}?PageNumber=1&PageSize=5&AuditLogs?Page=1&PageSize=5&Action=0";
 
             // Act
             var response = await _client.GetAsync(requestUri);
@@ -92,7 +93,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         {
             // Arrange
             AuthenticateClient();
-            var requestUri = "/api/v1/AuditLogs/nonexistent-log-id";
+            var requestUri = $"{BaseUri}/nonexistent-log-id";
 
             // Act
             var response = await _client.DeleteAsync(requestUri);
@@ -112,7 +113,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         public async Task DeleteLog_ReturnsUnauthorized_WhenNotAuthenticated()
         {
             // Arrange
-            var requestUri = "/api/v1/AuditLogs/valid-log-id";
+            var requestUri = $"{BaseUri}/valid-log-id";
 
             // Act
             var response = await _client.DeleteAsync(requestUri);
