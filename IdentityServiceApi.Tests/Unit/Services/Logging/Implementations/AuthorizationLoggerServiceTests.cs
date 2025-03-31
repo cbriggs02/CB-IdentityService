@@ -9,7 +9,7 @@ using Moq;
 using System.Net;
 using System.Security.Claims;
 
-namespace IdentityServiceApi.Tests.Unit.Services.Logging
+namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
 {
     /// <summary>
     ///     Unit tests for the <see cref="AuthorizationLoggerService"/> class.

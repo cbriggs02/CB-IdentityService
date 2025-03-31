@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IdentityServiceApi.Constants;
 using IdentityServiceApi.Data;
 using IdentityServiceApi.Interfaces.Authentication;
 using IdentityServiceApi.Interfaces.Logging;
@@ -9,19 +10,19 @@ using Moq;
 using System.Net;
 using System.Security.Claims;
 
-namespace IdentityServiceApi.Tests.Unit.Services.Logging
+namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
 {
     /// <summary>
-    ///     Unit tests for the <see cref="ExceptionLoggerService"/> class.
-    ///     This class contains test cases for various audit exception logging scenarios, verifying the 
-    ///     behavior of the exception logger functionality.
+    ///     Unit tests for the <see cref="PerformanceLoggerService"/> class.
+    ///     This class contains test cases for various audit performance logging scenarios, verifying the 
+    ///     behavior of the performance logger functionality.
     /// </summary>
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
     [Trait("TestCategory", "UnitTest")]
-    public class ExceptionLoggerServiceTests
+    public class PerformanceLoggerServiceTests
     {
         private readonly Mock<IUserContextService> _userContextServiceMock;
         private readonly Mock<ILoggingValidator> _loggingValidatorMock;
@@ -29,12 +30,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         private readonly Mock<IParameterValidator> _parameterValidatorMock;
         private readonly Mock<IServiceResultFactory> _serviceResultFactoryMock;
         private readonly Mock<IMapper> _mapperMock;
-        private readonly ExceptionLoggerService _exceptionLoggerService;
+        private readonly PerformanceLoggerService _performanceLoggerService;
+        private const long ValidResponseTime = 100;
+
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ExceptionLoggerServiceTests"/> class.
+        ///     Initializes a new instance of the <see cref="PerformanceLoggerServiceTests"/> class.
         /// </summary>
-        public ExceptionLoggerServiceTests()
+        public PerformanceLoggerServiceTests()
         {
             _userContextServiceMock = new Mock<IUserContextService>();
             _loggingValidatorMock = new Mock<ILoggingValidator>();
@@ -42,49 +45,55 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
             _parameterValidatorMock = new Mock<IParameterValidator>();
             _serviceResultFactoryMock = new Mock<IServiceResultFactory>();
             _mapperMock = new Mock<IMapper>();
-            _exceptionLoggerService = new ExceptionLoggerService(_userContextServiceMock.Object, _loggingValidatorMock.Object, _dbContextMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object, _mapperMock.Object);
+
+            _performanceLoggerService = new PerformanceLoggerService(_userContextServiceMock.Object, _loggingValidatorMock.Object, _dbContextMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object, _mapperMock.Object);
         }
 
         /// <summary>
-        ///     Validates that the <see cref="ExceptionLoggerService"/> constructor throws 
+        ///     Validates that the <see cref="PerformanceLoggerService"/> constructor throws 
         ///     an <see cref="ArgumentNullException"/> when null dependencies are provided.
         /// </summary>
         [Fact]
-        public void ExceptionLoggerService_NullDependencies_ThrowsArgumentNullException()
+        public void PerformanceLoggerService_NullDependencies_ThrowsArgumentNullException()
         {
             //Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new ExceptionLoggerService(null, null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>(() => new PerformanceLoggerService(null, null, null, null, null, null));
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method throws an 
-        ///     ArgumentNullException when the provided exception is null.
+        ///     Tests that the <see cref="PerformanceLoggerService.LogSlowPerformance"/> method 
+        ///     throws an <see cref="ArgumentException"/> when an invalid response time is provided.
         /// </summary>
+        /// <param name="responseTime">
+        ///     The response time value to test, which is expected to be invalid.
+        /// </param>
         /// <returns>
-        ///     A task representing the asynchronous operation.
+        ///     A task representing the asynchronous unit test operation.
         /// </returns>
-        [Fact]
-        public async Task LogException_NullException_ThrowsArgumentNullException()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-20)]
+        [InlineData(-111)]
+        [InlineData(-12121)]
+        [InlineData(-45745)]
+        [InlineData(-777777777777)]
+        public async Task LogSlowPerformance_InvalidResponseTime_ThrowsArgumentException(long responseTime)
         {
             // Arrange
-            Exception ex = null;
+            const string ExpectedExceptionMessage = ErrorMessages.AuditLog.PerformanceLog.InvalidResponseTime;
 
-            _loggingValidatorMock
-                .Setup(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()))
-                .Throws<ArgumentNullException>();
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() => _performanceLoggerService.LogSlowPerformance(responseTime));
 
-            // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _exceptionLoggerService.LogException(ex));
-
-            _loggingValidatorMock.Verify(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
+            Assert.Equal(ExpectedExceptionMessage, exception.Message);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method  throws 
-        ///     an InvalidOperationException when the context data is invalid.
+        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformance"/> method with invalid context data.
+        ///     Verifies that an <see cref="InvalidOperationException"/> is thrown for invalid user context data.
         /// </summary>
         /// <param name="input">
-        /// The invalid context data input (null or empty).
+        ///     The invalid user context data to test.
         /// </param>
         /// <returns>
         ///     A task representing the asynchronous operation.
@@ -92,68 +101,61 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
-        public async Task LogException_InvalidContextData_ThrowsInvalidOperationException(string input)
+        public async Task LogSlowPerformance_InvalidContextData_ThrowsInvalidOperationException(string input)
         {
             // Arrange
             ArrangeLoggingValidatorMock();
             ArrangeContextDataMock(input);
             ArrangeContextIpAddressMock(IPAddress.Parse("127.0.0.1"));
 
-            Exception ex = new();
-
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _exceptionLoggerService.LogException(ex));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _performanceLoggerService.LogSlowPerformance(ValidResponseTime));
 
             VerifyCallsToLoggingValidator(1);
             VerifyCallsToUserContextService();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method throws an
-        ///     InvalidOperationException when the IP address is invalid.
+        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformance"/> method with an invalid IP address.
+        ///     Verifies that an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <returns>
         ///     A task representing the asynchronous operation.
         /// </returns>
         [Fact]
-        public async Task LogException_InvalidIpAddress_ThrowsInvalidOperationException()
+        public async Task LogSlowPerformance_InvalidIpAddress_ThrowsInvalidOperationException()
         {
             // Arrange
             ArrangeLoggingValidatorMock();
             ArrangeContextDataMock("context data");
             ArrangeContextIpAddressMock(null); // Simulate invalid IP address
 
-            Exception ex = new();
-
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _exceptionLoggerService.LogException(ex));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _performanceLoggerService.LogSlowPerformance(ValidResponseTime));
 
             VerifyCallsToLoggingValidator(1);
             VerifyCallsToUserContextService();
         }
 
         /// <summary>
-        ///     Unit test to verify that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method 
-        ///     successfully logs an exception under successful conditions, including logging the exception details 
-        ///     and saving them to the audit log in the database.
+        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformance"/> method under valid conditions.
+        ///     Verifies that the authorization breach is successfully logged.
         /// </summary>
         /// <returns>
-        ///     A Task representing the asynchronous operation of the unit test.
+        ///     A task representing the asynchronous operation.
         /// </returns>
         [Fact]
-        public async Task LogException_SuccessConditions_SuccessfullyLogsException()
+        public async Task LogSlowPerformance_SuccessfulConditions_SuccessfullyLogsAuthorizationBreach()
         {
             // Arrange
-            ArrangeContextDataMock("context data");
+            ArrangeContextDataMock("Valid User Data");
             ArrangeContextIpAddressMock(IPAddress.Parse("127.0.0.1"));
-
-            Exception ex = new("Test exception");
 
             _dbContextMock.Setup(s => s.AuditLogs.Add(It.IsAny<AuditLog>()));
             _dbContextMock.Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             // Act
-            await _exceptionLoggerService.LogException(ex);
+            await _performanceLoggerService.LogSlowPerformance(ValidResponseTime);
 
             // Assert
             VerifyCallsToUserContextService();
@@ -181,18 +183,18 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .Returns(input);
         }
 
-        private void ArrangeLoggingValidatorMock()
-        {
-            _loggingValidatorMock
-                .Setup(v => v.ValidateContextData(It.IsAny<string>(), It.IsAny<string>()))
-                .Throws<InvalidOperationException>();
-        }
-
         private void ArrangeContextIpAddressMock(IPAddress address)
         {
             _userContextServiceMock
                 .Setup(ad => ad.GetAddress())
                 .Returns(address);
+        }
+
+        private void ArrangeLoggingValidatorMock()
+        {
+            _loggingValidatorMock
+                .Setup(v => v.ValidateContextData(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws<InvalidOperationException>();
         }
 
         private void VerifyCallsToLoggingValidator(int numOfTimes)
@@ -205,6 +207,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
             _userContextServiceMock.Verify(p => p.GetClaimsPrincipal(), Times.Once());
             _userContextServiceMock.Verify(id => id.GetUserId(It.IsAny<ClaimsPrincipal>()), Times.Once());
             _userContextServiceMock.Verify(ad => ad.GetAddress(), Times.Once());
+            _userContextServiceMock.Verify(rp => rp.GetRequestPath(), Times.Once());
         }
     }
 }

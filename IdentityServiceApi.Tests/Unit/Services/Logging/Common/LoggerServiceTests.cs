@@ -3,7 +3,7 @@ using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Services.Logging.Common;
 using Moq;
 
-namespace IdentityServiceApi.Tests.Unit.Services.Logging
+namespace IdentityServiceApi.Tests.Unit.Services.Logging.Common
 {
     /// <summary>
     ///     Unit tests for the <see cref="LoggerService"/> class.
