@@ -253,7 +253,10 @@ namespace IdentityServiceApi
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseMiddleware<TokenValidatorMiddleware>();
+            if (app.Environment.IsProduction())
+            {
+                app.UseMiddleware<TokenValidatorMiddleware>();
+            }
 
             app.MapControllers();
 
