@@ -10,7 +10,6 @@ using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Models.ApiResponseModels.Shared;
 using Asp.Versioning;
 using IdentityServiceApi.Models.RequestModels.UserManagement;
-using IdentityModel.OidcClient;
 
 namespace IdentityServiceApi.Controllers
 {

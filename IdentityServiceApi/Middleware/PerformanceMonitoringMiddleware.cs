@@ -92,7 +92,6 @@ namespace IdentityServiceApi.Middleware
                 // Log slow performance metrics in DB using audit logger
                 await loggerService.LogSlowPerformance(requestDuration);
             }
-
         }
 
         private void ConsoleLogPerformanceMetrics(HttpContext context, string requestId, long requestDuration, double cpuUsage)
