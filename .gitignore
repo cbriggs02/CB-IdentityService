@@ -6,4 +6,4 @@
 **/.vs/
 **appsettings.Development.json
 **appsettings.json
-IdentityServiceApi.Tests/Integration/Helpers/
+IdentityServiceApi.Tests/Integration/Helpers/JwTokenTestHelper.cs
