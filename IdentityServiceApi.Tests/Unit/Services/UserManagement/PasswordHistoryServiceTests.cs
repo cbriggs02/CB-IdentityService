@@ -59,7 +59,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Ensures that calling the <see cref="PasswordHistoryService.AddPasswordHistory(StorePasswordHistoryRequest)"/> 
+        ///     Ensures that calling the <see cref="PasswordHistoryService.AddPasswordHistoryAsync(StorePasswordHistoryRequest)"/> 
         ///     method  with a null parameter throws an ArgumentNullException.
         /// </summary>
         /// <returns>
@@ -74,13 +74,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.AddPasswordHistory(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.AddPasswordHistoryAsync(null));
 
             VerifyCallsToParameterService(0);
         }
 
         /// <summary>
-        ///     Ensures that calling the <see cref="PasswordHistoryService.AddPasswordHistory(StorePasswordHistoryRequest)"/> 
+        ///     Ensures that calling the <see cref="PasswordHistoryService.AddPasswordHistoryAsync(StorePasswordHistoryRequest)"/> 
         ///     with an invalid StorePasswordHistoryRequest (null, empty, or whitespace values) throws an ArgumentNullException.
         /// </summary>
         /// <param name="input">
@@ -103,13 +103,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.AddPasswordHistory(request));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.AddPasswordHistoryAsync(request));
 
             VerifyCallsToParameterService(1);
         }
 
         /// <summary>
-        ///     Tests that the <see cref="PasswordHistoryService.AddPasswordHistory(StorePasswordHistoryRequest)"/> method
+        ///     Tests that the <see cref="PasswordHistoryService.AddPasswordHistoryAsync(StorePasswordHistoryRequest)"/> method
         ///     successfully adds a password history record when provided with valid input data.
         /// </summary>
         /// <returns>
@@ -130,22 +130,22 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(s => s.PasswordHistories
                 .Add(It.IsAny<PasswordHistory>()));
             _cleanupServiceMock
-                .Setup(c => c.RemoveOldPasswords(UserId))
+                .Setup(c => c.RemoveOldPasswordsAsync(UserId))
                 .Returns(Task.CompletedTask);
             _dbContextMock
                 .Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
             // Act
-            await _passwordHistoryService.AddPasswordHistory(request);
+            await _passwordHistoryService.AddPasswordHistoryAsync(request);
 
             // Assert
             _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            _cleanupServiceMock.Verify(c => c.RemoveOldPasswords(UserId), Times.Once);
+            _cleanupServiceMock.Verify(c => c.RemoveOldPasswordsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Ensures that calling the <see cref="PasswordHistoryService.FindPasswordHash(SearchPasswordHistoryRequest)"/> 
+        ///     Ensures that calling the <see cref="PasswordHistoryService.FindPasswordHashAsync(SearchPasswordHistoryRequest)"/> 
         ///     method  with a null parameter throws an ArgumentNullException.
         /// </summary>
         /// <returns>
@@ -160,13 +160,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.FindPasswordHash(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.FindPasswordHashAsync(null));
 
             VerifyCallsToParameterService(0);
         }
 
         /// <summary>
-        ///     Ensures that calling the <see cref="PasswordHistoryService.FindPasswordHash(SearchPasswordHistoryRequest)"/> 
+        ///     Ensures that calling the <see cref="PasswordHistoryService.FindPasswordHashAsync(SearchPasswordHistoryRequest)"/> 
         ///     with an invalid StorePasswordHistoryRequest (null, empty, or whitespace values) throws an ArgumentNullException.
         /// </summary>
         /// <param name="input">
@@ -189,13 +189,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.FindPasswordHash(request));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordHistoryService.FindPasswordHashAsync(request));
 
             VerifyCallsToParameterService(1);
         }
 
         /// <summary>
-        ///     Tests that the <see cref="PasswordHistoryService.FindPasswordHash"/> method returns true when the 
+        ///     Tests that the <see cref="PasswordHistoryService.FindPasswordHashAsync"/> method returns true when the 
         ///     provided password matches the stored hash in the password history. This simulates a scenario where 
         ///     the password verification is successful and the provided password matches the stored hash.
         /// </summary>
@@ -217,7 +217,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var request = ArrangeSearchPasswordHistoryRequest(UserId, Password);
 
             // Act
-            var result = await _passwordHistoryService.FindPasswordHash(request);
+            var result = await _passwordHistoryService.FindPasswordHashAsync(request);
 
             // Assert
             Assert.True(result);
@@ -226,7 +226,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Tests that the <see cref="PasswordHistoryService.FindPasswordHash"/> method returns false when the provided
+        ///     Tests that the <see cref="PasswordHistoryService.FindPasswordHashAsync"/> method returns false when the provided
         ///     password does not match the stored hash in the password history.This simulates a scenario where the password 
         ///     verification fails and the provided password does not match the stored hash.
         /// </summary>
@@ -248,7 +248,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var request = ArrangeSearchPasswordHistoryRequest(UserId, Password);
 
             // Act
-            var result = await _passwordHistoryService.FindPasswordHash(request);
+            var result = await _passwordHistoryService.FindPasswordHashAsync(request);
 
             // Assert
             Assert.False(result);

@@ -96,7 +96,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.GetUser"/> method throws 
+        ///     Verifies that the <see cref="UserService.GetUserAsync"/> method throws 
         ///     an <see cref="ArgumentNullException"/> when the provided user ID is null or empty.
         /// </summary>
         /// <param name="input">
@@ -117,13 +117,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.GetUser(input));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.GetUserAsync(input));
 
             VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.GetUser"/> method returns 
+        ///     Verifies that the <see cref="UserService.GetUserAsync"/> method returns 
         ///     a forbidden failure result when a user attempts to retrieve another user's data 
         ///     without sufficient permissions.
         /// </summary>
@@ -149,13 +149,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(a => a.AddToRoleAsync(user, roleName))
                 .ReturnsAsync(IdentityResult.Success);
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
 
             ArrangeUserOperationFailureResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.GetUser(UserId);
+            var result = await _userService.GetUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -163,11 +163,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
             VerifyCallsToParameterValidatorForString();
-            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+            _permissionServiceMock.Verify(p => p.ValidatePermissionsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.GetUser"/> method returns 
+        ///     Verifies that the <see cref="UserService.GetUserAsync"/> method returns 
         ///     a failure result when the specified user ID does not exist.
         /// </summary>
         /// <returns>
@@ -181,14 +181,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
             ArrangeUserOperationFailureResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.GetUser(UserId);
+            var result = await _userService.GetUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -200,7 +200,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.GetUser"/> method returns 
+        ///     Verifies that the <see cref="UserService.GetUserAsync"/> method returns 
         ///     a success result when the specified user is found.
         /// </summary>
         /// <returns>
@@ -214,7 +214,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -225,7 +225,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeUserOperationSuccessResult(userDTO);
 
             // Act
-            var result = await _userService.GetUser(UserId);
+            var result = await _userService.GetUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -237,7 +237,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.CreateUser"/> method 
+        ///     Verifies that the <see cref="UserService.CreateUserAsync"/> method 
         ///     throws an <see cref="ArgumentNullException"/> when the provided 
         ///     <paramref name="user"/> parameter is null.
         /// </summary>
@@ -253,13 +253,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.CreateUser(null));
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.CreateUserAsync(null));
 
             VerifyCallsToParameterValidatorForObject();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.CreateUser"/> method 
+        ///     Verifies that the <see cref="UserService.CreateUserAsync"/> method 
         ///     throws an <see cref="ArgumentNullException"/> when one or more 
         ///     required user properties contain a null or empty value.
         /// </summary>
@@ -292,13 +292,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             };
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.CreateUser(user));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.CreateUserAsync(user));
 
             VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.CreateUser"/> method 
+        ///     Verifies that the <see cref="UserService.CreateUserAsync"/> method 
         ///     returns a failure result when the user creation process fails.
         /// </summary>
         /// <returns>
@@ -319,7 +319,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeUserOperationFailureResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.CreateUser(user);
+            var result = await _userService.CreateUserAsync(user);
 
             // Assert
             Assert.NotNull(result);
@@ -333,7 +333,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.CreateUser"/> method 
+        ///     Verifies that the <see cref="UserService.CreateUserAsync"/> method 
         ///     returns a success result when the user creation process succeeds.
         /// </summary>
         /// <returns>
@@ -354,7 +354,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Returns((UserDTO u) => new UserServiceResult { Success = true, User = u });
 
             // Act
-            var result = await _userService.CreateUser(user);
+            var result = await _userService.CreateUserAsync(user);
 
             // Assert
             Assert.NotNull(result);
@@ -368,7 +368,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     Verifies that the <see cref="UserService.UpdateUserAsync"/> method 
         ///     throws an <see cref="ArgumentNullException"/> when provided 
         ///     with an invalid user ID.
         /// </summary>
@@ -392,13 +392,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUserDTO();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUser(input, user));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUserAsync(input, user));
 
             VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     Verifies that the <see cref="UserService.UpdateUserAsync"/> method 
         ///     throws an <see cref="ArgumentNullException"/> when the user object is null.
         /// </summary>
         /// <returns>
@@ -413,13 +413,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUser("id-123", null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUserAsync("id-123", null));
 
             VerifyCallsToParameterValidatorForObject();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     Verifies that the <see cref="UserService.UpdateUserAsync"/> method 
         ///     throws an <see cref="ArgumentNullException"/> when the user object 
         ///     contains invalid properties (e.g., null, empty, or whitespace values).
         /// </summary>
@@ -451,13 +451,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             };
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUser("id-123", user));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.UpdateUserAsync("id-123", user));
 
             VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     Verifies that the <see cref="UserService.UpdateUserAsync"/> method 
         ///     returns a failure result with a forbidden error when a user 
         ///     attempts to update another user's information without proper authorization.
         /// </summary>
@@ -483,7 +483,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(a => a.AddToRoleAsync(user, roleName))
                 .ReturnsAsync(IdentityResult.Success);
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
 
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
@@ -491,7 +491,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var userDTO = ArrangeMockUserDTO();
 
             // Act
-            var result = await _userService.UpdateUser(UserId, userDTO);
+            var result = await _userService.UpdateUserAsync(UserId, userDTO);
 
             // Assert
             Assert.NotNull(result);
@@ -499,11 +499,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(7));
-            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+            _permissionServiceMock.Verify(p => p.ValidatePermissionsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     Verifies that the <see cref="UserService.UpdateUserAsync"/> method 
         ///     returns a failure result with a not found error when attempting 
         ///     to update a user that does not exist.
         /// </summary>
@@ -518,7 +518,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
@@ -527,7 +527,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var userDTO = ArrangeMockUserDTO();
 
             // Act
-            var result = await _userService.UpdateUser(UserId, userDTO);
+            var result = await _userService.UpdateUserAsync(UserId, userDTO);
 
             // Assert
             Assert.NotNull(result);
@@ -540,7 +540,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     Verifies that the <see cref="UserService.UpdateUserAsync"/> method 
         ///     returns a failure result when <see cref="UserManager{TUser}.UpdateAsync"/> fails.
         /// </summary>
         /// <returns>
@@ -556,7 +556,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -570,7 +570,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var userDTO = ArrangeMockUserDTO();
 
             // Act
-            var result = await _userService.UpdateUser(UserId, userDTO);
+            var result = await _userService.UpdateUserAsync(UserId, userDTO);
 
             // Assert
             Assert.NotNull(result);
@@ -583,7 +583,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.UpdateUser"/> method 
+        ///     Verifies that the <see cref="UserService.UpdateUserAsync"/> method 
         ///     successfully updates an existing user and returns a success result.
         /// </summary>
         /// <returns>
@@ -598,7 +598,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -612,7 +612,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var userDTO = ArrangeMockUserDTO();
 
             // Act
-            var result = await _userService.UpdateUser(UserId, userDTO);
+            var result = await _userService.UpdateUserAsync(UserId, userDTO);
 
             // Assert
             Assert.NotNull(result);
@@ -624,7 +624,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeleteUserAsync"/> method 
         ///     throws an <see cref="ArgumentNullException"/> when an invalid 
         ///     user ID (null, empty, or whitespace) is provided.
         /// </summary>
@@ -646,13 +646,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.DeleteUser(input));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.DeleteUserAsync(input));
 
             VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeleteUserAsync"/> method 
         ///     returns a forbidden failure result when a user attempts to delete 
         ///     another user without the necessary permissions.
         /// </summary>
@@ -678,13 +678,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(a => a.AddToRoleAsync(user, roleName))
                 .ReturnsAsync(IdentityResult.Success);
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
 
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.DeleteUser(UserId);
+            var result = await _userService.DeleteUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -692,11 +692,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
             VerifyCallsToParameterValidatorForString();
-            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+            _permissionServiceMock.Verify(p => p.ValidatePermissionsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeleteUserAsync"/> method 
         ///     returns a not found failure result when attempting to delete a 
         ///     user that does not exist.
         /// </summary>
@@ -711,14 +711,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
             ArrangeUserOperationFailureResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.DeleteUser(UserId);
+            var result = await _userService.DeleteUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -730,7 +730,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeleteUserAsync"/> method 
         ///     returns an operation failure result when the user deletion process fails.
         /// </summary>
         /// <returns>
@@ -746,7 +746,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -758,7 +758,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.DeleteUser(UserId);
+            var result = await _userService.DeleteUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -771,7 +771,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeleteUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeleteUserAsync"/> method 
         ///     successfully deletes an existing user and returns a success operation result.
         /// </summary>
         /// <returns>
@@ -786,7 +786,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -798,7 +798,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeGeneralOperationSuccessServiceResult();
 
             // Act
-            var result = await _userService.DeleteUser(UserId);
+            var result = await _userService.DeleteUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -807,12 +807,12 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             VerifyCallsToLookupService(UserId);
             VerifyCallsToParameterValidatorForString();
 
-            _userHistoryCleanupServiceMock.Verify(d => d.DeletePasswordHistory(UserId), Times.Once);
+            _userHistoryCleanupServiceMock.Verify(d => d.DeletePasswordHistoryAsync(UserId), Times.Once);
             _userManagerMock.Verify(d => d.DeleteAsync(It.IsAny<User>()), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.ActivateUser"/> method throws 
+        ///     Verifies that the <see cref="UserService.ActivateUserAsync"/> method throws 
         ///     an <see cref="ArgumentNullException"/> when an invalid user ID (null, 
         ///     empty, or whitespace) is provided.
         /// </summary>
@@ -834,13 +834,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.ActivateUser(input));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.ActivateUserAsync(input));
 
             VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.ActivateUser"/> method returns a forbidden result 
+        ///     Verifies that the <see cref="UserService.ActivateUserAsync"/> method returns a forbidden result 
         ///     when a user attempts to activate another user, an admin, or a super admin. Admins are also 
         ///     restricted from activating other admins or super admins.
         /// </summary>
@@ -868,13 +868,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(a => a.AddToRoleAsync(user, roleName))
                 .ReturnsAsync(IdentityResult.Success);
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
 
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.ActivateUser(UserId);
+            var result = await _userService.ActivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -882,11 +882,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
             VerifyCallsToParameterValidatorForString();
-            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+            _permissionServiceMock.Verify(p => p.ValidatePermissionsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.ActivateUser"/> method returns a forbidden result when a user 
+        ///     Verifies that the <see cref="UserService.ActivateUserAsync"/> method returns a forbidden result when a user 
         ///     attempts to activate their own account with insufficient privileges. This test ensures that users cannot 
         ///     activate their own account if they don't have the required permissions.
         /// </summary>
@@ -906,13 +906,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(a => a.AddToRoleAsync(user, Roles.User))
                 .ReturnsAsync(IdentityResult.Success);
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
 
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.ActivateUser(UserId);
+            var result = await _userService.ActivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -920,11 +920,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
             VerifyCallsToParameterValidatorForString();
-            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+            _permissionServiceMock.Verify(p => p.ValidatePermissionsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.ActivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.ActivateUserAsync"/> method 
         ///     returns a not found failure result when the user does not exist.
         /// </summary>
         /// <returns>
@@ -938,14 +938,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
             ArrangeUserOperationFailureResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.ActivateUser(UserId);
+            var result = await _userService.ActivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -957,7 +957,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.ActivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.ActivateUserAsync"/> method 
         ///     returns an operation failure result when the user is already activated.
         /// </summary>
         /// <returns>
@@ -973,14 +973,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = new User { Id = UserId, UserName = "user123", AccountStatus = 1 };
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.ActivateUser(UserId);
+            var result = await _userService.ActivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -992,7 +992,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.ActivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.ActivateUserAsync"/> method 
         ///     returns an operation failure result when <see cref="UserManager{TUser}.UpdateAsync"/> 
         ///     fails to update the user.
         /// </summary>
@@ -1009,7 +1009,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -1021,7 +1021,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.ActivateUser(UserId);
+            var result = await _userService.ActivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -1035,7 +1035,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.ActivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.ActivateUserAsync"/> method 
         ///     successfully activates a user who is found and not already activated, 
         ///     returning a success operation result.
         /// </summary>
@@ -1051,7 +1051,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -1063,7 +1063,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeGeneralOperationSuccessServiceResult();
 
             // Act
-            var result = await _userService.ActivateUser(UserId);
+            var result = await _userService.ActivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -1076,7 +1076,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeactivateUserAsync"/> method 
         ///     throws an <see cref="ArgumentNullException"/> when provided with 
         ///     an invalid user ID (null, empty, or whitespace).
         /// </summary>
@@ -1098,13 +1098,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.DeactivateUser(input));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.DeactivateUserAsync(input));
 
             VerifyCallsToParameterValidatorForString();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeactivateUserAsync"/> method 
         ///     returns a failure result with a forbidden error when a user 
         ///     attempts to deactivate another user without the necessary permissions.
         /// </summary>
@@ -1130,13 +1130,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(a => a.AddToRoleAsync(user, roleName))
                 .ReturnsAsync(IdentityResult.Success);
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
 
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.DeactivateUser(UserId);
+            var result = await _userService.DeactivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -1144,11 +1144,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
             VerifyCallsToParameterValidatorForString();
-            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+            _permissionServiceMock.Verify(p => p.ValidatePermissionsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeactivateUserAsync"/> method 
         ///     returns a failure result with a forbidden error when a user 
         ///     attempts to deactivate their own account without sufficient privileges.
         /// </summary>
@@ -1168,13 +1168,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(a => a.AddToRoleAsync(user, Roles.User))
                 .ReturnsAsync(IdentityResult.Success);
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
 
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.DeactivateUser(UserId);
+            var result = await _userService.DeactivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -1182,11 +1182,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
             VerifyCallsToParameterValidatorForString();
-            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+            _permissionServiceMock.Verify(p => p.ValidatePermissionsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeactivateUserAsync"/> method 
         ///     returns a failure result with a not found error when attempting 
         ///     to deactivate a user that does not exist.
         /// </summary>
@@ -1201,14 +1201,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             const string ExpectedErrorMessage = ErrorMessages.User.NotFound;
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
             ArrangeUserOperationFailureResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.DeactivateUser(UserId);
+            var result = await _userService.DeactivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -1220,7 +1220,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeactivateUserAsync"/> method 
         ///     returns a failure result when attempting to deactivate a user 
         ///     who is already deactivated.
         /// </summary>
@@ -1237,14 +1237,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.DeactivateUser(UserId);
+            var result = await _userService.DeactivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -1256,7 +1256,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeactivateUserAsync"/> method 
         ///     returns a failure result when updating the user fails.
         /// </summary>
         /// <returns>
@@ -1272,7 +1272,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockActivatedUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -1284,7 +1284,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeGeneralOperationFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _userService.DeactivateUser(UserId);
+            var result = await _userService.DeactivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -1298,7 +1298,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserService.DeactivateUser"/> method 
+        ///     Verifies that the <see cref="UserService.DeactivateUserAsync"/> method 
         ///     successfully deactivates a user when the user is found and not already deactivated, 
         ///     returning a success operation result.
         /// </summary>
@@ -1314,7 +1314,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockActivatedUser(UserId);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -1326,7 +1326,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeGeneralOperationSuccessServiceResult();
 
             // Act
-            var result = await _userService.DeactivateUser(UserId);
+            var result = await _userService.DeactivateUserAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -1415,7 +1415,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         private void ArrangeUserLookupServiceMock(User user, string userId, string expectedErrorMessage)
         {
             _userLookupServiceMock
-                .Setup(u => u.FindUserById(userId))
+                .Setup(u => u.FindUserByIdAsync(userId))
                 .ReturnsAsync(user == null
                     ? new UserLookupServiceResult
                     {
@@ -1441,7 +1441,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 
         private void VerifyCallsToLookupService(string id)
         {
-            _userLookupServiceMock.Verify(l => l.FindUserById(id), Times.Once);
+            _userLookupServiceMock.Verify(l => l.FindUserByIdAsync(id), Times.Once);
         }
     }
 }

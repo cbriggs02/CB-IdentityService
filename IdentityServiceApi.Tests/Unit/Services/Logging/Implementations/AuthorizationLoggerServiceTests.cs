@@ -58,7 +58,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
         }
 
         /// <summary>
-        ///     Tests the <see cref="AuthorizationLoggerService.LogAuthorizationBreach"/> method with invalid context data.
+        ///     Tests the <see cref="AuthorizationLoggerService.LogAuthorizationBreachAsync"/> method with invalid context data.
         ///     Verifies that an <see cref="InvalidOperationException"/> is thrown for invalid user context data.
         /// </summary>
         /// <param name="input">
@@ -78,14 +78,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             ArrangeContextIpAddressMock(IPAddress.Parse("127.0.0.1"));
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _authorizationLoggerService.LogAuthorizationBreach());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _authorizationLoggerService.LogAuthorizationBreachAsync());
 
             VerifyCallsToLoggingValidator(1);
             VerifyCallsToUserContextService();
         }
 
         /// <summary>
-        ///     Tests the <see cref="AuthorizationLoggerService.LogAuthorizationBreach"/> method with an invalid IP address.
+        ///     Tests the <see cref="AuthorizationLoggerService.LogAuthorizationBreachAsync"/> method with an invalid IP address.
         ///     Verifies that an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <returns>
@@ -100,14 +100,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             ArrangeContextIpAddressMock(null); // Simulate invalid IP address
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _authorizationLoggerService.LogAuthorizationBreach());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _authorizationLoggerService.LogAuthorizationBreachAsync());
 
             VerifyCallsToLoggingValidator(1);
             VerifyCallsToUserContextService();
         }
 
         /// <summary>
-        ///     Tests the <see cref="AuthorizationLoggerService.LogAuthorizationBreach"/> method under valid conditions.
+        ///     Tests the <see cref="AuthorizationLoggerService.LogAuthorizationBreachAsync"/> method under valid conditions.
         ///     Verifies that the authorization breach is successfully logged.
         /// </summary>
         /// <returns>
@@ -124,7 +124,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             _dbContextMock.Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             // Act
-            await _authorizationLoggerService.LogAuthorizationBreach();
+            await _authorizationLoggerService.LogAuthorizationBreachAsync();
 
             // Assert
             VerifyCallsToUserContextService();

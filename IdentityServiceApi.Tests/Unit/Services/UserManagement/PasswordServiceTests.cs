@@ -95,7 +95,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that calling <see cref="PasswordService.SetPassword"/> with an invalid user ID 
+        ///     Verifies that calling <see cref="PasswordService.SetPasswordAsync"/> with an invalid user ID 
         ///     (null, empty, or whitespace) results in an <see cref="ArgumentNullException"/>.
         /// </summary>
         /// <param name="id">
@@ -118,14 +118,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act 
-            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.SetPassword(id, request));
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.SetPasswordAsync(id, request));
 
             // Arrange
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
         }
 
         /// <summary>
-        ///     Verifies that calling <see cref="PasswordService.SetPassword"/> with a null request object 
+        ///     Verifies that calling <see cref="PasswordService.SetPasswordAsync"/> with a null request object 
         ///     results in an <see cref="ArgumentNullException"/>.
         /// </summary>
         /// <returns>
@@ -140,13 +140,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.SetPassword("id-123", null));
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.SetPasswordAsync("id-123", null));
 
             VerifyCallsToParameterService(1);
         }
 
         /// <summary>
-        ///     Verifies that calling <see cref="PasswordService.SetPassword"/> with an invalid request object 
+        ///     Verifies that calling <see cref="PasswordService.SetPasswordAsync"/> with an invalid request object 
         ///     containing a null, empty, or whitespace password results in an <see cref="ArgumentNullException"/>.
         /// </summary>
         /// <param name="input">
@@ -173,13 +173,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.SetPassword("id-123", request));
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.SetPasswordAsync("id-123", request));
 
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that calling <see cref="PasswordService.SetPassword"/> with mismatched passwords 
+        ///     Verifies that calling <see cref="PasswordService.SetPasswordAsync"/> with mismatched passwords 
         ///     results in a failure <see cref="ServiceResult"/>.
         /// </summary>
         /// <returns>
@@ -200,7 +200,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.SetPassword("id-123", request);
+            var result = await _passwordService.SetPasswordAsync("id-123", request);
 
             // Assert
             Assert.NotNull(result);
@@ -211,7 +211,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that calling <see cref="PasswordService.SetPassword"/> with a non-existent user ID 
+        ///     Verifies that calling <see cref="PasswordService.SetPasswordAsync"/> with a non-existent user ID 
         ///     results in a failure <see cref="ServiceResult"/> with a "User Not Found" error.
         /// </summary>
         /// <returns>
@@ -230,7 +230,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.SetPassword(UserId, request);
+            var result = await _passwordService.SetPasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -242,7 +242,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Tests the <see cref="PasswordService.SetPassword"/> method to ensure 
+        ///     Tests the <see cref="PasswordService.SetPasswordAsync"/> method to ensure 
         ///     it returns a failure result when the password has already been set.
         /// </summary>
         /// <returns>
@@ -262,7 +262,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.SetPassword(UserId, request);
+            var result = await _passwordService.SetPasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -274,7 +274,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="PasswordService.SetPassword"/> method 
+        ///     Verifies that the <see cref="PasswordService.SetPasswordAsync"/> method 
         ///     returns a general failure result when <see cref="UserManager{TUser}.AddPasswordAsync"/> 
         ///     fails while attempting to set a new password.
         /// </summary>
@@ -300,7 +300,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.SetPassword(UserId, request);
+            var result = await _passwordService.SetPasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -314,7 +314,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Tests the <see cref="PasswordService.SetPassword"/> method to ensure 
+        ///     Tests the <see cref="PasswordService.SetPasswordAsync"/> method to ensure 
         ///     it returns a general success result when all conditions are met.
         /// </summary>
         /// <returns>
@@ -338,7 +338,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeSuccessServiceResult();
 
             // Act
-            var result = await _passwordService.SetPassword(UserId, request);
+            var result = await _passwordService.SetPasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -351,7 +351,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Tests that the <see cref="PasswordService.UpdatePassword"/> method throws an 
+        ///     Tests that the <see cref="PasswordService.UpdatePasswordAsync"/> method throws an 
         ///     <see cref="ArgumentNullException"/> when the provided user ID is null, empty, 
         ///     or consists only of whitespace.
         /// </summary>
@@ -375,14 +375,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act 
-            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.UpdatePassword(id, request));
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.UpdatePasswordAsync(id, request));
 
             // Arrange
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
         }
 
         /// <summary>
-        ///     Tests that the <see cref="PasswordService.UpdatePassword"/> method throws an 
+        ///     Tests that the <see cref="PasswordService.UpdatePasswordAsync"/> method throws an 
         ///     <see cref="ArgumentNullException"/> when the request parameter object is null.
         /// </summary>
         /// <returns>
@@ -397,13 +397,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.UpdatePassword("id-123", null));
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.UpdatePasswordAsync("id-123", null));
 
             VerifyCallsToParameterService(1);
         }
 
         /// <summary>
-        ///     Tests that the <see cref="PasswordService.UpdatePassword"/> method throws an 
+        ///     Tests that the <see cref="PasswordService.UpdatePasswordAsync"/> method throws an 
         ///     <see cref="ArgumentNullException"/> when provided with an invalid request object 
         ///     containing null, empty, or whitespace values.
         /// </summary>
@@ -431,13 +431,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.UpdatePassword("id-123", request));
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordService.UpdatePasswordAsync("id-123", request));
 
             _parameterValidatorMock.Verify(v => v.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         /// <summary>
-        ///     Tests the <see cref="PasswordService.UpdatePassword"/> method to ensure that attempting 
+        ///     Tests the <see cref="PasswordService.UpdatePasswordAsync"/> method to ensure that attempting 
         ///     to update another user's password results in a forbidden failure response.
         /// </summary>
         /// <param name="roleName">
@@ -463,24 +463,24 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(a => a.AddToRoleAsync(user, roleName))
                 .ReturnsAsync(IdentityResult.Success);
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = false, Errors = new List<string> { ExpectedErrorMessage } });
 
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.UpdatePassword(UserId, request);
+            var result = await _passwordService.UpdatePasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
             Assert.False(result.Success);
             Assert.Contains(ExpectedErrorMessage, result.Errors);
 
-            _permissionServiceMock.Verify(p => p.ValidatePermissions(UserId), Times.Once);
+            _permissionServiceMock.Verify(p => p.ValidatePermissionsAsync(UserId), Times.Once);
         }
 
         /// <summary>
-        ///     Tests the <see cref="PasswordService.UpdatePassword"/> method to ensure that providing 
+        ///     Tests the <see cref="PasswordService.UpdatePasswordAsync"/> method to ensure that providing 
         ///     a non-existent user ID results in an invalid credentials failure response.
         /// </summary>
         /// <returns>
@@ -496,14 +496,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var request = ArrangeUpdatePasswordRequest();
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(null, UserId, ExpectedErrorMessage);
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.UpdatePassword(UserId, request);
+            var result = await _passwordService.UpdatePasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -515,7 +515,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Tests the <see cref="PasswordService.UpdatePassword"/> method to ensure that when a user 
+        ///     Tests the <see cref="PasswordService.UpdatePasswordAsync"/> method to ensure that when a user 
         ///     is found but has a null password hash, the service returns an invalid credentials failure response.
         /// </summary>
         /// <returns>
@@ -532,14 +532,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = new User { Id = UserId, UserName = "user123", PasswordHash = null };
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.UpdatePassword(UserId, request);
+            var result = await _passwordService.UpdatePasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -551,7 +551,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Tests the <see cref="PasswordService.UpdatePassword"/> method to verify that it returns
+        ///     Tests the <see cref="PasswordService.UpdatePasswordAsync"/> method to verify that it returns
         ///     an invalid credentials failure result when the provided current password does not match 
         ///     the stored password.
         /// </summary>
@@ -569,7 +569,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId, request.CurrentPassword);
 
             _permissionServiceMock
-              .Setup(p => p.ValidatePermissions(UserId))
+              .Setup(p => p.ValidatePermissionsAsync(UserId))
               .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -581,7 +581,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.UpdatePassword(UserId, request);
+            var result = await _passwordService.UpdatePasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -595,7 +595,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Tests the <see cref="PasswordService.UpdatePassword"/> method to ensure that when a new 
+        ///     Tests the <see cref="PasswordService.UpdatePasswordAsync"/> method to ensure that when a new 
         ///     password has already been used by the user, it returns a failure result indicating that 
         ///     password reuse is not allowed.
         /// </summary>
@@ -613,7 +613,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId, request.CurrentPassword);
 
             _permissionServiceMock
-              .Setup(p => p.ValidatePermissions(UserId))
+              .Setup(p => p.ValidatePermissionsAsync(UserId))
               .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -622,7 +622,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(c => c.CheckPasswordAsync(user, request.CurrentPassword))
                 .ReturnsAsync(true);
             _passwordHistoryServiceMock
-                .Setup(f => f.FindPasswordHash(It.Is<SearchPasswordHistoryRequest>(
+                .Setup(f => f.FindPasswordHashAsync(It.Is<SearchPasswordHistoryRequest>(
                     req => req.UserId == UserId && req.Password == request.NewPassword
                 )))
                 .ReturnsAsync(true);
@@ -630,7 +630,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.UpdatePassword(UserId, request);
+            var result = await _passwordService.UpdatePasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -640,11 +640,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             VerifyCallsToLookupService(UserId);
             VerifyCallsToParameterService(3);
 
-            _passwordHistoryServiceMock.Verify(f => f.FindPasswordHash(It.IsAny<SearchPasswordHistoryRequest>()), Times.Once());
+            _passwordHistoryServiceMock.Verify(f => f.FindPasswordHashAsync(It.IsAny<SearchPasswordHistoryRequest>()), Times.Once());
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="PasswordService.UpdatePassword"/> method 
+        ///     Verifies that the <see cref="PasswordService.UpdatePasswordAsync"/> method 
         ///     returns a general operation failure when <see cref="UserManager{TUser}.ChangePasswordAsync"/> 
         ///     fails during the password update process.
         /// </summary>
@@ -662,7 +662,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId, request.CurrentPassword);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -671,7 +671,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(c => c.CheckPasswordAsync(user, request.CurrentPassword))
                 .ReturnsAsync(true);
             _passwordHistoryServiceMock
-                .Setup(f => f.FindPasswordHash(It.Is<SearchPasswordHistoryRequest>(
+                .Setup(f => f.FindPasswordHashAsync(It.Is<SearchPasswordHistoryRequest>(
                     req => req.UserId == UserId && req.Password == request.NewPassword
                 )))
                 .ReturnsAsync(false);
@@ -682,7 +682,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeFailureServiceResult(ExpectedErrorMessage);
 
             // Act
-            var result = await _passwordService.UpdatePassword(UserId, request);
+            var result = await _passwordService.UpdatePasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -696,7 +696,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Tests the <see cref="PasswordService.UpdatePassword"/> method under successful conditions.
+        ///     Tests the <see cref="PasswordService.UpdatePasswordAsync"/> method under successful conditions.
         ///     Ensures that when valid inputs are provided, the method returns a successful operation result.
         /// </summary>
         /// <returns>
@@ -712,7 +712,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             var user = ArrangeMockUser(UserId, request.CurrentPassword);
 
             _permissionServiceMock
-                .Setup(p => p.ValidatePermissions(UserId))
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
                 .ReturnsAsync(new ServiceResult { Success = true });
 
             ArrangeUserLookupServiceMock(user, UserId, "");
@@ -721,7 +721,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Setup(c => c.CheckPasswordAsync(user, request.CurrentPassword))
                 .ReturnsAsync(true);
             _passwordHistoryServiceMock
-                .Setup(f => f.FindPasswordHash(It.Is<SearchPasswordHistoryRequest>(
+                .Setup(f => f.FindPasswordHashAsync(It.Is<SearchPasswordHistoryRequest>(
                     req => req.UserId == UserId && req.Password == request.NewPassword
                 )))
                 .ReturnsAsync(false);
@@ -732,7 +732,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             ArrangeSuccessServiceResult();
 
             // Act
-            var result = await _passwordService.UpdatePassword(UserId, request);
+            var result = await _passwordService.UpdatePasswordAsync(UserId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -792,7 +792,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         private void ArrangeUserLookupServiceMock(User user, string userId, string expectedErrorMessage)
         {
             _userLookupServiceMock
-                .Setup(u => u.FindUserById(userId))
+                .Setup(u => u.FindUserByIdAsync(userId))
                 .ReturnsAsync(user == null
                     ? new UserLookupServiceResult
                     {
@@ -814,7 +814,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 
         private void VerifyCallsToLookupService(string id)
         {
-            _userLookupServiceMock.Verify(l => l.FindUserById(id), Times.Once);
+            _userLookupServiceMock.Verify(l => l.FindUserByIdAsync(id), Times.Once);
         }
     }
 }

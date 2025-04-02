@@ -64,14 +64,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _auditLoggerService.GetLogs(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _auditLoggerService.GetLogsAsync(null));
 
             VerifyCallsToParameterServiceForObjectValidation();
         }
 
         /// <summary>
         ///     Verifies that an <see cref="ArgumentNullException"/> is thrown when 
-        ///     <see cref="AuditLoggerService.DeleteLog"/> is called with null or empty IDs.
+        ///     <see cref="AuditLoggerService.DeleteLogAsync"/> is called with null or empty IDs.
         /// </summary>
         /// <param name="id">
         ///     The ID to validate.
@@ -88,7 +88,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _auditLoggerService.DeleteLog(id));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _auditLoggerService.DeleteLogAsync(id));
 
             VerifyCallsToParameterServiceForStringValidation(1);
         }
@@ -116,7 +116,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _auditLoggerService.DeleteLog(id);
+            var result = await _auditLoggerService.DeleteLogAsync(id);
 
             // Assert
             Assert.NotNull(result);
@@ -141,7 +141,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _auditLoggerService.DeleteLog(AuditLogId);
+            var result = await _auditLoggerService.DeleteLogAsync(AuditLogId);
 
             // Assert
             Assert.NotNull(result);
@@ -154,7 +154,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
         }
 
         /// <summary>
-        ///     Verifies that <see cref="AuditLoggerService.DeleteLog"/> returns a success result when the 
+        ///     Verifies that <see cref="AuditLoggerService.DeleteLogAsync"/> returns a success result when the 
         ///     entity deletion operation is successful.
         /// </summary>
         [Fact]
@@ -175,7 +175,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
                 .Returns(serviceResult);
 
             // Act
-            var result = await _auditLoggerService.DeleteLog(AuditLogId);
+            var result = await _auditLoggerService.DeleteLogAsync(AuditLogId);
 
             // Assert
             Assert.NotNull(result);

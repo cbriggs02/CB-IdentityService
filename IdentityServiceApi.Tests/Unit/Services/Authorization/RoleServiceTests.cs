@@ -103,7 +103,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.CreateRole"/> method throws an <see cref="ArgumentNullException"/>
+        ///     Tests that the <see cref="RoleService.CreateRoleAsync"/> method throws an <see cref="ArgumentNullException"/>
         ///     when a null role name is provided, or a empty string is provided.
         ///     This verifies that the service correctly validates input parameters before proceeding with role creation.
         /// </summary>
@@ -125,13 +125,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _roleService.CreateRole(roleName));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _roleService.CreateRoleAsync(roleName));
 
             VerifyCallsToParameterService(1);
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.CreateRole"/> returns a error message 
+        ///     Tests that the <see cref="RoleService.CreateRoleAsync"/> returns a error message 
         ///     <see cref="ErrorMessages.Role.AlreadyExist"/> when providing a already existing roles to the creation method.
         /// </summary>
         /// <param name="roleName">
@@ -156,7 +156,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.CreateRole(roleName);
+            var result = await _roleService.CreateRoleAsync(roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -169,7 +169,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests the behavior of the <see cref="RoleService.CreateRole"/> method when the role creation operation fails.
+        ///     Tests the behavior of the <see cref="RoleService.CreateRoleAsync"/> method when the role creation operation fails.
         ///     It verifies that the operation returns a failure result with the appropriate error message when the role cannot be created.
         /// </summary>
         /// <returns>
@@ -192,7 +192,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.CreateRole(roleName);
+            var result = await _roleService.CreateRoleAsync(roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -205,7 +205,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.CreateRole"/> returns a <see cref="ServiceResult"/>
+        ///     Tests that the <see cref="RoleService.CreateRoleAsync"/> returns a <see cref="ServiceResult"/>
         ///     with success set to true when providing role to the creation method that doesn't already exist.
         /// </summary>
         /// <returns>
@@ -227,7 +227,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeSuccessServiceResult();
 
             // Act
-            var result = await _roleService.CreateRole(roleName);
+            var result = await _roleService.CreateRoleAsync(roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -239,7 +239,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.DeleteRole"/> method throws an <see cref="ArgumentNullException"/>
+        ///     Tests that the <see cref="RoleService.DeleteRoleAsync"/> method throws an <see cref="ArgumentNullException"/>
         ///     when a null role name is provided.
         ///     This ensures that the service correctly validates the role name parameter before attempting to delete a role.
         /// </summary>
@@ -261,13 +261,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _roleService.DeleteRole(id));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _roleService.DeleteRoleAsync(id));
 
             VerifyCallsToParameterService(1);
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.DeleteRole"/> returns a <see cref="ErrorMessages.Role.NotFound"/> 
+        ///     Tests that the <see cref="RoleService.DeleteRoleAsync"/> returns a <see cref="ErrorMessages.Role.NotFound"/> 
         ///     when providing a invalid role id to the deletion method.
         /// </summary>
         /// <returns>
@@ -287,7 +287,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.DeleteRole(roleId);
+            var result = await _roleService.DeleteRoleAsync(roleId);
 
             // Assert
             Assert.NotNull(result);
@@ -300,7 +300,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests the behavior of the <see cref="RoleService.DeleteRole"/> method when the role deletion operation fails.
+        ///     Tests the behavior of the <see cref="RoleService.DeleteRoleAsync"/> method when the role deletion operation fails.
         ///     It verifies that the operation returns a failure result with the appropriate error message when the role cannot be deleted.
         /// </summary>
         /// <returns>
@@ -324,7 +324,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.DeleteRole(roleId);
+            var result = await _roleService.DeleteRoleAsync(roleId);
 
             // Assert
             Assert.NotNull(result);
@@ -337,7 +337,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.DeleteRole"/> returns a <see cref="ServiceResult"/>
+        ///     Tests that the <see cref="RoleService.DeleteRoleAsync"/> returns a <see cref="ServiceResult"/>
         ///     with success set to true when providing role id to the deletion method that already exist.
         /// </summary>
         /// <returns>
@@ -360,7 +360,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeSuccessServiceResult();
 
             // Act
-            var result = await _roleService.DeleteRole(roleId);
+            var result = await _roleService.DeleteRoleAsync(roleId);
 
             // Assert
             Assert.NotNull(result);
@@ -372,7 +372,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.AssignRole"/> method throws an <see cref="ArgumentNullException"/>
+        ///     Tests that the <see cref="RoleService.AssignRoleAsync"/> method throws an <see cref="ArgumentNullException"/>
         ///     when a null, empty or white space parameters are provided.
         ///     This ensures that the service correctly validates the role name and id parameter before attempting to assign a role.
         /// </summary>
@@ -394,13 +394,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _roleService.AssignRole(input, input));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _roleService.AssignRoleAsync(input, input));
 
             VerifyCallsToParameterService(1);
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.AssignRole"/> returns a <see cref="ErrorMessages.User.NotFound"/> when 
+        ///     Tests that the <see cref="RoleService.AssignRoleAsync"/> returns a <see cref="ErrorMessages.User.NotFound"/> when 
         ///     providing a invalid user id to the method.
         /// </summary>
         /// <returns>
@@ -418,7 +418,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.AssignRole(userId, roleName);
+            var result = await _roleService.AssignRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -430,7 +430,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.AssignRole"/> returns a <see cref="ErrorMessages.Role.InactiveUser"/> when 
+        ///     Tests that the <see cref="RoleService.AssignRoleAsync"/> returns a <see cref="ErrorMessages.Role.InactiveUser"/> when 
         ///     assigning a role to a user who is not activated in the system.
         /// </summary>
         /// <returns>
@@ -450,7 +450,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.AssignRole(userId, roleName);
+            var result = await _roleService.AssignRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -462,7 +462,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.AssignRole"/> returns a <see cref="ErrorMessages.Role.InvalidRole"/> when 
+        ///     Tests that the <see cref="RoleService.AssignRoleAsync"/> returns a <see cref="ErrorMessages.Role.InvalidRole"/> when 
         ///     providing a role that does not exist in the system.
         /// </summary>
         /// <returns>
@@ -482,7 +482,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.AssignRole(userId, roleName);
+            var result = await _roleService.AssignRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -494,7 +494,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.AssignRole"/> returns a <see cref="ErrorMessages.Role.HasRole"/> when 
+        ///     Tests that the <see cref="RoleService.AssignRoleAsync"/> returns a <see cref="ErrorMessages.Role.HasRole"/> when 
         ///     assigning a role to a user whom already has that role.
         /// </summary>
         /// <param name="roleName">
@@ -527,7 +527,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.AssignRole(userId, roleName);
+            var result = await _roleService.AssignRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -541,7 +541,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests the behavior of the <see cref="RoleService.AssignRole"/> method when the role assignment operation fails.
+        ///     Tests the behavior of the <see cref="RoleService.AssignRoleAsync"/> method when the role assignment operation fails.
         ///     It verifies that the operation returns a failure result with the appropriate error message when the user cannot be assigned to a role.
         /// </summary>
         /// <param name="roleName">
@@ -578,7 +578,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.AssignRole(userId, roleName);
+            var result = await _roleService.AssignRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -592,7 +592,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.AssignRole"/> returns success when 
+        ///     Tests that the <see cref="RoleService.AssignRoleAsync"/> returns success when 
         ///     assigning a role to a user.
         /// </summary>
         /// <param name="roleName">
@@ -627,7 +627,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeSuccessServiceResult();
 
             // Act
-            var result = await _roleService.AssignRole(userId, roleName);
+            var result = await _roleService.AssignRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -640,7 +640,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.RemoveRole"/> method throws an <see cref="ArgumentNullException"/>
+        ///     Tests that the <see cref="RoleService.RemoveRoleAsync"/> method throws an <see cref="ArgumentNullException"/>
         ///     when a null, empty or white space parameters role are provided.
         ///     This verifies that the service correctly validates the role name and id parameter before attempting to remove a role.
         /// </summary>
@@ -662,13 +662,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _roleService.RemoveRole(input, input));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _roleService.RemoveRoleAsync(input, input));
 
             VerifyCallsToParameterService(1);
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.RemoveRole"/> returns a <see cref="ErrorMessages.User.NotFound"/> when 
+        ///     Tests that the <see cref="RoleService.RemoveRoleAsync"/> returns a <see cref="ErrorMessages.User.NotFound"/> when 
         ///     providing a invalid user id to the method.
         /// </summary>
         /// <returns>
@@ -686,7 +686,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.RemoveRole(userId, roleName);
+            var result = await _roleService.RemoveRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -698,7 +698,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.RemoveRole"/> returns a <see cref="ErrorMessages.Role.InvalidRole"/> when 
+        ///     Tests that the <see cref="RoleService.RemoveRoleAsync"/> returns a <see cref="ErrorMessages.Role.InvalidRole"/> when 
         ///     providing a role that does not exist in the system.
         /// </summary>
         /// <returns>
@@ -718,7 +718,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.RemoveRole(userId, roleName);
+            var result = await _roleService.RemoveRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -730,7 +730,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="RoleService.RemoveRole"/> returns a <see cref="ErrorMessages.Role.MissingRole"/> when 
+        ///     Tests that the <see cref="RoleService.RemoveRoleAsync"/> returns a <see cref="ErrorMessages.Role.MissingRole"/> when 
         ///     removing a role from a user who is not assigned that role.
         /// </summary>
         /// <param name="roleName">
@@ -763,7 +763,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.RemoveRole(userId, roleName);
+            var result = await _roleService.RemoveRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -777,7 +777,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests the behavior of the <see cref="RoleService.RemoveRole"/> method when the role removal operation fails.
+        ///     Tests the behavior of the <see cref="RoleService.RemoveRoleAsync"/> method when the role removal operation fails.
         ///     It verifies that the operation returns a failure result with the appropriate error message when the user cannot be removed from the role.
         /// </summary>
         /// <param name="roleName">
@@ -814,7 +814,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeFailureServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _roleService.RemoveRole(userId, roleName);
+            var result = await _roleService.RemoveRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -828,7 +828,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests the behavior of the <see cref="RoleService.RemoveRole"/> method when the role removal operation succeeds.
+        ///     Tests the behavior of the <see cref="RoleService.RemoveRoleAsync"/> method when the role removal operation succeeds.
         ///     It verifies that the operation returns a success result when the user is successfully removed from a role.
         /// </summary>
         /// <param name="roleName">
@@ -864,7 +864,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeSuccessServiceResult();
 
             // Act
-            var result = await _roleService.RemoveRole(userId, roleName);
+            var result = await _roleService.RemoveRoleAsync(userId, roleName);
 
             // Assert
             Assert.NotNull(result);
@@ -879,7 +879,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         private void ArrangeUserLookupServiceMock(User user, string userId, string expectedErrorMessage)
         {
             _userLookupServiceMock
-                .Setup(u => u.FindUserById(userId))
+                .Setup(u => u.FindUserByIdAsync(userId))
                 .ReturnsAsync(user == null
                     ? new UserLookupServiceResult
                     {
@@ -921,7 +921,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
 
         private void VerifyCallsToLookupService(string id)
         {
-            _userLookupServiceMock.Verify(l => l.FindUserById(id), Times.Once);
+            _userLookupServiceMock.Verify(l => l.FindUserByIdAsync(id), Times.Once);
         }
 
         private void VerifyCallsToParameterService(int numberOfTimes)

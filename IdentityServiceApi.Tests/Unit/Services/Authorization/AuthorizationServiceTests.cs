@@ -113,7 +113,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.True(result);
@@ -152,7 +152,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.False(result);
@@ -190,7 +190,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.True(result);
@@ -227,7 +227,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.True(result);
@@ -264,7 +264,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.True(result);
@@ -301,7 +301,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.True(result);
@@ -338,7 +338,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.True(result);
@@ -376,7 +376,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.True(result);
@@ -409,7 +409,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeUserLookupResult(targetUser);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.False(result);
@@ -441,7 +441,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeUserLookupResult(targetUser);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.False(result);
@@ -478,7 +478,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.False(result);
@@ -516,7 +516,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.False(result);
@@ -554,7 +554,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.False(result);
@@ -585,7 +585,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForClaimsPrincipal(claimsPrincipal, currentUserRole);
 
             _userLookupServiceMock
-                .Setup(x => x.FindUserById(targetUserId))
+                .Setup(x => x.FindUserByIdAsync(targetUserId))
                 .ReturnsAsync(new UserLookupServiceResult
                 {
                     Success = false,
@@ -593,7 +593,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 });
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.False(result);
@@ -603,7 +603,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="AuthorizationService.ValidatePermission(string)"/> method
+        ///     Tests that the <see cref="AuthorizationService.ValidatePermissionAsync(string)"/> method
         ///     returns false when the claims principal is null.
         /// </summary>
         /// <returns>
@@ -626,7 +626,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeGetRolesForUser(targetUser, targetUserRole);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(targetUserId);
+            var result = await _authorizationService.ValidatePermissionAsync(targetUserId);
 
             // Assert
             Assert.False(result);
@@ -635,7 +635,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         }
 
         /// <summary>
-        ///     Tests that the <see cref="AuthorizationService.ValidatePermission(string)"/> method
+        ///     Tests that the <see cref="AuthorizationService.ValidatePermissionAsync(string)"/> method
         ///     returns false when the target user ID is null.
         /// </summary>
         /// <returns>
@@ -653,14 +653,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeClaimsPrinciple(claimsPrincipal);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(null);
+            var result = await _authorizationService.ValidatePermissionAsync(null);
 
             // Assert
             Assert.False(result);
         }
 
         /// <summary>
-        ///     Tests that the <see cref="AuthorizationService.ValidatePermission(string)"/> method
+        ///     Tests that the <see cref="AuthorizationService.ValidatePermissionAsync(string)"/> method
         ///     returns false when both the claims principal and target user ID are null.
         /// </summary>
         /// <returns>
@@ -675,7 +675,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             ArrangeClaimsPrinciple(claimsPrincipal);
 
             // Act
-            var result = await _authorizationService.ValidatePermission(null);
+            var result = await _authorizationService.ValidatePermissionAsync(null);
 
             // Assert
             Assert.False(result);
@@ -727,7 +727,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             };
 
             _userLookupServiceMock
-                .Setup(x => x.FindUserById(user.Id))
+                .Setup(x => x.FindUserByIdAsync(user.Id))
                 .ReturnsAsync(result);
         }
 
@@ -744,7 +744,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
 
         private void VerifyCallsToUserLookupService(string id)
         {
-            _userLookupServiceMock.Verify(x => x.FindUserById(id), Times.Once);
+            _userLookupServiceMock.Verify(x => x.FindUserByIdAsync(id), Times.Once);
         }
     }
 }

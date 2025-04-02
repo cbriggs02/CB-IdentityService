@@ -84,7 +84,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserLookupService.FindUserById"/> method throws an 
+        ///     Verifies that the <see cref="UserLookupService.FindUserByIdAsync"/> method throws an 
         ///     <see cref="ArgumentNullException"/> when provided with an invalid user ID.
         /// </summary>
         /// <param name="input">
@@ -105,13 +105,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userLookupService.FindUserById(input));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userLookupService.FindUserByIdAsync(input));
 
             VerifyCallsToParameterValidator();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserLookupService.FindUserById"/> method returns 
+        ///     Verifies that the <see cref="UserLookupService.FindUserByIdAsync"/> method returns 
         ///     a failure result when the specified user does not exist.
         /// </summary>
         /// <returns>
@@ -130,7 +130,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .ReturnsAsync((User)null);
 
             // Act
-            var result = await _userLookupService.FindUserById(UserId);
+            var result = await _userLookupService.FindUserByIdAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -142,7 +142,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserLookupService.FindUserById"/> method returns 
+        ///     Verifies that the <see cref="UserLookupService.FindUserByIdAsync"/> method returns 
         ///     a success result when the specified user exists.
         /// </summary>
         /// <returns>
@@ -161,7 +161,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .ReturnsAsync(user);
 
             // Act
-            var result = await _userLookupService.FindUserById(UserId);
+            var result = await _userLookupService.FindUserByIdAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -173,7 +173,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserLookupService.FindUserByUsername"/> method 
+        ///     Verifies that the <see cref="UserLookupService.FindUserByUsernameAsync"/> method 
         ///     throws an <see cref="ArgumentNullException"/> when the provided username is null or empty.
         /// </summary>
         /// <param name="input">
@@ -194,13 +194,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userLookupService.FindUserByUsername(input));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userLookupService.FindUserByUsernameAsync(input));
 
             VerifyCallsToParameterValidator();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserLookupService.FindUserByUsername"/> method returns 
+        ///     Verifies that the <see cref="UserLookupService.FindUserByUsernameAsync"/> method returns 
         ///     a not found failure result when the specified user does not exist.
         /// </summary>
         /// <returns>
@@ -219,7 +219,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .ReturnsAsync((User)null);
 
             // Act
-            var result = await _userLookupService.FindUserByUsername(Username);
+            var result = await _userLookupService.FindUserByUsernameAsync(Username);
 
             // Assert
             Assert.NotNull(result);
@@ -231,7 +231,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="UserLookupService.FindUserByUsername"/> method returns 
+        ///     Verifies that the <see cref="UserLookupService.FindUserByUsernameAsync"/> method returns 
         ///     a success result when the specified user exists.
         /// </summary>
         /// <returns>
@@ -250,7 +250,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .ReturnsAsync(user);
 
             // Act
-            var result = await _userLookupService.FindUserByUsername(Username);
+            var result = await _userLookupService.FindUserByUsernameAsync(Username);
 
             // Assert
             Assert.NotNull(result);

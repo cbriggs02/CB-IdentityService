@@ -49,21 +49,21 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Common
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="LoggerService.LogAuthorizationBreach"/> method
+        ///     Verifies that the <see cref="LoggerService.LogAuthorizationBreachAsync"/> method
         ///     performs logging operations successfully under valid conditions.
         /// </summary>
         [Fact]
         public async Task LogAuthorizationBreach_SuccessfulConditions_SuccessfulLogsAuthorizationBreach()
         {
             // Act
-            await _loggerService.LogAuthorizationBreach();
+            await _loggerService.LogAuthorizationBreachAsync();
 
             // Assert
-            _authorizationLoggerServiceMock.Verify(v => v.LogAuthorizationBreach(), Times.Once());
+            _authorizationLoggerServiceMock.Verify(v => v.LogAuthorizationBreachAsync(), Times.Once());
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="LoggerService.LogException"/> method throws
+        ///     Verifies that the <see cref="LoggerService.LogExceptionAsync"/> method throws
         ///     an <see cref="ArgumentNullException"/> when called with a null exception.
         /// </summary>
         [Fact]
@@ -75,13 +75,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Common
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _loggerService.LogException(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _loggerService.LogExceptionAsync(null));
 
             _parameterValidator.Verify(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()));
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="LoggerService.LogException"/> method performs
+        ///     Verifies that the <see cref="LoggerService.LogExceptionAsync"/> method performs
         ///     logging operations successfully under valid conditions.
         /// </summary>
         [Fact]
@@ -91,15 +91,15 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Common
             Exception ex = new();
 
             // Act
-            await _loggerService.LogException(ex);
+            await _loggerService.LogExceptionAsync(ex);
 
             // Assert
             _parameterValidator.Verify(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()), Times.Once());
-            _exceptionLoggerMock.Verify(v => v.LogException(ex), Times.Once());
+            _exceptionLoggerMock.Verify(v => v.LogExceptionAsync(ex), Times.Once());
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="LoggerService.LogSlowPerformance"/> method
+        ///     Verifies that the <see cref="LoggerService.LogSlowPerformanceAsync"/> method
         ///     performs logging operations successfully for various response times.
         /// </summary>
         /// <param name="responseTime">
@@ -115,10 +115,10 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Common
         public async Task LogSlowPerformance_SuccessfulConditions_SuccessfullyLogsSlowPerformance(long responseTime)
         {
             // Act 
-            await _loggerService.LogSlowPerformance(responseTime);
+            await _loggerService.LogSlowPerformanceAsync(responseTime);
 
             // Assert
-            _performanceLoggerMock.Verify(v => v.LogSlowPerformance(responseTime), Times.Once());
+            _performanceLoggerMock.Verify(v => v.LogSlowPerformanceAsync(responseTime), Times.Once());
         }
     }
 }

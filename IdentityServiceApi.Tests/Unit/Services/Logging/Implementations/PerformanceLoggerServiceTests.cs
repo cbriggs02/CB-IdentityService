@@ -61,7 +61,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
         }
 
         /// <summary>
-        ///     Tests that the <see cref="PerformanceLoggerService.LogSlowPerformance"/> method 
+        ///     Tests that the <see cref="PerformanceLoggerService.LogSlowPerformanceAsync"/> method 
         ///     throws an <see cref="ArgumentException"/> when an invalid response time is provided.
         /// </summary>
         /// <param name="responseTime">
@@ -83,13 +83,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             const string ExpectedExceptionMessage = ErrorMessages.AuditLog.PerformanceLog.InvalidResponseTime;
 
             //Act & Assert
-            var exception = await Assert.ThrowsAsync<ArgumentException>(() => _performanceLoggerService.LogSlowPerformance(responseTime));
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() => _performanceLoggerService.LogSlowPerformanceAsync(responseTime));
 
             Assert.Equal(ExpectedExceptionMessage, exception.Message);
         }
 
         /// <summary>
-        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformance"/> method with invalid context data.
+        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformanceAsync"/> method with invalid context data.
         ///     Verifies that an <see cref="InvalidOperationException"/> is thrown for invalid user context data.
         /// </summary>
         /// <param name="input">
@@ -109,14 +109,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             ArrangeContextIpAddressMock(IPAddress.Parse("127.0.0.1"));
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _performanceLoggerService.LogSlowPerformance(ValidResponseTime));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _performanceLoggerService.LogSlowPerformanceAsync(ValidResponseTime));
 
             VerifyCallsToLoggingValidator(1);
             VerifyCallsToUserContextService();
         }
 
         /// <summary>
-        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformance"/> method with an invalid IP address.
+        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformanceAsync"/> method with an invalid IP address.
         ///     Verifies that an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <returns>
@@ -131,14 +131,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             ArrangeContextIpAddressMock(null); // Simulate invalid IP address
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _performanceLoggerService.LogSlowPerformance(ValidResponseTime));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _performanceLoggerService.LogSlowPerformanceAsync(ValidResponseTime));
 
             VerifyCallsToLoggingValidator(1);
             VerifyCallsToUserContextService();
         }
 
         /// <summary>
-        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformance"/> method under valid conditions.
+        ///     Tests the <see cref="PerformanceLoggerService.LogSlowPerformanceAsync"/> method under valid conditions.
         ///     Verifies that the authorization breach is successfully logged.
         /// </summary>
         /// <returns>
@@ -155,7 +155,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             _dbContextMock.Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             // Act
-            await _performanceLoggerService.LogSlowPerformance(ValidResponseTime);
+            await _performanceLoggerService.LogSlowPerformanceAsync(ValidResponseTime);
 
             // Assert
             VerifyCallsToUserContextService();

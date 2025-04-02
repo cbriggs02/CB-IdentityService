@@ -57,7 +57,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method throws an 
+        ///     Verifies that the <see cref="ExceptionLoggerService.LogExceptionAsync(Exception)"/> method throws an 
         ///     ArgumentNullException when the provided exception is null.
         /// </summary>
         /// <returns>
@@ -74,13 +74,13 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _exceptionLoggerService.LogException(ex));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _exceptionLoggerService.LogExceptionAsync(ex));
 
             _loggingValidatorMock.Verify(v => v.ValidateObjectNotNull(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method  throws 
+        ///     Verifies that the <see cref="ExceptionLoggerService.LogExceptionAsync(Exception)"/> method  throws 
         ///     an InvalidOperationException when the context data is invalid.
         /// </summary>
         /// <param name="input">
@@ -102,14 +102,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             Exception ex = new();
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _exceptionLoggerService.LogException(ex));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _exceptionLoggerService.LogExceptionAsync(ex));
 
             VerifyCallsToLoggingValidator(1);
             VerifyCallsToUserContextService();
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method throws an
+        ///     Verifies that the <see cref="ExceptionLoggerService.LogExceptionAsync(Exception)"/> method throws an
         ///     InvalidOperationException when the IP address is invalid.
         /// </summary>
         /// <returns>
@@ -126,14 +126,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             Exception ex = new();
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _exceptionLoggerService.LogException(ex));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _exceptionLoggerService.LogExceptionAsync(ex));
 
             VerifyCallsToLoggingValidator(1);
             VerifyCallsToUserContextService();
         }
 
         /// <summary>
-        ///     Unit test to verify that the <see cref="ExceptionLoggerService.LogException(Exception)"/> method 
+        ///     Unit test to verify that the <see cref="ExceptionLoggerService.LogExceptionAsync(Exception)"/> method 
         ///     successfully logs an exception under successful conditions, including logging the exception details 
         ///     and saving them to the audit log in the database.
         /// </summary>
@@ -153,7 +153,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             _dbContextMock.Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             // Act
-            await _exceptionLoggerService.LogException(ex);
+            await _exceptionLoggerService.LogExceptionAsync(ex);
 
             // Assert
             VerifyCallsToUserContextService();

@@ -132,7 +132,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _loginService.Login(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _loginService.LoginAsync(null));
 
             VerifyCallsToParameterService(0);
         }
@@ -161,7 +161,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _loginService.Login(request));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _loginService.LoginAsync(request));
 
             VerifyCallsToParameterService(1);
         }
@@ -183,7 +183,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             var request = new LoginRequest { UserName = nonExistentUserName, Password = TestPassword };
 
             _userLookupServiceMock
-                .Setup(x => x.FindUserByUsername(nonExistentUserName))
+                .Setup(x => x.FindUserByUsernameAsync(nonExistentUserName))
                 .ReturnsAsync(new UserLookupServiceResult
                 {
                     Success = false,
@@ -193,7 +193,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             ArrangeServiceResult(expectedErrorMessage);
 
             // Act
-            var result = await _loginService.Login(request);
+            var result = await _loginService.LoginAsync(request);
 
             // Assert
             Assert.NotNull(result);
@@ -224,7 +224,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             var request = CreateRequestObject(TestPassword, inactiveUser);
 
             // Act
-            var result = await _loginService.Login(request);
+            var result = await _loginService.LoginAsync(request);
 
             // Assert
             Assert.NotNull(result);
@@ -262,7 +262,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             var request = CreateRequestObject(wrongPassword, user);
 
             // Act
-            var result = await _loginService.Login(request);
+            var result = await _loginService.LoginAsync(request);
 
             // Assert
             Assert.NotNull(result);
@@ -307,7 +307,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             var request = CreateRequestObject(correctPassword, mockUser);
 
             // Act
-            var result = await _loginService.Login(request);
+            var result = await _loginService.LoginAsync(request);
 
             // Assert
             Assert.NotNull(result);
@@ -359,7 +359,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             var request = CreateRequestObject(correctPassword, mockUser);
 
             // Act
-            var result = await _loginService.Login(request);
+            var result = await _loginService.LoginAsync(request);
 
             // Assert
             Assert.NotNull(result);
@@ -418,7 +418,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
             };
 
             _userLookupServiceMock
-                .Setup(x => x.FindUserByUsername(user.UserName))
+                .Setup(x => x.FindUserByUsernameAsync(user.UserName))
                 .ReturnsAsync(result);
         }
 
@@ -430,7 +430,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authentication
 
         private void VerifyCallsToLookupService(string username)
         {
-            _userLookupServiceMock.Verify(l => l.FindUserByUsername(username), Times.Once);
+            _userLookupServiceMock.Verify(l => l.FindUserByUsernameAsync(username), Times.Once);
         }
     }
 }

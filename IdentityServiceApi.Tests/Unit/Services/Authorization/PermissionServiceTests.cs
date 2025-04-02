@@ -73,7 +73,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _permissionService.ValidatePermissions(id));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _permissionService.ValidatePermissionsAsync(id));
 
             VerifyCallsToParameterService();
         }
@@ -102,14 +102,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 });
 
             // Act
-            var result = await _permissionService.ValidatePermissions(UserId);
+            var result = await _permissionService.ValidatePermissionsAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
             Assert.False(result.Success);
             Assert.Contains(expectedErrorMessage, result.Errors);
 
-            _loggerServiceMock.Verify(l => l.LogAuthorizationBreach(), Times.Once);
+            _loggerServiceMock.Verify(l => l.LogAuthorizationBreachAsync(), Times.Once);
             VerifyCallsToParameterService();
         }
 
@@ -131,7 +131,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
                 .Returns(new ServiceResult { Success = true });
 
             // Act
-            var result = await _permissionService.ValidatePermissions(UserId);
+            var result = await _permissionService.ValidatePermissionsAsync(UserId);
 
             // Assert
             Assert.NotNull(result);
@@ -144,7 +144,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         private void ArrangeAuthorizationServiceMock(bool hasPermission)
         {
             _authServiceMock
-                .Setup(a => a.ValidatePermission(UserId))
+                .Setup(a => a.ValidatePermissionAsync(UserId))
                 .ReturnsAsync(hasPermission);
         }
 
