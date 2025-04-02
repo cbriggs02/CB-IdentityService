@@ -51,9 +51,9 @@ namespace IdentityServiceApi.Services.Logging.Common
         /// <returns>
         ///     A task representing the asynchronous operation of logging the authorization breach.
         /// </returns>
-        public async Task LogAuthorizationBreach()
+        public async Task LogAuthorizationBreachAsync()
         {
-            await _authorizationLoggerService.LogAuthorizationBreach();
+            await _authorizationLoggerService.LogAuthorizationBreachAsync();
         }
 
         /// <summary>
@@ -65,10 +65,10 @@ namespace IdentityServiceApi.Services.Logging.Common
         /// <returns>
         ///     A task representing the asynchronous operation of logging the exception.
         /// </returns>
-        public async Task LogException(Exception exception)
+        public async Task LogExceptionAsync(Exception exception)
         {
             _parameterValidator.ValidateObjectNotNull(exception, nameof(exception));
-            await _exceptionLoggerService.LogException(exception);
+            await _exceptionLoggerService.LogExceptionAsync(exception);
         }
 
         /// <summary>
@@ -80,9 +80,9 @@ namespace IdentityServiceApi.Services.Logging.Common
         /// <returns>
         ///     A task representing the asynchronous operation of logging the slow performance event.
         /// </returns>
-        public async Task LogSlowPerformance(long responseTime)
+        public async Task LogSlowPerformanceAsync(long responseTime)
         {
-            await _performanceLoggerService.LogSlowPerformance(responseTime);
+            await _performanceLoggerService.LogSlowPerformanceAsync(responseTime);
         }
     }
 }

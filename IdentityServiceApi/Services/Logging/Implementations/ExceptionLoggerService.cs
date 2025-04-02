@@ -65,7 +65,7 @@ namespace IdentityServiceApi.Services.Logging.Implementations
         /// <returns>
         ///     A task representing the asynchronous operation of logging the exception.
         /// </returns>
-        public override async Task LogException(Exception exception)
+        public override async Task LogExceptionAsync(Exception exception)
         {
             _loggingValidator.ValidateObjectNotNull(exception, nameof(exception));
 

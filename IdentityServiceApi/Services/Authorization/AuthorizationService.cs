@@ -60,7 +60,7 @@ namespace IdentityServiceApi.Services.Authorization
         ///     - Returns false if an admin attempts to access another admin's data.
         ///     -Returns false if id is not provided or user context is not available.
         /// </returns>
-        public async Task<bool> ValidatePermission(string id)
+        public async Task<bool> ValidatePermissionAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -118,7 +118,7 @@ namespace IdentityServiceApi.Services.Authorization
                 return false; // No target user ID provided, so permission cannot be validated
             }
 
-            var userLookupResult = await _userLookupService.FindUserById(id);
+            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if(!userLookupResult.Success)
             {
                 return false;

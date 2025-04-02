@@ -54,20 +54,20 @@ namespace IdentityServiceApi.Controllers
         /// </returns>
         [Authorize(Roles = "SuperAdmin")]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RolesList))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RolesListResponse))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.GetRoles)]
-        public async Task<ActionResult<RolesList>> GetRoles()
+        public async Task<ActionResult<RolesListResponse>> GetRolesAsync()
         {
-            var result = await _roleService.GetRoles();
+            var result = await _roleService.GetRolesAsync();
 
             if (result.Roles == null || !result.Roles.Any())
             {
                 return NoContent();
             }
 
-            return Ok(new RolesList { Roles = result.Roles });
+            return Ok(new RolesListResponse { Roles = result.Roles });
         }
 
         /// <summary>
@@ -90,9 +90,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.CreateRole)]
-        public async Task<IActionResult> CreateRole([FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
+        public async Task<IActionResult> CreateRoleAsync([FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
         {
-            var result = await _roleService.CreateRole(roleName);
+            var result = await _roleService.CreateRoleAsync(roleName);
 
             if (!result.Success)
             {
@@ -124,9 +124,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.DeleteRole)]
-        public async Task<IActionResult> DeleteRole([FromRoute][Required] string id)
+        public async Task<IActionResult> DeleteRoleAsync([FromRoute][Required] string id)
         {
-            var result = await _roleService.DeleteRole(id);
+            var result = await _roleService.DeleteRoleAsync(id);
 
             if (!result.Success)
             {
@@ -134,6 +134,7 @@ namespace IdentityServiceApi.Controllers
                 {
                     return NotFound();
                 }
+
                 return BadRequest(new ErrorResponse { Errors = result.Errors });
             }
 
@@ -165,9 +166,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.AssignRole)]
-        public async Task<IActionResult> AssignRole([FromRoute][Required] string id, [FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
+        public async Task<IActionResult> AssignRoleAsync([FromRoute][Required] string id, [FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
         {
-            var result = await _roleService.AssignRole(id, roleName);
+            var result = await _roleService.AssignRoleAsync(id, roleName);
 
             if (!result.Success)
             {
@@ -207,9 +208,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.RemoveRole)]
-        public async Task<IActionResult> RemoveRole([FromRoute][Required] string id, [FromRoute][Required] string roleName)
+        public async Task<IActionResult> RemoveRoleAsync([FromRoute][Required] string id, [FromRoute][Required] string roleName)
         {
-            var result = await _roleService.RemoveRole(id, roleName);
+            var result = await _roleService.RemoveRoleAsync(id, roleName);
 
             if (!result.Success)
             {

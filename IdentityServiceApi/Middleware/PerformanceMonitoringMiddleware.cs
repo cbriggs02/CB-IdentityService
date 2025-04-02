@@ -52,7 +52,7 @@ namespace IdentityServiceApi.Middleware
         /// <returns>
         ///     A task representing the asynchronous operation of processing the request.
         /// </returns>
-        public async Task Invoke(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             using var scope = _scopeFactory.CreateScope();
             var loggerService = scope.ServiceProvider.GetRequiredService<ILoggerService>();
@@ -65,7 +65,7 @@ namespace IdentityServiceApi.Middleware
             var requestDuration = StopRequestTimer(stopwatch);
             var cpuUsage = GetCpuUsage();
 
-            await CheckPerformance(requestDuration, loggerService);
+            await CheckPerformanceAsync(requestDuration, loggerService);
             ConsoleLogPerformanceMetrics(context, requestId, requestDuration, cpuUsage); 
         }
 
@@ -85,12 +85,12 @@ namespace IdentityServiceApi.Middleware
             return Process.GetCurrentProcess().TotalProcessorTime.TotalMilliseconds;
         }
 
-        private async Task CheckPerformance(long requestDuration, ILoggerService loggerService)
+        private async Task CheckPerformanceAsync(long requestDuration, ILoggerService loggerService)
         {
             if (requestDuration > performanceThreshold)
             {
                 // Log slow performance metrics in DB using audit logger
-                await loggerService.LogSlowPerformance(requestDuration);
+                await loggerService.LogSlowPerformanceAsync(requestDuration);
             }
         }
 

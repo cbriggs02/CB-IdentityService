@@ -54,7 +54,7 @@ namespace IdentityServiceApi.Middleware
         /// <returns>
         ///     A task that represents the completion of the JWT token validation and request processing.
         /// </returns>
-        public async Task Invoke(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             try
             {
@@ -64,18 +64,18 @@ namespace IdentityServiceApi.Middleware
 
                     if (string.IsNullOrEmpty(userId))
                     {
-                        await HandleAuthorizationBreach(context, ErrorMessages.Authorization.MissingUserIdClaim, "Anonymous");
+                        await HandleAuthorizationBreachAsync(context, ErrorMessages.Authorization.MissingUserIdClaim, "Anonymous");
                         return;
                     }
 
                     using var scope = _scopeFactory.CreateScope();
                     var userLookupService = scope.ServiceProvider.GetRequiredService<IUserLookupService>();
-                    var userLookupResult = await userLookupService.FindUserById(userId);
+                    var userLookupResult = await userLookupService.FindUserByIdAsync(userId);
 
                     // Validate tokens that are still active/valid but user has recently removed account
                     if (!userLookupResult.Success)
                     {
-                        await HandleAuthorizationBreach(context, $"User with ID {userId} no longer exists in the system.", userId);
+                        await HandleAuthorizationBreachAsync(context, $"User with ID {userId} no longer exists in the system.", userId);
                         return;
                     }
                 }
@@ -85,7 +85,7 @@ namespace IdentityServiceApi.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred during token validation.");
-                await WriteServerUnauthorizedResponse(context);
+                await WriteServerUnauthorizedResponseAsync(context);
             }
         }
 
@@ -94,21 +94,21 @@ namespace IdentityServiceApi.Middleware
             return principal?.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
-        private async Task HandleAuthorizationBreach(HttpContext context, string reason, string userId)
+        private async Task HandleAuthorizationBreachAsync(HttpContext context, string reason, string userId)
         {
             _logger.LogWarning($"Unauthorized access attempt: Reason: {reason}, UserId: {userId}");
-            await LogAuthorizationBreachToDatabase();
-            await WriteServerUnauthorizedResponse(context);
+            await LogAuthorizationBreachToDatabaseAsync();
+            await WriteServerUnauthorizedResponseAsync(context);
         }
 
-        private async Task LogAuthorizationBreachToDatabase()
+        private async Task LogAuthorizationBreachToDatabaseAsync()
         {
             using var scope = _scopeFactory.CreateScope();
             var loggerService = scope.ServiceProvider.GetRequiredService<ILoggerService>();
-            await loggerService.LogAuthorizationBreach();
+            await loggerService.LogAuthorizationBreachAsync();
         }
 
-        private static async Task WriteServerUnauthorizedResponse(HttpContext context)
+        private static async Task WriteServerUnauthorizedResponseAsync(HttpContext context)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "application/json";

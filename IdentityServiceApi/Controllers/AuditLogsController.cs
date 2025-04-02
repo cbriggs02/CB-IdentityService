@@ -62,9 +62,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLogs)]
-        public async Task<ActionResult<AuditLogListResponse>> GetLogs([FromQuery] AuditLogListRequest request)
+        public async Task<ActionResult<AuditLogListResponse>> GetLogsAsync([FromQuery] AuditLogListRequest request)
         {
-            var result = await _auditLogService.GetLogs(request);
+            var result = await _auditLogService.GetLogsAsync(request);
 
             if (result.Logs == null || !result.Logs.Any())
             {
@@ -103,9 +103,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.DeleteLog)]
-        public async Task<IActionResult> DeleteLog([FromRoute][Required] string id)
+        public async Task<IActionResult> DeleteLogAsync([FromRoute][Required] string id)
         {
-            var result = await _auditLogService.DeleteLog(id);
+            var result = await _auditLogService.DeleteLogAsync(id);
 
             if (!result.Success)
             {

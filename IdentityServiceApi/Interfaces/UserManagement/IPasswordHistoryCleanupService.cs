@@ -18,7 +18,7 @@
         /// <returns>
         ///      A task representing the asynchronous operation of deleting the password history.
         /// </returns>
-        Task DeletePasswordHistory(string userId);
+        Task DeletePasswordHistoryAsync(string userId);
 
         /// <summary>
         ///     Asynchronously removes old entries for a users password history only keeping most recent 5 records.
@@ -29,6 +29,6 @@
         /// <returns>
         ///     A task representing the asynchronous operation of removing old password histories.
         /// </returns>
-        Task RemoveOldPasswords(string id);
+        Task RemoveOldPasswordsAsync(string id);
     }
 }

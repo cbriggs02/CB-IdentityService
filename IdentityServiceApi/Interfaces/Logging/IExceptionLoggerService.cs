@@ -19,6 +19,6 @@
         /// <returns>
         ///     A task representing the asynchronous operation of logging the exception.
         /// </returns>
-        Task LogException(Exception exception);
+        Task LogExceptionAsync(Exception exception);
     }
 }

@@ -25,7 +25,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     the asynchronous operation, containing the result of the user lookup 
         ///     which includes the user information if found, or error details if not.
         /// </returns>
-        Task<UserLookupServiceResult> FindUserById(string id);
+        Task<UserLookupServiceResult> FindUserByIdAsync(string id);
 
         /// <summary>
         ///     Asynchronously retrieves a user by their user name.
@@ -38,6 +38,6 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     the asynchronous operation, containing the result of the user lookup 
         ///     which includes the user information if found, or error details if not.
         /// </returns>
-        Task<UserLookupServiceResult> FindUserByUsername(string userName);
+        Task<UserLookupServiceResult> FindUserByUsernameAsync(string userName);
     }
 }

@@ -76,13 +76,13 @@ namespace IdentityServiceApi.Services.Authentication
         ///     - If the provided password does not match the located user, returns an error message.  
         ///     - If an error occurs during login, returns <see cref="LoginServiceResult"/> with an error message.
         /// </returns>
-        public async Task<LoginServiceResult> Login(LoginRequest credentials)
+        public async Task<LoginServiceResult> LoginAsync(LoginRequest credentials)
         {
             _parameterValidator.ValidateObjectNotNull(credentials, nameof(credentials));
             _parameterValidator.ValidateNotNullOrEmpty(credentials.UserName, nameof(credentials.UserName));
             _parameterValidator.ValidateNotNullOrEmpty(credentials.Password, nameof(credentials.Password));
 
-            var userLookupResult = await _userLookupService.FindUserByUsername(credentials.UserName);
+            var userLookupResult = await _userLookupService.FindUserByUsernameAsync(credentials.UserName);
             if (!userLookupResult.Success)
             {
                 return _loginServiceResultFactory.LoginOperationFailure(userLookupResult.Errors.ToArray());
@@ -90,7 +90,7 @@ namespace IdentityServiceApi.Services.Authentication
 
             var user = userLookupResult.UserFound;
 
-            if (user.AccountStatus == 0)
+            if (user.AccountStatus != 1)
             {
                 return _loginServiceResultFactory.LoginOperationFailure(new[] { ErrorMessages.User.NotActivated });
             }
@@ -101,7 +101,7 @@ namespace IdentityServiceApi.Services.Authentication
                 return _loginServiceResultFactory.LoginOperationFailure(new[] { ErrorMessages.Password.InvalidCredentials });
             }
 
-            var token = await GenerateJwtToken(user);
+            var token = await GenerateJwtTokenAsync(user);
             return _loginServiceResultFactory.LoginOperationSuccess(token);
         }
 
@@ -114,7 +114,7 @@ namespace IdentityServiceApi.Services.Authentication
         /// <returns>
         ///     A string representing the generated JWT token.
         /// </returns>
-        private async Task<string> GenerateJwtToken(User user)
+        private async Task<string> GenerateJwtTokenAsync(User user)
         {
             var validIssuer = _configuration["JwtSettings:ValidIssuer"];
             var validAudience = _configuration["JwtSettings:ValidAudience"];

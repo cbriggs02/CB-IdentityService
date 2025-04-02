@@ -41,7 +41,7 @@ namespace IdentityServiceApi.Data
         /// <returns>
         ///     A task that represents the asynchronous operation.
         /// </returns>
-        public async Task InitializeDatabase(WebApplication app)
+        public async Task InitializeDatabaseAsync(WebApplication app)
         {
             using var scope = app.Services.CreateScope();
             var services = scope.ServiceProvider;
@@ -52,13 +52,13 @@ namespace IdentityServiceApi.Data
                 var userManager = services.GetRequiredService<UserManager<User>>();
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-                await InitializeRoles(roleManager);
+                await InitializeRolesAsync(roleManager);
 
                 await context.Database.MigrateAsync();
 
                 if (app.Environment.IsDevelopment())
                 {
-                    await InitializeUsers(userManager);
+                    await InitializeUsersAsync(userManager);
                 }
             }
             catch (DbUpdateException dbEx)
@@ -71,19 +71,19 @@ namespace IdentityServiceApi.Data
             }
         }
 
-        private static async Task InitializeUsers(UserManager<User> userManager)
+        private static async Task InitializeUsersAsync(UserManager<User> userManager)
         {
-            await SeedDefaultUsers(userManager);
-            await SeedAdmin(userManager);
-            await SeedSuper(userManager);
+            await SeedDefaultUsersAsync(userManager);
+            await SeedAdminAsync(userManager);
+            await SeedSuperAsync(userManager);
         }
 
-        private static async Task InitializeRoles(RoleManager<IdentityRole> roleManager)
+        private static async Task InitializeRolesAsync(RoleManager<IdentityRole> roleManager)
         {
-            await SeedRoles(roleManager);
+            await SeedRolesAsync(roleManager);
         }
 
-        private static async Task SeedDefaultUsers(UserManager<User> userManager)
+        private static async Task SeedDefaultUsersAsync(UserManager<User> userManager)
         {
             const string password = "P@s_s8w0rd!";
 
@@ -108,7 +108,7 @@ namespace IdentityServiceApi.Data
             }
         }
 
-        private static async Task SeedSuper(UserManager<User> userManager)
+        private static async Task SeedSuperAsync(UserManager<User> userManager)
         {
             const string Email = "super@admin.com";
             const string Password = "superPassword123!";
@@ -140,7 +140,7 @@ namespace IdentityServiceApi.Data
             }
         }
 
-        private static async Task SeedAdmin(UserManager<User> userManager)
+        private static async Task SeedAdminAsync(UserManager<User> userManager)
         {
             const string Email = "admin@admin.com";
             const string Password = "AdminPassword123!";
@@ -172,7 +172,7 @@ namespace IdentityServiceApi.Data
             }
         }
 
-        private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
+        private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
         {
             string[] roleNames = { Roles.SuperAdmin, Roles.Admin, Roles.User };
 

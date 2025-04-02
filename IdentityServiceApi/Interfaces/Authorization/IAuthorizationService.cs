@@ -25,6 +25,6 @@
         ///     Regular users are restricted to accessing their own data, 
         ///     while admins can access their own and other non-admin users' data.
         /// </returns>
-        Task<bool> ValidatePermission(string id);
+        Task<bool> ValidatePermissionAsync(string id);
     }
 }

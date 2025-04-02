@@ -47,7 +47,7 @@ namespace IdentityServiceApi.Middleware
         /// <returns>
         ///     A task representing the asynchronous operation of processing the request and handling any exceptions.
         /// </returns>
-        public async Task Invoke(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             using var scope = _scopeFactory.CreateScope();
             var loggerService = scope.ServiceProvider.GetRequiredService<ILoggerService>();
@@ -58,9 +58,9 @@ namespace IdentityServiceApi.Middleware
             }
             catch (Exception ex)
             {
-                await loggerService.LogException(ex); // Log exception in DB with audit logger
+                await loggerService.LogExceptionAsync(ex); // Log exception in DB with audit logger
                 ConsoleLogExceptionDetails(context, ex);
-                await WriteServerErrorResponse(context); // Return 500 status to client
+                await WriteServerErrorResponseAsync(context); // Return 500 status to client
             }
         }
 
@@ -81,7 +81,7 @@ namespace IdentityServiceApi.Middleware
                 innerExceptionMessage, stackTrace);
         }
 
-        private static async Task WriteServerErrorResponse(HttpContext context)
+        private static async Task WriteServerErrorResponseAsync(HttpContext context)
         {
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";

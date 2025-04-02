@@ -69,7 +69,7 @@ namespace IdentityServiceApi.Services.Logging.Implementations
         /// <exception cref="ArgumentException">
         ///     Thrown if the provided response time is less than or equal to zero.
         /// </exception>
-        public override async Task LogSlowPerformance(long responseTime)
+        public override async Task LogSlowPerformanceAsync(long responseTime)
         {
             if (responseTime <= 0)
             {

@@ -66,7 +66,7 @@ namespace IdentityServiceApi.Services.Logging.Implementations
         /// <returns>
         ///     A task representing the asynchronous operation of logging the authorization breach.
         /// </returns>
-        public override async Task LogAuthorizationBreach()
+        public override async Task LogAuthorizationBreachAsync()
         {
             var principal = _userContextService.GetClaimsPrincipal();
             var currentUserId = _userContextService.GetUserId(principal) ?? "Anonymous";

@@ -23,7 +23,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation that returns a <see cref="UserServiceListResult"/> object.
         /// </returns>
-        Task<UserServiceListResult> GetUsers(UserListRequest request);
+        Task<UserServiceListResult> GetUsersAsync(UserListRequest request);
 
         /// <summary>
         ///     Asynchronously retrieves a user by ID from the system.
@@ -34,7 +34,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation that returns a <see cref="UserServiceResult"/> object.
         /// </returns>
-        Task<UserServiceResult> GetUser(string id);
+        Task<UserServiceResult> GetUserAsync(string id);
 
         /// <summary>
         ///     Asynchronously creates a new user in the system using the specified user data transfer object.
@@ -45,7 +45,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation that returns a <see cref="UserServiceResult"/> object.
         /// </returns>
-        Task<UserServiceResult> CreateUser(UserDTO userDTO);
+        Task<UserServiceResult> CreateUserAsync(UserDTO userDTO);
 
         /// <summary>
         ///     Asynchronously updates a user in the system by ID using the specified user data transfer object.
@@ -59,7 +59,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation that returns a <see cref="ServiceResult"/> object.
         /// </returns>
-        Task<ServiceResult> UpdateUser(string id, UserDTO userDTO);
+        Task<ServiceResult> UpdateUserAsync(string id, UserDTO userDTO);
 
         /// <summary>
         ///     Asynchronously deletes a user in the system by ID.
@@ -70,7 +70,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation that returns a <see cref="ServiceResult"/> object.
         /// </returns>
-        Task<ServiceResult> DeleteUser(string id);
+        Task<ServiceResult> DeleteUserAsync(string id);
 
         /// <summary>
         ///     Asynchronously activates a user in the system by ID.
@@ -81,7 +81,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation that returns a <see cref="ServiceResult"/> object.
         /// </returns>
-        Task<ServiceResult> ActivateUser(string id);
+        Task<ServiceResult> ActivateUserAsync(string id);
 
         /// <summary>
         ///     Asynchronously deactivates a user in the system by ID.
@@ -92,6 +92,6 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation that returns a <see cref="ServiceResult"/> object.
         /// </returns>
-        Task<ServiceResult> DeactivateUser(string id);
+        Task<ServiceResult> DeactivateUserAsync(string id);
     }
 }

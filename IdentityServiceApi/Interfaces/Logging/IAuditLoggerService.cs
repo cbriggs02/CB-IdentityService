@@ -24,7 +24,7 @@ namespace IdentityServiceApi.Interfaces.Logging
         ///     A task that represents the asynchronous operation of retrieving logs. 
         ///     The result contains a list of audit logs along with pagination metadata.
         /// </returns>
-        Task<AuditLogServiceListResult> GetLogs(AuditLogListRequest request);
+        Task<AuditLogServiceListResult> GetLogsAsync(AuditLogListRequest request);
 
         /// <summary>
         ///     Asynchronously deletes a audit log in the system by ID.
@@ -35,6 +35,6 @@ namespace IdentityServiceApi.Interfaces.Logging
         /// <returns>
         ///     A task representing the asynchronous operation that returns a <see cref= ServiceResult"/> object.
         /// </returns>
-        Task<ServiceResult> DeleteLog(string id);
+        Task<ServiceResult> DeleteLogAsync(string id);
     }
 }

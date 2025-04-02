@@ -8,7 +8,7 @@ namespace IdentityServiceApi.Services.Logging.AbstractClasses
     /// <summary>
     ///     An abstract base class for logging exceptions. This class extends the <see cref="AuditLoggerService"/> 
     ///     and implements the <see cref="IExceptionLoggerService"/> interface, providing a foundation for 
-    ///     logging exceptions in the system. Concrete implementations will implement the <see cref="LogException"/>
+    ///     logging exceptions in the system. Concrete implementations will implement the <see cref="LogExceptionAsync"/>
     ///     method to handle the actual exception logging logic.
     /// </summary>
     /// <remarks>
@@ -49,6 +49,6 @@ namespace IdentityServiceApi.Services.Logging.AbstractClasses
         /// <returns>
         ///     A task representing the asynchronous operation of logging the exception.
         /// </returns>
-        public abstract Task LogException(Exception exception);
+        public abstract Task LogExceptionAsync(Exception exception);
     }
 }

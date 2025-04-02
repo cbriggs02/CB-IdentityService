@@ -24,7 +24,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task that represents the asynchronous operation, returning a result object that indicates the outcome of the password setting process.
         /// </returns>
-        Task<ServiceResult> SetPassword(string id, SetPasswordRequest request);
+        Task<ServiceResult> SetPasswordAsync(string id, SetPasswordRequest request);
 
         /// <summary>
         ///     Asynchronously updates the password of a user identified by their ID in the system.
@@ -38,6 +38,6 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// <returns>
         ///     A task that represents the asynchronous operation, returning a result object that indicates the outcome of the password update process.
         /// </returns>
-        Task<ServiceResult> UpdatePassword(string id, UpdatePasswordRequest request);
+        Task<ServiceResult> UpdatePasswordAsync(string id, UpdatePasswordRequest request);
     }
 }

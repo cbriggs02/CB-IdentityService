@@ -56,7 +56,7 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     containing the result of the user lookup which includes the user information 
         ///     if found, or error details if not.
         /// </returns>
-        public async Task<UserLookupServiceResult> FindUserById(string id)
+        public async Task<UserLookupServiceResult> FindUserByIdAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
             var user = await _userManager.FindByIdAsync(id);
@@ -74,7 +74,7 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     containing the result of the user lookup which includes the user information 
         ///     if found, or error details if not.
         /// </returns>
-        public async Task<UserLookupServiceResult> FindUserByUsername(string userName)
+        public async Task<UserLookupServiceResult> FindUserByUsernameAsync(string userName)
         {
             _parameterValidator.ValidateNotNullOrEmpty(userName, nameof(userName));
             var user = await _userManager.FindByNameAsync(userName);

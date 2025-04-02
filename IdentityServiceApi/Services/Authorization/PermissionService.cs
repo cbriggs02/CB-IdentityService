@@ -59,15 +59,15 @@ namespace IdentityServiceApi.Services.Authorization
         ///     - If the user lacks the required permissions, returns a result with Success set to false 
         ///       and an appropriate error message.
         /// </returns>
-        public async Task<ServiceResult> ValidatePermissions(string id)
+        public async Task<ServiceResult> ValidatePermissionsAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
             // Use the auth service to check permissions
-            bool hasPermission = await _authService.ValidatePermission(id);
+            bool hasPermission = await _authService.ValidatePermissionAsync(id);
             if (!hasPermission)
             {
-                await _loggerService.LogAuthorizationBreach();
+                await _loggerService.LogAuthorizationBreachAsync();
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Authorization.Forbidden });
             }
 

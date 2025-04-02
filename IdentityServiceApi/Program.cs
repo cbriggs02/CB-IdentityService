@@ -210,7 +210,7 @@ namespace IdentityServiceApi
             using (var scope = app.Services.CreateScope())
             {
                 var dbInitializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
-                await dbInitializer.InitializeDatabase(app);
+                await dbInitializer.InitializeDatabaseAsync(app);
             }
 
             if (app.Environment.IsDevelopment())

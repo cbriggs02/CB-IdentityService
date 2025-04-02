@@ -9,7 +9,7 @@ namespace IdentityServiceApi.Models.ApiResponseModels.RolesResponses
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
-    public class RolesList
+    public class RolesListResponse
     {
         /// <summary>
         ///     The list of roles retrieved from the service that is returned by the API.

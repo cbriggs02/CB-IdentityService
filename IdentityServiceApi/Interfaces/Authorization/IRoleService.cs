@@ -18,7 +18,7 @@ namespace IdentityServiceApi.Interfaces.Authorization
         /// <returns>
         ///     A task that represents the asynchronous operation, containing a collection of role data transfer objects.
         /// </returns>
-        Task<RoleServiceListResult> GetRoles();
+        Task<RoleServiceListResult> GetRolesAsync();
 
         /// <summary>
         ///     Asynchronously creates a new role in the system with the specified name.
@@ -29,7 +29,7 @@ namespace IdentityServiceApi.Interfaces.Authorization
         /// <returns>
         ///     A task that represents the asynchronous operation, returning a result object indicating the outcome of the role creation.
         /// </returns>
-        Task<ServiceResult> CreateRole(string roleName);
+        Task<ServiceResult> CreateRoleAsync(string roleName);
 
         /// <summary>
         ///     Asynchronously deletes a role identified by its ID from the system.
@@ -40,7 +40,7 @@ namespace IdentityServiceApi.Interfaces.Authorization
         /// <returns>
         ///     A task that represents the asynchronous operation, returning a result object indicating the outcome of the role deletion.
         /// </returns>
-        Task<ServiceResult> DeleteRole(string id);
+        Task<ServiceResult> DeleteRoleAsync(string id);
 
         /// <summary>
         ///     Asynchronously assigns a specified role to a user identified by their ID.
@@ -54,7 +54,7 @@ namespace IdentityServiceApi.Interfaces.Authorization
         /// <returns>
         ///     A task that represents the asynchronous operation, returning a result object indicating the outcome of the role assignment.
         /// </returns>
-        Task<ServiceResult> AssignRole(string id, string roleName);
+        Task<ServiceResult> AssignRoleAsync(string id, string roleName);
 
         /// <summary>
         ///     Asynchronously removes a specified role to a user identified by their ID.
@@ -68,6 +68,6 @@ namespace IdentityServiceApi.Interfaces.Authorization
         /// <returns>
         ///     A task that represents the asynchronous operation, returning a result object indicating the outcome of the role removal.
         /// </returns>
-        Task<ServiceResult> RemoveRole(string id, string roleName);
+        Task<ServiceResult> RemoveRoleAsync(string id, string roleName);
     }
 }

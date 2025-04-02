@@ -45,6 +45,6 @@ namespace IdentityServiceApi.Services.Logging.AbstractClasses
         /// <returns>
         ///     A task that represents the asynchronous operation of logging the authorization breach.
         /// </returns>
-        public abstract Task LogAuthorizationBreach();
+        public abstract Task LogAuthorizationBreachAsync();
     }
 }

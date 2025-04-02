@@ -63,9 +63,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.PasswordApi.SetPassword)]
-        public async Task<IActionResult> SetPassword([FromRoute][Required] string id, [FromBody] SetPasswordRequest request)
+        public async Task<IActionResult> SetPasswordAsync([FromRoute][Required] string id, [FromBody] SetPasswordRequest request)
         {
-            var result = await _passwordService.SetPassword(id, request);
+            var result = await _passwordService.SetPasswordAsync(id, request);
 
             if (!result.Success)
             {   
@@ -107,22 +107,16 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.PasswordApi.UpdatePassword)]
-        public async Task<IActionResult> UpdatePassword([FromRoute][Required] string id, [FromBody] UpdatePasswordRequest request)
+        public async Task<IActionResult> UpdatePasswordAsync([FromRoute][Required] string id, [FromBody] UpdatePasswordRequest request)
         {
-            var result = await _passwordService.UpdatePassword(id, request);
+            var result = await _passwordService.UpdatePasswordAsync(id, request);
 
             if (!result.Success)
             {
                 if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
                 {
                     return Forbid();
-                }
-
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
                 }
 
                 return BadRequest(new ErrorResponse { Errors = result.Errors });

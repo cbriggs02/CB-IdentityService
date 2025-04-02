@@ -22,7 +22,7 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     A task that represents the asynchronous operation of saving the password history record
         ///     to the database. The task completes when the record has been successfully saved, or if an error occurs.
         /// </returns>
-        Task AddPasswordHistory(StorePasswordHistoryRequest request);
+        Task AddPasswordHistoryAsync(StorePasswordHistoryRequest request);
 
         /// <summary>
         ///     Asynchronously checks the user's password history for potentially reused passwords.
@@ -37,6 +37,6 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     - true if the password hash is found in the user's history, indicating a potential reuse.
         ///     - false if the password hash is not found in the user's history, indicating that the password is not reused.
         /// </returns>
-        Task<bool> FindPasswordHash(SearchPasswordHistoryRequest request);
+        Task<bool> FindPasswordHashAsync(SearchPasswordHistoryRequest request);
     }
 }

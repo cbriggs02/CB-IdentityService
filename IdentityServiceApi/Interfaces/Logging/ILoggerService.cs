@@ -15,7 +15,7 @@
         /// <returns>
         ///     A task representing the asynchronous operation of logging the authorization breach.
         /// </returns>
-        Task LogAuthorizationBreach();
+        Task LogAuthorizationBreachAsync();
 
         /// <summary>
         ///      Asynchronously logs an exception that occurred within the application.
@@ -26,7 +26,7 @@
         /// <returns>
         ///     A task representing the asynchronous operation of logging the exception.
         /// </returns>
-        Task LogException(Exception exception);
+        Task LogExceptionAsync(Exception exception);
 
         /// <summary>
         ///      Asynchronously logs a slow performance event, typically associated with a long response time for a request.
@@ -37,6 +37,6 @@
         /// <returns>
         ///     A task representing the asynchronous operation of logging the slow performance event.
         /// </returns>
-        Task LogSlowPerformance(long responseTime);
+        Task LogSlowPerformanceAsync(long responseTime);
     }
 }

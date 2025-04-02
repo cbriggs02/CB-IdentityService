@@ -24,6 +24,6 @@ namespace IdentityServiceApi.Interfaces.Authentication
         ///     The result indicates the success or failure of the login attempt, along with any relevant messages
         ///     or tokens.
         /// </returns>
-        Task<LoginServiceResult> Login(LoginRequest credentials);
+        Task<LoginServiceResult> LoginAsync(LoginRequest credentials);
     }
 }

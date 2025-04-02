@@ -60,9 +60,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.LoginApi.Login)]
-        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest credentials)
+        public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] LoginRequest credentials)
         {
-            var result = await _loginService.Login(credentials);
+            var result = await _loginService.LoginAsync(credentials);
 
             if (!result.Success)
             {

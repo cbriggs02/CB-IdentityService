@@ -80,7 +80,7 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     A task that represents the asynchronous operation, returning a <see cref="UserServiceListResult"/>
         ///     containing the list of users and associated pagination metadata.
         /// </returns>
-        public async Task<UserServiceListResult> GetUsers(UserListRequest request)
+        public async Task<UserServiceListResult> GetUsersAsync(UserListRequest request)
         {
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
 
@@ -122,17 +122,17 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     A task that represents the asynchronous operation, returning a <see cref="UserServiceResult"/>
         ///     with the user's data if found.
         /// </returns>
-        public async Task<UserServiceResult> GetUser(string id)
+        public async Task<UserServiceResult> GetUserAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var permissionResult = await _permissionService.ValidatePermissions(id);
+            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
                 return _userServiceResultFactory.UserOperationFailure(permissionResult.Errors.ToArray());
             }
 
-            var userLookupResult = await _userLookupService.FindUserById(id);
+            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if(!userLookupResult.Success)
             {
                 return _userServiceResultFactory.UserOperationFailure(userLookupResult.Errors.ToArray());
@@ -156,7 +156,7 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     - If successful, returns the details of the created user.
         ///     - If the user already exists or an error occurs, returns relevant error messages.
         /// </returns>
-        public async Task<UserServiceResult> CreateUser(UserDTO user)
+        public async Task<UserServiceResult> CreateUserAsync(UserDTO user)
         {
             ValidateUserDTO(user);
 
@@ -204,18 +204,18 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     A task that represents the asynchronous operation, returning a <see cref="ServiceResult"/>
         ///     indicating the success or failure of the update operation.
         /// </returns>
-        public async Task<ServiceResult> UpdateUser(string id, UserDTO user)
+        public async Task<ServiceResult> UpdateUserAsync(string id, UserDTO user)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
             ValidateUserDTO(user);
 
-            var permissionResult = await _permissionService.ValidatePermissions(id);
+            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
                 return _userServiceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
             }
 
-            var userLookupResult = await _userLookupService.FindUserById(id);
+            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if(!userLookupResult.Success)
             {
                 return _userServiceResultFactory.GeneralOperationFailure(userLookupResult.Errors.ToArray());
@@ -251,17 +251,17 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     - If successful, deletes associated password history as well.
         ///     - If the user is not found or an error occurs, returns relevant error messages.
         /// </returns>
-        public async Task<ServiceResult> DeleteUser(string id)
+        public async Task<ServiceResult> DeleteUserAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var permissionResult = await _permissionService.ValidatePermissions(id);
+            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
                 return _userServiceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
             }
 
-            var userLookupServiceResult = await _userLookupService.FindUserById(id);
+            var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
                 return _userServiceResultFactory.UserOperationFailure(userLookupServiceResult.Errors.ToArray());
@@ -276,7 +276,7 @@ namespace IdentityServiceApi.Services.UserManagement
             }
 
             // delete all stored passwords for user once user is deleted for data clean up.
-            await _cleanupService.DeletePasswordHistory(id);
+            await _cleanupService.DeletePasswordHistoryAsync(id);
             return _userServiceResultFactory.GeneralOperationSuccess();
         }
 
@@ -290,17 +290,17 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     A task that represents the asynchronous operation, returning a <see cref="ServiceResult"/>
         ///     indicating the success or failure of the account activation.
         /// </returns>
-        public async Task<ServiceResult> ActivateUser(string id)
+        public async Task<ServiceResult> ActivateUserAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var permissionResult = await _permissionService.ValidatePermissions(id);
+            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
                 return _userServiceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
             }
 
-            var userLookupServiceResult = await _userLookupService.FindUserById(id);
+            var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
                 return _userServiceResultFactory.UserOperationFailure(userLookupServiceResult.Errors.ToArray());
@@ -308,7 +308,7 @@ namespace IdentityServiceApi.Services.UserManagement
 
             var user = userLookupServiceResult.UserFound;
 
-            if (user.AccountStatus == 1)
+            if (user.AccountStatus != 0)
             {
                 return _userServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.User.AlreadyActivated });
             }
@@ -334,17 +334,17 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     A task that represents the asynchronous operation, returning a <see cref="ServiceResult"/>
         ///     indicating the success or failure of the account deactivation.
         /// </returns>
-        public async Task<ServiceResult> DeactivateUser(string id)
+        public async Task<ServiceResult> DeactivateUserAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var permissionResult = await _permissionService.ValidatePermissions(id);
+            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
                 return _userServiceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
             }
 
-            var userLookupServiceResult = await _userLookupService.FindUserById(id);
+            var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
                 return _userServiceResultFactory.UserOperationFailure(userLookupServiceResult.Errors.ToArray());
@@ -352,7 +352,7 @@ namespace IdentityServiceApi.Services.UserManagement
 
             var user = userLookupServiceResult.UserFound;
 
-            if (user.AccountStatus == 0)
+            if (user.AccountStatus != 1)
             {
                 return _userServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.User.NotActivated });
             }

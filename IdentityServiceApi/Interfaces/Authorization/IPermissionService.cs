@@ -23,6 +23,6 @@ namespace IdentityServiceApi.Interfaces.Authorization
         ///     A service method that returns a ServiceResult,
         ///     with success status and errors (if any).
         /// </returns>
-        Task<ServiceResult> ValidatePermissions(string id);
+        Task<ServiceResult> ValidatePermissionsAsync(string id);
     }
 }

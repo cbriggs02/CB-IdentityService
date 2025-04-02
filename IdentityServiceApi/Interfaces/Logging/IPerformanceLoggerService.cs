@@ -19,6 +19,6 @@
         /// <returns>
         ///     A task representing the asynchronous operation of logging the performance issue.
         /// </returns>
-        Task LogSlowPerformance(long responseTime);
+        Task LogSlowPerformanceAsync(long responseTime);
     }
 }

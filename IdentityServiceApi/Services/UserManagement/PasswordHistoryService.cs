@@ -59,7 +59,7 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <returns>
         ///     A task representing the asynchronous operation of saving the password history record to the database.
         /// </returns>
-        public async Task AddPasswordHistory(StorePasswordHistoryRequest request)
+        public async Task AddPasswordHistoryAsync(StorePasswordHistoryRequest request)
         {
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
             _parameterValidator.ValidateNotNullOrEmpty(request.UserId, nameof(request.UserId));
@@ -74,7 +74,7 @@ namespace IdentityServiceApi.Services.UserManagement
 
             _context.PasswordHistories.Add(passwordHistory);
 
-            await _cleanupService.RemoveOldPasswords(passwordHistory.UserId);
+            await _cleanupService.RemoveOldPasswordsAsync(passwordHistory.UserId);
             await _context.SaveChangesAsync();
         }
 
@@ -88,7 +88,7 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     A task representing the asynchronous operation. The task result is a boolean indicating
         ///     whether the provided password hash is found in the user's password history.
         /// </returns>
-        public async Task<bool> FindPasswordHash(SearchPasswordHistoryRequest request)
+        public async Task<bool> FindPasswordHashAsync(SearchPasswordHistoryRequest request)
         {
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
             _parameterValidator.ValidateNotNullOrEmpty(request.UserId, nameof(request.UserId));

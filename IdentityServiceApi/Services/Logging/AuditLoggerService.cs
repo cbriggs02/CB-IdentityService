@@ -64,7 +64,7 @@ namespace IdentityServiceApi.Services.Logging
         ///     A task that represents the asynchronous operation. The task result contains
         ///     the audit logs and pagination metadata.
         /// </returns>
-        public async Task<AuditLogServiceListResult> GetLogs(AuditLogListRequest request)
+        public async Task<AuditLogServiceListResult> GetLogsAsync(AuditLogListRequest request)
         {
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
 
@@ -107,7 +107,7 @@ namespace IdentityServiceApi.Services.Logging
         ///     indicates whether the deletion was successful and provides any 
         ///     associated error messages if applicable.
         /// </returns>
-        public async Task<ServiceResult> DeleteLog(string id)
+        public async Task<ServiceResult> DeleteLogAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 

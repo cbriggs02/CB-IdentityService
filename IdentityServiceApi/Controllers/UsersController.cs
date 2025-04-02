@@ -65,9 +65,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUsers)]
-        public async Task<ActionResult<UserListResponse>> GetUsers([FromQuery] UserListRequest request)
+        public async Task<ActionResult<UserListResponse>> GetUsersAsync([FromQuery] UserListRequest request)
         {
-            var result = await _userService.GetUsers(request);
+            var result = await _userService.GetUsersAsync(request);
 
             if (result.Users == null || !result.Users.Any())
             {
@@ -106,9 +106,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserById)]
-        public async Task<ActionResult<UserResponse>> GetUser([FromRoute][Required] string id)
+        public async Task<ActionResult<UserResponse>> GetUserAsync([FromRoute][Required] string id)
         {
-            var result = await _userService.GetUser(id);
+            var result = await _userService.GetUserAsync(id);
 
             if (!result.Success)
             {
@@ -142,9 +142,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.CreateUser)]
-        public async Task<ActionResult<UserResponse>> CreateUser([FromBody] UserDTO user)
+        public async Task<ActionResult<UserResponse>> CreateUserAsync([FromBody] UserDTO user)
         {
-            var result = await _userService.CreateUser(user);
+            var result = await _userService.CreateUserAsync(user);
 
             if (!result.Success)
             {
@@ -153,7 +153,7 @@ namespace IdentityServiceApi.Controllers
 
             var response = new UserResponse { User = result.User };
 
-            return CreatedAtAction(nameof(GetUser), new { id = response.User.UserName }, response);
+            return CreatedAtAction(nameof(GetUserAsync), new { id = response.User.UserName }, response);
         }
 
         /// <summary>
@@ -184,9 +184,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.UpdateUser)]
-        public async Task<IActionResult> UpdateUser([FromRoute][Required] string id, [FromBody] UserDTO user)
+        public async Task<IActionResult> UpdateUserAsync([FromRoute][Required] string id, [FromBody] UserDTO user)
         {
-            var result = await _userService.UpdateUser(id, user);
+            var result = await _userService.UpdateUserAsync(id, user);
 
             if (!result.Success)
             {
@@ -231,9 +231,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.DeleteUser)]
-        public async Task<IActionResult> DeleteUser([FromRoute][Required] string id)
+        public async Task<IActionResult> DeleteUserAsync([FromRoute][Required] string id)
         {
-            var result = await _userService.DeleteUser(id);
+            var result = await _userService.DeleteUserAsync(id);
 
             if (!result.Success)
             {
@@ -278,9 +278,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.ActivateUser)]
-        public async Task<IActionResult> ActivateUser([FromRoute][Required] string id)
+        public async Task<IActionResult> ActivateUserAsync([FromRoute][Required] string id)
         {
-            var result = await _userService.ActivateUser(id);
+            var result = await _userService.ActivateUserAsync(id);
 
             if (!result.Success)
             {
@@ -325,9 +325,9 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.DeactivateUser)]
-        public async Task<IActionResult> DeactivateUser([FromRoute][Required] string id)
+        public async Task<IActionResult> DeactivateUserAsync([FromRoute][Required] string id)
         {
-            var result = await _userService.DeactivateUser(id);
+            var result = await _userService.DeactivateUserAsync(id);
 
             if (!result.Success)
             {

@@ -16,6 +16,6 @@
         /// <returns>
         ///     A task representing the asynchronous operation of logging the authorization breach.
         /// </returns>
-        Task LogAuthorizationBreach();
+        Task LogAuthorizationBreachAsync();
     }
 }

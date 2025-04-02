@@ -74,7 +74,7 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     - If the user ID cannot be found, an error message is provided.
         ///     - If an error occurs during setup, an error message is returned.
         /// </returns>
-        public async Task<ServiceResult> SetPassword(string id, SetPasswordRequest request)
+        public async Task<ServiceResult> SetPasswordAsync(string id, SetPasswordRequest request)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
@@ -86,7 +86,7 @@ namespace IdentityServiceApi.Services.UserManagement
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.Mismatch });
             }
 
-            var userLookupResult = await _userLookupService.FindUserById(id);
+            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
                 return _serviceResultFactory.GeneralOperationFailure(userLookupResult.Errors.ToArray());
@@ -94,7 +94,7 @@ namespace IdentityServiceApi.Services.UserManagement
 
             var user = userLookupResult.UserFound;
 
-            if (user.PasswordHash != null)
+            if (!string.IsNullOrEmpty(user.PasswordHash))
             {
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.AlreadySet });
             }
@@ -105,7 +105,7 @@ namespace IdentityServiceApi.Services.UserManagement
                 return _serviceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
             }
 
-            await CreatePasswordHistory(user);
+            await CreatePasswordHistoryAsync(user);
             return _serviceResultFactory.GeneralOperationSuccess();
         }
 
@@ -124,26 +124,31 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     - If the user ID cannot be found or the current password is invalid, an error message is provided.
         ///     - If an error occurs during the update, an error message is returned.
         /// </returns>
-        public async Task<ServiceResult> UpdatePassword(string id, UpdatePasswordRequest request)
+        public async Task<ServiceResult> UpdatePasswordAsync(string id, UpdatePasswordRequest request)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
             _parameterValidator.ValidateNotNullOrEmpty(request.CurrentPassword, nameof(request.CurrentPassword));
             _parameterValidator.ValidateNotNullOrEmpty(request.NewPassword, nameof(request.NewPassword));
 
-            var permissionResult = await _permissionService.ValidatePermissions(id);
+            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
                 return _serviceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
             }
 
-            var userLookupResult = await _userLookupService.FindUserById(id);
-            if (!userLookupResult.Success || userLookupResult.UserFound.PasswordHash == null)
+            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
+            if (!userLookupResult.Success)
             {
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.InvalidCredentials });
             }
 
             var user = userLookupResult.UserFound;
+
+            if (string.IsNullOrEmpty(user.PasswordHash))
+            {
+                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.InvalidCredentials });
+            }
 
             var passwordIsValid = await _userManager.CheckPasswordAsync(user, request.CurrentPassword);
             if (!passwordIsValid)
@@ -152,7 +157,7 @@ namespace IdentityServiceApi.Services.UserManagement
             }
 
             // Send password to be checked against users history for re-use errors
-            var isPasswordReused = await IsPasswordReused(user.Id, request.NewPassword);
+            var isPasswordReused = await IsPasswordReusedAsync(user.Id, request.NewPassword);
             if (isPasswordReused)
             {
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.CannotReuse });
@@ -164,11 +169,11 @@ namespace IdentityServiceApi.Services.UserManagement
                 return _serviceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
             }
 
-            await CreatePasswordHistory(user);
+            await CreatePasswordHistoryAsync(user);
             return _serviceResultFactory.GeneralOperationSuccess();
         }
 
-        private async Task CreatePasswordHistory(User user)
+        private async Task CreatePasswordHistoryAsync(User user)
         {
             var passwordHistoryRequest = new StorePasswordHistoryRequest
             {
@@ -176,10 +181,10 @@ namespace IdentityServiceApi.Services.UserManagement
                 PasswordHash = user.PasswordHash,
             };
 
-            await _historyService.AddPasswordHistory(passwordHistoryRequest);
+            await _historyService.AddPasswordHistoryAsync(passwordHistoryRequest);
         }
 
-        private async Task<bool> IsPasswordReused(string userId, string password)
+        private async Task<bool> IsPasswordReusedAsync(string userId, string password)
         {
             var request = new SearchPasswordHistoryRequest
             {
@@ -187,7 +192,7 @@ namespace IdentityServiceApi.Services.UserManagement
                 Password = password
             };
 
-            return await _historyService.FindPasswordHash(request);
+            return await _historyService.FindPasswordHashAsync(request);
         }
     }
 }

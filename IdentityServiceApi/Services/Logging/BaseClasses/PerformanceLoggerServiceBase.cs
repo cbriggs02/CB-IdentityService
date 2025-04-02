@@ -47,6 +47,6 @@ namespace IdentityServiceApi.Services.Logging.AbstractClasses
         /// <returns>
         ///     A task representing the asynchronous operation of logging the slow performance event.
         /// </returns>
-        public abstract Task LogSlowPerformance(long responseTime);
+        public abstract Task LogSlowPerformanceAsync(long responseTime);
     }
 }
