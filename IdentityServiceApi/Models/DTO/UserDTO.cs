@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace IdentityServiceApi.Models.DTO
 {
@@ -13,6 +15,12 @@ namespace IdentityServiceApi.Models.DTO
     /// </remarks>
     public class UserDTO
     {
+        /// <summary>
+        ///     Gets or sets the unique identifier for the user (from ASP.NET Identity).
+        /// </summary>
+        [SwaggerSchema(ReadOnly = true)]
+        public string Id { get; set; }
+
         /// <summary>
         ///     Gets or sets the username of the user.
         /// </summary>

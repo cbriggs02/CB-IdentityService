@@ -192,6 +192,7 @@ namespace IdentityServiceApi.Services.UserManagement
 
             var returnUser = new UserDTO
             {
+                Id = newUser.Id,
                 UserName = newUser.UserName,
                 FirstName = newUser.FirstName,
                 LastName = newUser.LastName,
