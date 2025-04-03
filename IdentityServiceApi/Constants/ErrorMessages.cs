@@ -87,6 +87,11 @@
             ///     Message displayed when attempting to perform an operation on a non-active user account.
             /// </summary>
             public const string NotActivated = "User account is not activated.";
+
+            /// <summary>
+            ///     Message displayed when the specified country cannot be found.
+            /// </summary>
+            public const string CountryNotFound = "Country not found.";
         }
 
         /// <summary>

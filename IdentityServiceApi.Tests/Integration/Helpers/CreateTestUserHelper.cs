@@ -179,7 +179,7 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
                 Email = email,
                 EmailConfirmed = true,
                 PhoneNumber = phoneNumber,
-                Country = country,
+                CountryId = 2,
                 AccountStatus = status ? 1 : 0,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,

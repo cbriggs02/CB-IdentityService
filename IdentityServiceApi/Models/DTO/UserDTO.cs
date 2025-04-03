@@ -53,10 +53,13 @@ namespace IdentityServiceApi.Models.DTO
         public string PhoneNumber { get; set; }
 
         /// <summary>
-        ///     Gets or sets the country of the user.
+        ///     Gets or sets the country identifier for the user.
         /// </summary>
-        [Required(ErrorMessage = "Country is required")]
-        [StringLength(75)]
-        public string Country { get; set; }
+        public int CountryId { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the name of the country for the user.
+        /// </summary>
+        public string CountryName { get; set; }
     }
 }

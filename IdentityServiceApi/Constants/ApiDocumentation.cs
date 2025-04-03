@@ -135,5 +135,18 @@
             /// </summary>
             public const string DeleteLog = "Deletes an audit log by its ID.";
         }
+
+        /// <summary>
+        ///     Contains constants for documenting country-related API endpoints.
+        ///     These constants define summaries, descriptions, and other documentation details
+        ///     specific to operations related to country management, such as retrieving list of countries.
+        /// </summary>
+        public static class CountriesApi
+        {
+            /// <summary>
+            ///     Summary for retrieving all countries in the system.
+            /// </summary>
+            public const string GetCountries = "Retrieves all countries in the system.";
+        }
     }
 }

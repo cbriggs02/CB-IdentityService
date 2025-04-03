@@ -30,11 +30,9 @@ namespace IdentityServiceApi.Models.Entities
         public string LastName { get; set; }
 
         /// <summary>
-        ///     Gets or sets the country of the user.
+        ///     Gets or sets the country identifier for the user.
         /// </summary>
-        [Required]
-        [StringLength(75)]
-        public string Country { get; set; }
+        public int CountryId { get; set; }
 
         /// <summary>
         ///     Gets or sets the account status of the user.
@@ -53,6 +51,11 @@ namespace IdentityServiceApi.Models.Entities
         ///     This indicates when the user information was last modified.
         /// </summary>
         public DateTime UpdatedAt { get; set; }
+
+        /// <summary>
+        ///     Navigation property for the user's country.
+        /// </summary>
+        public virtual Country Country { get; set; }
 
         /// <summary>
         ///     Gets or sets a collection of previous passwords used by this user.

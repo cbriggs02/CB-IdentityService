@@ -2,10 +2,11 @@
 using IdentityServiceApi.Models.ApiResponseModels.AuditLogsResponses;
 using System.Net.Http.Headers;
 using System.Net;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using IdentityServiceApi.Tests.Integration.Helpers;
 using IdentityServiceApi.Constants;
+using IdentityServiceApi.Tests.Integration.Constants;
+using Newtonsoft.Json;
 
 namespace IdentityServiceApi.Tests.Integration.Controllers
 {
@@ -21,111 +22,118 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
     [Trait("TestCategory", "IntegrationTest")]
     public class AuditLogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
     {
-        private readonly HttpClient _client;
-        private const string BaseUri = "/api/v1/AuditLogs";
+        private readonly WebApplicationFactory<Program> _factory;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="AuditLogsControllerTests"/> class.
-        ///     This constructor sets up the HTTP client for testing using the provided <see cref="WebApplicationFactory{TEntryPoint}"/>.
+        ///     This constructor sets up the test environment using a <see cref="WebApplicationFactory{TEntryPoint}"/> 
+        ///     to create a test server for the application.
         /// </summary>
         /// <param name="factory">
-        ///     The web application factory used to create the client for integration testing.
+        ///     The <see cref="WebApplicationFactory{Program}"/> instance used to create the test server.
         /// </param>
         public AuditLogsControllerTests(WebApplicationFactory<Program> factory)
         {
-            _client = factory.CreateClient();
+            _factory = factory;
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="AuditLogsController.GetLogs"/> method returns an OK response (200) 
+        ///     Verifies that the <see cref="AuditLogsController.GetLogsAsync"/> method returns an OK response (200) 
         ///     when the user is authorized and audit logs data exists.
         /// </summary>
         /// <returns>
         ///     A task that represents the asynchronous unit test operation.
         /// </returns>
         [Fact]
-        public async Task GetLogs_ReturnsOk_WhenAuthorizedAndDataExists()
+        public async Task GetLogsAsync_ReturnsOk_WhenAuthorizedAndDataExists()
         {
             // Arrange
-            AuthenticateClient();
-            var requestUri = $"{BaseUri}?Page=1&PageSize=5&Action=0";
+            var client = _factory.CreateClient();
+            AuthenticateClient(client);
+            var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}?Page=1&PageSize=5&Action=0";
 
             // Act
-            var response = await _client.GetAsync(requestUri);
+            var response = await client.GetAsync(requestUri);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var content = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<AuditLogListResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            Assert.NotNull(result);
-            Assert.NotEmpty(result.Logs);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var getLogsResponse = JsonConvert.DeserializeObject<AuditLogListResponse>(responseBody);
+
+            Assert.NotNull(getLogsResponse);
+            Assert.NotEmpty(getLogsResponse.Logs);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="AuditLogsController.GetLogs"/> method returns an Unauthorized response (401) 
+        ///     Verifies that the <see cref="AuditLogsController.GetLogsAsync"/> method returns an Unauthorized response (401) 
         ///     when the user is not authenticated.
         /// </summary>
         /// <returns>
         ///     A task that represents the asynchronous unit test operation.
         /// </returns>
         [Fact]
-        public async Task GetLogs_ReturnsUnauthorized_WhenNotAuthenticated()
+        public async Task GetLogsAsync_ReturnsUnauthorized_WhenNotAuthenticated()
         {
             // Arrange
-            var requestUri = $"{BaseUri}?PageNumber=1&PageSize=5&AuditLogs?Page=1&PageSize=5&Action=0";
+            var client = _factory.CreateClient();
+            var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}?PageNumber=1&PageSize=5&AuditLogs?Page=1&PageSize=5&Action=0";
 
             // Act
-            var response = await _client.GetAsync(requestUri);
+            var response = await client.GetAsync(requestUri);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="AuditLogsController.DeleteLog"/> method returns a NotFound response (404) 
+        ///     Verifies that the <see cref="AuditLogsController.DeleteLogAsync"/> method returns a NotFound response (404) 
         ///     when trying to delete a log that does not exist.
         /// </summary>
         /// <returns>
         ///     A task that represents the asynchronous unit test operation.
         /// </returns>
         [Fact]
-        public async Task DeleteLog_ReturnsNotFound_WhenLogDoesNotExist()
+        public async Task DeleteLogAsync_ReturnsNotFound_WhenLogDoesNotExist()
         {
             // Arrange
-            AuthenticateClient();
-            var requestUri = $"{BaseUri}/nonexistent-log-id";
+            var client = _factory.CreateClient();
+
+            AuthenticateClient(client);
+            var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}/nonexistent-log-id";
 
             // Act
-            var response = await _client.DeleteAsync(requestUri);
+            var response = await client.DeleteAsync(requestUri);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="AuditLogsController.DeleteLog"/> method returns an Unauthorized response (401) 
+        ///     Verifies that the <see cref="AuditLogsController.DeleteLogAsync"/> method returns an Unauthorized response (401) 
         ///     when the user is not authenticated.
         /// </summary>
         /// <returns>
         ///     A task that represents the asynchronous unit test operation.
         /// </returns>
         [Fact]
-        public async Task DeleteLog_ReturnsUnauthorized_WhenNotAuthenticated()
+        public async Task DeleteLogAsync_ReturnsUnauthorized_WhenNotAuthenticated()
         {
             // Arrange
-            var requestUri = $"{BaseUri}/valid-log-id";
+            var client = _factory.CreateClient();
+            var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}/valid-log-id";
 
             // Act
-            var response = await _client.DeleteAsync(requestUri);
+            var response = await client.DeleteAsync(requestUri);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        private void AuthenticateClient()
+        private static void AuthenticateClient(HttpClient client)
         {
-            var token = JwtTokenTestHelper.GenerateJwtToken(roles: new List<string> { Roles.SuperAdmin });
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var token = JwtTokenTestHelper.GenerateJwtToken(roles: new List<string> { Roles.SuperAdmin }, "user123", "id-123");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
     }
 }

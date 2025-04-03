@@ -37,7 +37,6 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses
             _parameterValidator.ValidateNotNullOrEmpty(user.LastName, nameof(user.LastName));
             _parameterValidator.ValidateNotNullOrEmpty(user.Email, nameof(user.Email));
             _parameterValidator.ValidateNotNullOrEmpty(user.PhoneNumber, nameof(user.PhoneNumber));
-            _parameterValidator.ValidateNotNullOrEmpty(user.Country, nameof(user.Country));
         }
 
         /// <summary>

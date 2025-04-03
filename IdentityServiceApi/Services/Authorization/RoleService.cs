@@ -75,69 +75,6 @@ namespace IdentityServiceApi.Services.Authorization
         }
 
         /// <summary>
-        ///     Asynchronously creates a new role in the system with the specified name.
-        /// </summary>
-        /// <param name="roleName">
-        ///     The name of the role to create.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation, returning a <see cref="ServiceResult"/>
-        ///     indicating the creation status:
-        ///     - If successful, returns a result with Success set to true.
-        ///     - If the role already exists, returns an error message.
-        ///     - If an error occurs during creation, returns a result with an error message.
-        /// </returns>
-        public async Task<ServiceResult> CreateRoleAsync(string roleName)
-        {
-            _parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
-
-            if (await DoesRoleExist(roleName))
-            {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.AlreadyExist });
-            }
-
-            var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
-            if (!result.Succeeded)
-            {
-                return _serviceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
-            }
-
-            return _serviceResultFactory.GeneralOperationSuccess();
-        }
-
-        /// <summary>
-        ///     Asynchronously deletes a role from the system based on its unique ID.
-        /// </summary>
-        /// <param name="id">
-        ///     The unique ID of the role to delete.
-        /// </param>
-        /// <returns>
-        ///     A task representing the asynchronous operation, returning a <see cref="ServiceResult"/>
-        ///     indicating the deletion status:
-        ///     - If successful, returns a result with Success set to true.
-        ///     - If the role is not found, returns an error message.
-        ///     - If an error occurs during deletion, returns a result with an error message.
-        /// </returns>
-        public async Task<ServiceResult> DeleteRoleAsync(string id)
-        {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
-
-            var role = await _roleManager.FindByIdAsync(id);
-            if (role == null)
-            {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.NotFound });
-            }
-
-            var result = await _roleManager.DeleteAsync(role);
-            if (!result.Succeeded)
-            {
-                return _serviceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
-            }
-
-            return _serviceResultFactory.GeneralOperationSuccess();
-        }
-
-        /// <summary>
         ///     Asynchronously assigns a specified role to a user identified by their unique ID.
         /// </summary>
         /// <param name="id">

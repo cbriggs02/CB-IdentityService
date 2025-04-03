@@ -29,6 +29,7 @@ namespace IdentityServiceApi.Services.UserManagement
         private readonly IPermissionService _permissionService;
         private readonly IParameterValidator _parameterValidator;
         private readonly IUserLookupService _userLookupService;
+        private readonly ICountryService _countryService;
         private readonly IMapper _mapper;
 
         /// <summary>
@@ -52,13 +53,16 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <param name="userLookupService">
         ///     The service used for looking up users in the system.
         /// </param>
+        /// <param name="countryService">
+        /// 
+        /// </param>
         /// <param name="mapper">
         ///     Object mapper for converting between entities and data transfer objects (DTOs).
         /// </param>
         /// <exception cref="ArgumentNullException">
         ///     Thrown when any of the provided service parameters are null.
         /// </exception>
-        public UserService(UserManager<User> userManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, IMapper mapper)
+        public UserService(UserManager<User> userManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IMapper mapper)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _userServiceResultFactory = userServiceResultFactory ?? throw new ArgumentNullException(nameof(userServiceResultFactory));
@@ -66,6 +70,7 @@ namespace IdentityServiceApi.Services.UserManagement
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
             _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
             _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
+            _countryService = countryService ?? throw new ArgumentNullException(nameof(countryService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
@@ -92,6 +97,7 @@ namespace IdentityServiceApi.Services.UserManagement
 
             var totalCount = await query.CountAsync();
             var users = await query
+                .Include(user => user.Country)
                 .OrderBy(user => user.LastName)
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
@@ -160,6 +166,12 @@ namespace IdentityServiceApi.Services.UserManagement
         {
             ValidateUserDTO(user);
 
+            var country = await _countryService.FindCountryByIdAsync(user.CountryId);
+            if (country == null)
+            {
+                return _userServiceResultFactory.UserOperationFailure(new[] { ErrorMessages.User.CountryNotFound });
+            }
+
             var newUser = new User
             {
                 UserName = user.UserName,
@@ -167,7 +179,7 @@ namespace IdentityServiceApi.Services.UserManagement
                 LastName = user.LastName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                Country = user.Country,
+                CountryId = user.CountryId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
@@ -185,7 +197,8 @@ namespace IdentityServiceApi.Services.UserManagement
                 LastName = newUser.LastName,
                 Email = newUser.Email,
                 PhoneNumber = newUser.PhoneNumber,
-                Country = newUser.Country
+                CountryId = newUser.CountryId,
+                CountryName = country.Name
             };
 
             return _userServiceResultFactory.UserOperationSuccess(returnUser);
@@ -221,13 +234,19 @@ namespace IdentityServiceApi.Services.UserManagement
                 return _userServiceResultFactory.GeneralOperationFailure(userLookupResult.Errors.ToArray());
             }
 
+            var country = await _countryService.FindCountryByIdAsync(user.CountryId);
+            if (country == null)
+            {
+                return _userServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.User.CountryNotFound });
+            }
+
             var existingUser = userLookupResult.UserFound;
             existingUser.UserName = user.UserName;
             existingUser.FirstName = user.FirstName;
             existingUser.LastName = user.LastName;
             existingUser.Email = user.Email;
             existingUser.PhoneNumber = user.PhoneNumber;
-            existingUser.Country = user.Country;
+            existingUser.CountryId = user.CountryId;
             existingUser.UpdatedAt = DateTime.UtcNow;
 
             var result = await _userManager.UpdateAsync(existingUser);
@@ -376,7 +395,6 @@ namespace IdentityServiceApi.Services.UserManagement
             _parameterValidator.ValidateNotNullOrEmpty(user.LastName, nameof(user.LastName));
             _parameterValidator.ValidateNotNullOrEmpty(user.Email, nameof(user.Email));
             _parameterValidator.ValidateNotNullOrEmpty(user.PhoneNumber, nameof(user.PhoneNumber));
-            _parameterValidator.ValidateNotNullOrEmpty(user.Country, nameof(user.Country));
         }
     }
 }

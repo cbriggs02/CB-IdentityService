@@ -132,6 +132,7 @@ namespace IdentityServiceApi
             builder.Services.AddScoped<IPasswordService, PasswordService>();
             builder.Services.AddScoped<IPasswordHistoryService, PasswordHistoryService>();
             builder.Services.AddScoped<IPasswordHistoryCleanupService, PasswordHistoryCleanupService>();
+            builder.Services.AddScoped<ICountryService, CountryService>();
 
             // Utility related services
             builder.Services.AddScoped<IParameterValidator, ParameterValidator>();
