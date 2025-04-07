@@ -53,9 +53,6 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
         /// <param name="phoneNumber">
         ///     The phone number of the test user.
         /// </param>
-        /// <param name="country">
-        ///     The country of the test user.
-        /// </param>
         /// <param name="status">
         ///     The status of the test user indicating whether the user is active.
         /// </param>
@@ -69,9 +66,9 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
         /// <exception cref="InvalidOperationException">
         ///     Thrown when the creation of the user or the assignment of the role fails.
         /// </exception>
-        public async Task<User> CreateTestUserWithPasswordAsync(string userName, string firstName, string lastName, string email, string phoneNumber, string country, string password, bool status, string role = null)
+        public async Task<User> CreateTestUserWithPasswordAsync(string userName, string firstName, string lastName, string email, string phoneNumber, string password, bool status, string role = null)
         {
-            var user = CreateUserObject(userName, firstName, lastName, email, phoneNumber, country, status);
+            var user = CreateUserObject(userName, firstName, lastName, email, phoneNumber, status);
 
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded)
@@ -110,9 +107,6 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
         /// <param name="phoneNumber">
         ///     The phone number of the test user.
         /// </param>
-        /// <param name="country">
-        ///     The country of the test user.
-        /// </param>
         /// <param name="status">
         ///     The status of the test user indicating whether the user is active.
         /// </param>
@@ -126,9 +120,9 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
         /// <exception cref="InvalidOperationException">
         ///     Thrown when the creation of the user or the assignment of the role fails.
         /// </exception>
-        public async Task<User> CreateTestUserWithoutPasswordAsync(string userName, string firstName, string lastName, string email, string phoneNumber, string country, bool status, string role = null)
+        public async Task<User> CreateTestUserWithoutPasswordAsync(string userName, string firstName, string lastName, string email, string phoneNumber, bool status, string role = null)
         {
-            var user = CreateUserObject(userName, firstName, lastName, email, phoneNumber, country, status);
+            var user = CreateUserObject(userName, firstName, lastName, email, phoneNumber, status);
 
             var result = await _userManager.CreateAsync(user);
             if (!result.Succeeded)
@@ -169,7 +163,7 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
             }
         }
 
-        private static User CreateUserObject(string userName, string firstName, string lastName, string email, string phoneNumber, string country, bool status)
+        private static User CreateUserObject(string userName, string firstName, string lastName, string email, string phoneNumber, bool status)
         {
             return new User
             {

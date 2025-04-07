@@ -181,9 +181,8 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
             string firstName = faker.Name.FirstName();
             string lastName = faker.Name.LastName();
             string phoneNumber = faker.Phone.PhoneNumber();
-            string country = faker.Address.Country();
 
-            return await createTestUserHelper.CreateTestUserWithPasswordAsync(userName, firstName, lastName, email, phoneNumber, country, Password, status);
+            return await createTestUserHelper.CreateTestUserWithPasswordAsync(userName, firstName, lastName, email, phoneNumber, Password, status);
         }
 
         private async Task CleanUpTestUserAsync(string email)

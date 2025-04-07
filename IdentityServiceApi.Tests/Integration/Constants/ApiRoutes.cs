@@ -53,5 +53,16 @@
             /// </summary>
             public const string BaseUri = "/api/v1/Roles/";
         }
+
+        /// <summary>
+        ///     Contains API route constants for the Country controller.
+        /// </summary>
+        public static class CountriesController
+        {
+            /// <summary>
+            ///     The request URI for obtaining list of countries.
+            /// </summary>
+            public const string RequestUri = "/api/v1/Countries";
+        }
     }
 }

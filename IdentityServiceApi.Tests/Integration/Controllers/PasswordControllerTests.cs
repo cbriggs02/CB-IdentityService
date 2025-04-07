@@ -464,18 +464,18 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         {
             var createTestUserHelper = CreateTestUserHelper();
 
-            GenerateFakeUserData(out string userName, out string email, out string firstName, out string lastName, out string phoneNumber, out string country);
+            GenerateFakeUserData(out string userName, out string email, out string firstName, out string lastName, out string phoneNumber);
 
-            return await createTestUserHelper.CreateTestUserWithPasswordAsync(userName, firstName, lastName, email, phoneNumber, country, Password, status, role);
+            return await createTestUserHelper.CreateTestUserWithPasswordAsync(userName, firstName, lastName, email, phoneNumber, Password, status, role);
         }
 
         private async Task<User> CreateTestUserWithoutPasswordAsync(bool status, string role = null)
         {
             var createTestUserHelper = CreateTestUserHelper();
 
-            GenerateFakeUserData(out string userName, out string email, out string firstName, out string lastName, out string phoneNumber, out string country);
+            GenerateFakeUserData(out string userName, out string email, out string firstName, out string lastName, out string phoneNumber);
 
-            return await createTestUserHelper.CreateTestUserWithoutPasswordAsync(userName, firstName, lastName, email, phoneNumber, country, status, role);
+            return await createTestUserHelper.CreateTestUserWithoutPasswordAsync(userName, firstName, lastName, email, phoneNumber, status, role);
         }
 
         private async Task CleanUpTestUserAsync(string email)
@@ -494,7 +494,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
             return createTestUserHelper;
         }
 
-        private static void GenerateFakeUserData(out string userName, out string email, out string firstName, out string lastName, out string phoneNumber, out string country)
+        private static void GenerateFakeUserData(out string userName, out string email, out string firstName, out string lastName, out string phoneNumber)
         {
             var faker = new Faker();
             userName = faker.Internet.UserName();
@@ -502,7 +502,6 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
             firstName = faker.Name.FirstName();
             lastName = faker.Name.LastName();
             phoneNumber = faker.Phone.PhoneNumber();
-            country = faker.Address.Country();
         }
     }
 }
