@@ -22,7 +22,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
     ///     @Created: 2024
     /// </remarks>
     [Trait("TestCategory", "UnitTest")]
-    public class RoleServiceTests
+    public class RoleServiceTests 
     {
         private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
         private readonly Mock<UserManager<User>> _userManagerMock;
