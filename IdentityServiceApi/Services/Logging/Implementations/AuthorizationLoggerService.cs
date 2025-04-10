@@ -69,7 +69,7 @@ namespace IdentityServiceApi.Services.Logging.Implementations
         public override async Task LogAuthorizationBreachAsync()
         {
             var principal = _userContextService.GetClaimsPrincipal();
-            var currentUserId = _userContextService.GetUserId(principal) ?? "Anonymous";
+            var currentUserId = _userContextService.GetUserId(principal);
             var ipAddress = _userContextService.GetAddress()?.ToString() ?? "Unknown";
             var requestPath = _userContextService.GetRequestPath() ?? "Unknown Path";
 

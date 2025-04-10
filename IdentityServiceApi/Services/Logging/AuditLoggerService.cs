@@ -120,7 +120,7 @@ namespace IdentityServiceApi.Services.Logging
             _context.AuditLogs.Remove(log);
 
             int result = await _context.SaveChangesAsync();
-            if (result == 0)
+            if (result != 1)
             {
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.AuditLog.DeletionFailed });
             }

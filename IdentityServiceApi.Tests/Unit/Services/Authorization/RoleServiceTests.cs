@@ -513,10 +513,12 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         /// </summary>
         /// <param name="roleName">
         ///     The role to be removed from the user.
-        ///     This can be any valid role name such as <see cref="Roles.SuperAdmin"/>, <see cref="Roles.Admin"/>, or <see cref="Roles.User"/>.
+        ///     This can be any valid role name such as <see cref="Roles.SuperAdmin"/>,
+        ///     <see cref="Roles.Admin"/>, or <see cref="Roles.User"/>.
         /// </param>
         /// <returns>
-        ///     A task representing the asynchronous operation. The result will indicate whether the operation was successful or not.
+        ///     A task representing the asynchronous operation. The result will indicate whether the operation was 
+        ///     successful or not.
         /// </returns>
         [Theory]
         [InlineData(Roles.SuperAdmin)]
@@ -564,10 +566,12 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         /// </summary>
         /// <param name="roleName">
         ///     The role to be removed from the user.
-        ///     This can be any valid role name such as <see cref="Roles.SuperAdmin"/>, <see cref="Roles.Admin"/>, or <see cref="Roles.User"/>.
+        ///     This can be any valid role name such as <see cref="Roles.SuperAdmin"/>, 
+        ///     <see cref="Roles.Admin"/>, or <see cref="Roles.User"/>.
         /// </param>
         /// <returns>
-        ///     A task representing the asynchronous operation. The result will indicate whether the operation was successful or not.
+        ///     A task representing the asynchronous operation. The result will indicate whether the operation was 
+        ///     successful or not.
         /// </returns>
         [Theory]
         [InlineData(Roles.SuperAdmin)]
