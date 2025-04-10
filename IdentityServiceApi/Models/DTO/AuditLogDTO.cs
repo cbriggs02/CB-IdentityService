@@ -21,7 +21,7 @@ namespace IdentityServiceApi.Models.DTO
         /// </summary>
         [SwaggerSchema(ReadOnly = true)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         ///     Gets or sets the action performed that is being logged.
@@ -35,16 +35,15 @@ namespace IdentityServiceApi.Models.DTO
         ///     Gets or sets the identifier of the user who performed the action.
         ///     This value represents the unique ID of the user in the system.
         /// </summary>
-        [Required]
-        public string UserId { get; set; }
+        public string? UserId { get; set; } 
 
         /// <summary>
         ///     Gets or sets detailed information about the action or exception being logged.
         ///     This may include error messages or additional context regarding the action.
         /// </summary>
         [Required]
-        [StringLength(1000)]
-        public string Details { get; set; }
+        [Column(TypeName = "NVARCHAR(MAX)")]
+        public string Details { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the IP address from which the action was performed.
@@ -52,7 +51,7 @@ namespace IdentityServiceApi.Models.DTO
         /// </summary>
         [Required]
         [StringLength(40)]
-        public string IpAddress { get; set; }
+        public string IpAddress { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the timestamp indicating when the action occurred.

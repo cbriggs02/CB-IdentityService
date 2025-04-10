@@ -21,6 +21,6 @@ namespace IdentityServiceApi.Models.ServiceResultModels.Logging
         ///     Gets or sets the pagination metadata associated with the audit log retrieval operation.
         ///     This metadata includes details such as total audit log count, current page, and page size. 
         /// </summary>
-        public PaginationModel PaginationMetadata { get; set; }
+        public PaginationModel PaginationMetadata { get; set; } = new PaginationModel();
     }
 }

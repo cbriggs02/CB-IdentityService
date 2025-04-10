@@ -20,6 +20,6 @@ namespace IdentityServiceApi.Models.ApiResponseModels.UsersResponses
         /// <summary>
         ///     Metadata for pagination, such as total count and page details.
         /// </summary>
-        public PaginationModel PaginationMetadata { get; set; }
+        public PaginationModel PaginationMetadata { get; set; } = new PaginationModel();
     }
 }

@@ -17,7 +17,7 @@ namespace IdentityServiceApi.Models.RequestModels.UserManagement
         /// </summary>
         [Required(ErrorMessage = "Current Password is required")]
         [DataType(DataType.Password)]
-        public string CurrentPassword { get; set; }
+        public string CurrentPassword { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the new password that the user wants to set.
@@ -25,6 +25,6 @@ namespace IdentityServiceApi.Models.RequestModels.UserManagement
         /// </summary>
         [Required(ErrorMessage = "New Password is required")]
         [DataType(DataType.Password)]
-        public string NewPassword { get; set; }
+        public string NewPassword { get; set; } = string.Empty;
     }
 }

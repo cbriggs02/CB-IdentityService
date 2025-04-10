@@ -24,6 +24,6 @@ namespace IdentityServiceApi.Models.ServiceResultModels.UserManagement
         ///     Gets or sets the pagination metadata associated with the user retrieval operation.
         ///     This metadata includes details such as total user count, current page, and page size. 
         /// </summary>
-        public PaginationModel PaginationMetadata { get; set; }
+        public PaginationModel PaginationMetadata { get; set; } = new PaginationModel();
     }
 }

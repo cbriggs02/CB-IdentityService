@@ -14,11 +14,11 @@
         ///     Gets or sets the id of the user who's password is being searched in history in 
         ///     request.
         /// </summary>
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the password being searched in history in request.
         /// </summary>
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 }

@@ -15,6 +15,6 @@ namespace IdentityServiceApi.Models.ServiceResultModels.UserManagement
         /// <summary>
         ///     Gets or sets the user found during the lookup.
         /// </summary>
-        public User UserFound { get; set; }
+        public User UserFound { get; set; } = new User();
     }
 }

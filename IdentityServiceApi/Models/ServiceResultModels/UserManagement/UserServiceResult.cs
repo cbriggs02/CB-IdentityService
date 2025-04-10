@@ -17,6 +17,6 @@ namespace IdentityServiceApi.Models.ServiceResultModels.UserManagement
         ///     The user DTO object obtained from the operation.
         ///     This may be empty if no users match the request criteria.
         /// </summary>
-        public UserDTO User { get; set; }
+        public UserDTO User { get; set; } = new UserDTO();
     }
 }

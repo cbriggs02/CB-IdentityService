@@ -1,6 +1,5 @@
 ﻿using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace IdentityServiceApi.Models.DTO
 {
@@ -19,13 +18,13 @@ namespace IdentityServiceApi.Models.DTO
         ///     Gets or sets the unique identifier for the user (from ASP.NET Identity).
         /// </summary>
         [SwaggerSchema(ReadOnly = true)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         ///     Gets or sets the username of the user.
         /// </summary>
         [Required(ErrorMessage = "User name is required")]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the first name of the user.
@@ -33,7 +32,7 @@ namespace IdentityServiceApi.Models.DTO
         [Required(ErrorMessage = "First name is required")]
         [StringLength(50)]
         [Display(Name = "First Name")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the last name of the user.
@@ -41,15 +40,15 @@ namespace IdentityServiceApi.Models.DTO
         [Required(ErrorMessage = "Last name is required")]
         [StringLength(50)]
         [Display(Name = "Last Name")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the email address of the user.
         /// </summary>
         [Required(ErrorMessage = "Email Address is required")]
         [EmailAddress]
-        [StringLength(25)]
-        public string Email { get; set; }
+        [StringLength(255)]
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the phone number of the user.
@@ -58,7 +57,7 @@ namespace IdentityServiceApi.Models.DTO
         [Phone]
         [Display(Name = "Phone Number")]
         [RegularExpression(@"^\d{3}-\d{3}-\d{4}$", ErrorMessage = "Please enter a phone number in the format xxx-xxx-xxxx.")]
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the country identifier for the user.
@@ -68,6 +67,8 @@ namespace IdentityServiceApi.Models.DTO
         /// <summary>
         ///     Gets or sets the name of the country for the user.
         /// </summary>
-        public string CountryName { get; set; }
+        [SwaggerSchema(ReadOnly = true)]
+        public string? CountryName { get; set; }
     }
 }
+

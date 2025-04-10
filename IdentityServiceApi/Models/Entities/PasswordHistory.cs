@@ -19,19 +19,19 @@ namespace IdentityServiceApi.Models.Entities
         /// </summary>
         [SwaggerSchema(ReadOnly = true)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         ///     Gets or sets the identifier of the user to whom this password belongs.
         /// </summary>
         [Required]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the hashed password being stored in history.
         /// </summary>
         [Required]
-        public string PasswordHash { get; set; }
+        public string PasswordHash { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the date this password was created.
@@ -41,6 +41,6 @@ namespace IdentityServiceApi.Models.Entities
         /// <summary>
         ///     Gets or sets the navigation property to the user associated with this password history entry.
         /// </summary>
-        public virtual User User { get; set; }
+        public virtual User User { get; set; } = null!;
     }
 }

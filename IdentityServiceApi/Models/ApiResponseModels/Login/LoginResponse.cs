@@ -13,6 +13,6 @@ namespace IdentityServiceApi.Models.ApiResponseModels.LoginResponses
         /// <summary>
         ///    The JWT (JSON Web Token) that is generated upon a successful login from login service.
         /// </summary>
-        public string Token { get; set; }
+        public string Token { get; set; } = string.Empty;
     }
 }

@@ -19,7 +19,7 @@ namespace IdentityServiceApi.Models.Entities
         [Required]
         [PersonalData]
         [StringLength(50)]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the last name of the user.
@@ -27,7 +27,7 @@ namespace IdentityServiceApi.Models.Entities
         [Required]
         [PersonalData]
         [StringLength(50)]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the country identifier for the user.
@@ -55,18 +55,12 @@ namespace IdentityServiceApi.Models.Entities
         /// <summary>
         ///     Navigation property for the user's country.
         /// </summary>
-        public virtual Country Country { get; set; }
+        public virtual Country Country { get; set; } = null!;
 
         /// <summary>
         ///     Gets or sets a collection of previous passwords used by this user.
         ///     This collection helps track password history to prevent password reuse.
         /// </summary>
         public virtual ICollection<PasswordHistory> Passwords { get; set; } = new List<PasswordHistory>();
-
-        /// <summary>
-        ///     Gets or sets a collection of audit logs associated with this user.
-        ///     This collection helps track actions, exceptions, or authorization breaches triggered by this user.
-        /// </summary>
-        public virtual ICollection<AuditLog> Logs { get; set; } = new List<AuditLog>();
     }
 }

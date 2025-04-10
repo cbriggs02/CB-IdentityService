@@ -25,6 +25,6 @@ namespace IdentityServiceApi.Models.Entities
 		/// </summary>
 		[Required(ErrorMessage = "Country name is required")]
 		[StringLength(100)]
-		public string Name { get; set; }
-	}
+		public string Name { get; set; } = string.Empty;
+    }
 }

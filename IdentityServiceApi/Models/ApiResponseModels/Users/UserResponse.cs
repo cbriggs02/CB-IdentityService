@@ -15,6 +15,6 @@ namespace IdentityServiceApi.Models.ApiResponseModels.UsersResponses
         ///     The User DTO object retrieved or created from the service that is returned by the API.
         ///     This will contain user details if successful.
         /// </summary>
-        public UserDTO User { get; set; }
+        public UserDTO User { get; set; } = new UserDTO();
     }
 }

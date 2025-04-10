@@ -13,12 +13,12 @@
         /// <summary>
         ///     Gets or sets the ID of the user whose password is being recorded in history.
         /// </summary>
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the hashed password being recorded in history.
         ///     Only the hashed version of the password is stored for security purposes.
         /// </summary>
-        public string PasswordHash { get; set; }
+        public string PasswordHash { get; set; } = string.Empty;
     }
 }

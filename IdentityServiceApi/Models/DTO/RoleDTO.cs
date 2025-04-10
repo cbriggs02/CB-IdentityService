@@ -12,11 +12,11 @@
         /// <summary>
         ///     Gets or sets the unique identifier for the role.
         /// </summary>
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         ///     Gets or sets the name of the role.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

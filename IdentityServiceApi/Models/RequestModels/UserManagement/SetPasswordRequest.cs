@@ -17,7 +17,7 @@ namespace IdentityServiceApi.Models.RequestModels.UserManagement
         /// </summary>
         [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the confirmed password that should match the new password.
@@ -25,6 +25,6 @@ namespace IdentityServiceApi.Models.RequestModels.UserManagement
         /// </summary>
         [Required(ErrorMessage = "Confirmed Password is required")]
         [DataType(DataType.Password)]
-        public string PasswordConfirmed { get; set; }
+        public string PasswordConfirmed { get; set; } = string.Empty;
     }
 }

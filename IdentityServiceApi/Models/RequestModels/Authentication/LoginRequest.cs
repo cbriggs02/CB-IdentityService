@@ -16,7 +16,7 @@ namespace IdentityServiceApi.Models.RequestModels.Authentication
         ///     Used to identify the user during the authentication process.
         /// </summary>
         [Required(ErrorMessage = "Username is required.")]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
 
         /// <summary>
         ///     Gets or sets the password for authentication.
@@ -24,6 +24,6 @@ namespace IdentityServiceApi.Models.RequestModels.Authentication
         /// </summary>
         [Required(ErrorMessage = "Password is required.")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 }
