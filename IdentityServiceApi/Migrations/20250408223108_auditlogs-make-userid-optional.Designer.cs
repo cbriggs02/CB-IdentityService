@@ -4,6 +4,7 @@ using IdentityServiceApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServiceApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250408223108_auditlogs-make-userid-optional")]
+    partial class auditlogsmakeuseridoptional
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,9 +323,9 @@ namespace IdentityServiceApi.Migrations
             modelBuilder.Entity("IdentityServiceApi.Models.Entities.AuditLog", b =>
                 {
                     b.HasOne("IdentityServiceApi.Models.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("Logs")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("User");
                 });
@@ -403,6 +405,8 @@ namespace IdentityServiceApi.Migrations
 
             modelBuilder.Entity("IdentityServiceApi.Models.Entities.User", b =>
                 {
+                    b.Navigation("Logs");
+
                     b.Navigation("Passwords");
                 });
 #pragma warning restore 612, 618

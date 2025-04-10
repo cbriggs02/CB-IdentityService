@@ -4,6 +4,7 @@ using IdentityServiceApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServiceApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250408222030_change-auditlog-details-length")]
+    partial class changeauditlogdetailslength
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,6 +47,7 @@ namespace IdentityServiceApi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -321,9 +324,10 @@ namespace IdentityServiceApi.Migrations
             modelBuilder.Entity("IdentityServiceApi.Models.Entities.AuditLog", b =>
                 {
                     b.HasOne("IdentityServiceApi.Models.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("Logs")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -403,6 +407,8 @@ namespace IdentityServiceApi.Migrations
 
             modelBuilder.Entity("IdentityServiceApi.Models.Entities.User", b =>
                 {
+                    b.Navigation("Logs");
+
                     b.Navigation("Passwords");
                 });
 #pragma warning restore 612, 618
