@@ -52,7 +52,7 @@ namespace IdentityServiceApi.Controllers
         ///     its confirmation.
         /// </param>
         /// <returns>
-        ///     - <see cref="StatusCodes.Status200OK"/> (OK) if setting the password was successful.
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if setting the password was successful.
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors 
         ///         returned by the password service that occurred while setting the password.       
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
@@ -77,7 +77,7 @@ namespace IdentityServiceApi.Controllers
                 return BadRequest(new ErrorResponse { Errors = result.Errors });
             }
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace IdentityServiceApi.Controllers
         ///     including the current password and the new password.
         /// </param>
         /// <returns>
-        ///     - <see cref="StatusCodes.Status200OK"/> (OK) if updating the password was successful.   
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if updating the password was successful.   
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors 
         ///         returned by the password service that occurred during the password update.      
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by
@@ -122,7 +122,7 @@ namespace IdentityServiceApi.Controllers
                 return BadRequest(new ErrorResponse { Errors = result.Errors });
             }
 
-            return Ok();
+            return NoContent();
         }
     }
 }

@@ -55,7 +55,7 @@
         }
 
         /// <summary>
-        ///     Contains API route constants for the Country controller.
+        ///     Contains API route constants for the Countries controller.
         /// </summary>
         public static class CountriesController
         {
@@ -63,6 +63,17 @@
             ///     The request URI for obtaining list of countries.
             /// </summary>
             public const string RequestUri = "/api/v1/Countries";
+        }
+
+        /// <summary>
+        ///     Contains API route constants for the Users controller.
+        /// </summary>
+        public static class UsersController
+        {
+            /// <summary>
+            ///     The base URI for accessing the Users API endpoints.
+            /// </summary>
+            public const string BaseUri = "/api/v1/Users";
         }
     }
 }

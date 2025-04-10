@@ -89,7 +89,7 @@ namespace IdentityServiceApi.Controllers
         ///     The ID of the audit log to delete.
         /// </param>
         /// <returns>
-        ///     - <see cref="StatusCodes.Status200OK"/> (OK) if the audit log deletion was successful.    
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if the audit log deletion was successful.    
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors encountered during 
         ///         the audit log deletion.    
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is 
@@ -98,7 +98,7 @@ namespace IdentityServiceApi.Controllers
         /// </returns>
         [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -117,7 +117,7 @@ namespace IdentityServiceApi.Controllers
                 return BadRequest(new ErrorResponse { Errors = result.Errors });
             }
 
-            return Ok();
+            return NoContent();
         }
     }
 }

@@ -110,7 +110,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="PasswordController.SetPasswordAsync"/> method returns an OK response (200) 
+        ///     Verifies that the <see cref="PasswordController.SetPasswordAsync"/> method returns an NoContent response (204)
         ///     when the user is found and their password hash is null.
         /// </summary>
         /// <returns>
@@ -129,7 +129,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
             var response = await client.PutAsync(requestUri, jsonContent);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             await CleanUpTestUserAsync(user.Email);
         }
@@ -198,7 +198,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="PasswordController.UpdatePasswordAsync"/> method returns a Forbidden response (403) 
+        ///     Verifies that the <see cref="PasswordController.UpdatePasswordAsync"/> method returns a Forbidden response (403)
         ///     when an authenticated user attempts to update the password of a non-existent user.
         /// </summary>
         /// <returns>
@@ -226,8 +226,8 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="PasswordController.UpdatePasswordAsync"/> method returns a Bad Request response (400) 
-        ///     when the user's password hash is null.
+        ///     Verifies that the <see cref="PasswordController.UpdatePasswordAsync"/> method returns a Bad Request 
+        ///     response (400) when the user's password hash is null.
         /// </summary>
         /// <returns>
         ///     A task that represents the asynchronous unit test operation.
@@ -260,8 +260,8 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="PasswordController.UpdatePasswordAsync"/> method returns a Bad Request response (400) 
-        ///     when the provided current password in the request body does not match the user's actual password.
+        ///     Verifies that the <see cref="PasswordController.UpdatePasswordAsync"/> method returns a Bad Request 
+        ///     response (400) when the provided current password in the request body does not match the user's actual password.
         /// </summary>
         /// <returns>
         ///     A task that represents the asynchronous unit test operation.
@@ -395,14 +395,14 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
         }
 
         /// <summary>
-        ///     Verifies that the <see cref="PasswordController.UpdatePasswordAsync"/> method returns an OK response (200) 
+        ///     Verifies that the <see cref="PasswordController.UpdatePasswordAsync"/> method returns an No Content Response (204) 
         ///     when the requested new password meets the required password requirements (e.g., length, complexity).
         /// </summary>
         /// <returns>
         ///     A task that represents the asynchronous unit test operation.
         /// </returns>
         [Fact]
-        public async Task UpdatePasswordAsync_ReturnsOK_WhenRequestedNewPasswordMeetsPasswordRequirements()
+        public async Task UpdatePasswordAsync_ReturnsNoContent_WhenRequestedNewPasswordMeetsPasswordRequirements()
         {
             // Arrange
             var client = _factory.CreateClient();
@@ -417,7 +417,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
             var response = await client.PatchAsync(requestUri, jsonContent);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             await CleanUpTestUserAsync(user.Email);
         }
