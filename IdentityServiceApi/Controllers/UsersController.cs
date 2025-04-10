@@ -153,7 +153,7 @@ namespace IdentityServiceApi.Controllers
 
             var response = new UserResponse { User = result.User };
 
-            return CreatedAtAction(nameof(GetUserAsync), new { id = response.User.UserName }, response);
+            return CreatedAtAction("GetUser", new { id = response.User.Id }, response.User);
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ namespace IdentityServiceApi.Controllers
         ///     The ID of the user account to delete.
         /// </param>
         /// <returns>
-        ///     - <see cref="StatusCodes.Status200OK"/> (OK) if the user account deletion was successful.
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if the user account deletion was successful.
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors encountered during 
         ///         the user account deletion.   
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is 
@@ -225,7 +225,7 @@ namespace IdentityServiceApi.Controllers
         /// </returns>
         [Authorize(Roles = "SuperAdmin,Admin,User")]
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -250,7 +250,7 @@ namespace IdentityServiceApi.Controllers
                 return BadRequest(new ErrorResponse { Errors = result.Errors });
             }
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace IdentityServiceApi.Controllers
         ///     The identifier of the user account to activate.
         /// </param>
         /// <returns>
-        ///     - <see cref="StatusCodes.Status200OK"/> (OK) if the user account activation was successful.  
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if the user account activation was successful.  
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors encountered
         ///         during the user account activation.    
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user 
@@ -272,7 +272,7 @@ namespace IdentityServiceApi.Controllers
         /// </returns>
         [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpPatch("activate/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -297,7 +297,7 @@ namespace IdentityServiceApi.Controllers
                 return BadRequest(new ErrorResponse { Errors = result.Errors });
             }
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace IdentityServiceApi.Controllers
         ///     The unique identifier of the user account to deactivate.
         /// </param>
         /// <returns>
-        ///     - <see cref="StatusCodes.Status200OK"/> (OK) if the user account deactivation was successful. 
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if the user account deactivation was successful. 
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors encountered 
         ///         during the user account deactivation. 
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
@@ -319,7 +319,7 @@ namespace IdentityServiceApi.Controllers
         /// </returns>
         [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpPatch("deactivate/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -344,7 +344,91 @@ namespace IdentityServiceApi.Controllers
                 return BadRequest(new ErrorResponse { Errors = result.Errors });
             }
 
-            return Ok();
+            return NoContent();
+        }
+
+        /// <summary>
+        ///     Asynchronously processes requests for assigning a role to a user in the system
+        ///     by delegating the operation to the required service.
+        /// </summary>
+        /// <param name="id">
+        ///     The ID of the user to whom the role is being assigned.
+        /// </param>
+        /// <param name="roleName">
+        ///     The name of the role being assigned to the user.
+        /// </param>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if the role assignment was successful.    
+        ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors 
+        ///         returned by the role service that occurred during the role assignment.         
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made 
+        ///         by a user who is not authenticated or does not have the required role.    
+        ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
+        /// </returns>
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpPost("{id}/roles")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [SwaggerOperation(Summary = ApiDocumentation.RolesApi.AssignRole)]
+        public async Task<IActionResult> AssignRoleAsync([FromRoute][Required] string id, [FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
+        {
+            var result = await _userService.AssignRoleAsync(id, roleName);
+
+            if (!result.Success)
+            {
+                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return NotFound();
+                }
+
+                return BadRequest(new ErrorResponse { Errors = result.Errors });
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>
+        ///     Asynchronously processes requests for removing a role from a user in the system
+        ///     by delegating the operation to the required service.
+        /// </summary>
+        /// <param name="id">
+        ///     The ID of the user to whom the role is being removed.
+        /// </param>
+        /// <param name="roleName">
+        ///     The name of the role being removed to the user.
+        /// </param>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if the role removal was successful.     
+        ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors 
+        ///         returned by the role service that occurred when removing the role.       
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made 
+        ///         by a user who is not authenticated or does not have the required role.   
+        ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
+        /// </returns>
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpDelete("{id}/roles/{roleName}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [SwaggerOperation(Summary = ApiDocumentation.RolesApi.RemoveRole)]
+        public async Task<IActionResult> RemoveRoleAsync([FromRoute][Required] string id, [FromRoute][Required] string roleName)
+        {
+            var result = await _userService.RemoveRoleAsync(id, roleName);
+
+            if (!result.Success)
+            {
+                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return NotFound();
+                }
+
+                return BadRequest(new ErrorResponse { Errors = result.Errors });
+            }
+
+            return NoContent();
         }
     }
 }

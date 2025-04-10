@@ -30,6 +30,7 @@ namespace IdentityServiceApi.Services.UserManagement
         private readonly IParameterValidator _parameterValidator;
         private readonly IUserLookupService _userLookupService;
         private readonly ICountryService _countryService;
+        private readonly IRoleService _roleService;
         private readonly IMapper _mapper;
 
         /// <summary>
@@ -54,7 +55,10 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     The service used for looking up users in the system.
         /// </param>
         /// <param name="countryService">
-        /// 
+        ///     The service used for managing country-specific data, such as country-related.
+        /// </param>
+        /// <param name="roleService">
+        ///     The service responsible for managing user roles, including assigning, removing, and retrieving roles.
         /// </param>
         /// <param name="mapper">
         ///     Object mapper for converting between entities and data transfer objects (DTOs).
@@ -62,7 +66,7 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <exception cref="ArgumentNullException">
         ///     Thrown when any of the provided service parameters are null.
         /// </exception>
-        public UserService(UserManager<User> userManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IMapper mapper)
+        public UserService(UserManager<User> userManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IRoleService roleService, IMapper mapper)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _userServiceResultFactory = userServiceResultFactory ?? throw new ArgumentNullException(nameof(userServiceResultFactory));
@@ -71,6 +75,7 @@ namespace IdentityServiceApi.Services.UserManagement
             _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
             _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
             _countryService = countryService ?? throw new ArgumentNullException(nameof(countryService));
+            _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
@@ -386,6 +391,55 @@ namespace IdentityServiceApi.Services.UserManagement
             }
 
             return _userServiceResultFactory.GeneralOperationSuccess();
+        }
+
+        /// <summary>
+        ///     Asynchronously assigns a specified role to a user identified by their unique ID.
+        /// </summary>
+        /// <param name="id">
+        ///     The unique ID of the user to whom the role is being assigned.
+        /// </param>
+        /// <param name="roleName">
+        ///     The name of the role to assign to the user.
+        /// </param>
+        /// <returns>
+        ///     A task representing the asynchronous operation, returning a <see cref="ServiceResult"/>.
+        ///     The result indicates the assignment status:
+        ///     - If successful, Success is true.
+        ///     - If the user ID or role name is invalid, an error message is returned.
+        ///     - If the user already has the role, an error is returned.
+        ///     - If an error occurs during the assignment, an error message is returned.
+        /// </returns>
+        public async Task<ServiceResult> AssignRoleAsync(string id, string roleName)
+        {
+            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            _parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
+
+            return await _roleService.AssignRoleAsync(id, roleName);
+        }
+
+        /// <summary>
+        ///     Asynchronously removes a specified role to a user identified by their unique ID.
+        /// </summary>
+        /// <param name="id">
+        ///     The unique ID of the user to whom the role is being removed.
+        /// </param>
+        /// <param name="roleName">
+        ///     The name of the role to remove from the user.
+        /// </param>
+        /// <returns>
+        ///     A task representing the asynchronous operation, returning a <see cref="ServiceResult"/>
+        ///     indicating the removal status:
+        ///     - If successful, returns a result with Success set to true.
+        ///     - If the user ID or role name is invalid, returns an error message.
+        ///     - If an error occurs during removal, returns a result with an error message.
+        /// </returns>
+        public async Task<ServiceResult> RemoveRoleAsync(string id, string roleName)
+        {
+            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            _parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
+
+            return await _roleService.RemoveRoleAsync(id, roleName);
         }
 
         private void ValidateUserDTO(UserDTO user)

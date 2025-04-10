@@ -43,6 +43,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 		private readonly Mock<IParameterValidator> _parameterValidatorMock;
 		private readonly Mock<IUserLookupService> _userLookupServiceMock;
 		private readonly Mock<ICountryService> _countryServiceMock;
+		private readonly Mock<IRoleService> _roleServiceMock;
 		private readonly Mock<IMapper> _mapperMock;
 		private readonly UserService _userService;
 
@@ -81,9 +82,10 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			_parameterValidatorMock = new Mock<IParameterValidator>();
 			_userLookupServiceMock = new Mock<IUserLookupService>();
 			_countryServiceMock = new Mock<ICountryService>();
+			_roleServiceMock = new Mock<IRoleService>();
 			_mapperMock = new Mock<IMapper>();
 
-			_userService = new UserService(_userManagerMock.Object, _userServiceResultFactoryMock.Object, _userHistoryCleanupServiceMock.Object, _permissionServiceMock.Object, _parameterValidatorMock.Object, _userLookupServiceMock.Object, _countryServiceMock.Object, _mapperMock.Object);
+			_userService = new UserService(_userManagerMock.Object, _userServiceResultFactoryMock.Object, _userHistoryCleanupServiceMock.Object, _permissionServiceMock.Object, _parameterValidatorMock.Object, _userLookupServiceMock.Object, _countryServiceMock.Object, _roleServiceMock.Object, _mapperMock.Object);
 		}
 
 		/// <summary>
@@ -94,7 +96,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 		public void UserService_NullDependencies_ThrowsArgumentNullException()
 		{
 			//Act & Assert
-			Assert.Throws<ArgumentNullException>(() => new UserService(null, null, null, null, null, null, null, null));
+			Assert.Throws<ArgumentNullException>(() => new UserService(null, null, null, null, null, null, null, null, null));
 		}
 
 		/// <summary>
@@ -1443,6 +1445,118 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			VerifyCallsToParameterValidatorForString();
 
 			_userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<User>()), Times.Once);
+		}
+
+		/// <summary>
+		///     Verifies that the <see cref="UserService.AssignRoleAsync"/> method 
+		///     throws an <see cref="ArgumentNullException"/> when provided with invalid parameters 
+		///     (null, empty, or whitespace) for both the user ID and role name.
+		/// </summary>
+		/// <param name="input">
+		///     The input string to use as both the user ID and role name, representing an invalid parameter.
+		/// </param>
+		/// <returns>
+		///     A task that represents the asynchronous test operation.
+		/// </returns>
+		[Theory]
+		[InlineData(null)]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task AssignRoleAsync_InvalidParameters_ThrowsArgumentNullException(string input)
+		{
+			// Arrange
+			_parameterValidatorMock
+				.Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+				.Throws<ArgumentNullException>();
+
+			// Act & Assert
+			await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.AssignRoleAsync(input, input));
+
+			VerifyCallsToParameterValidatorForString();
+		}
+
+		/// <summary>
+		///     Verifies that the <see cref="UserService.AssignRoleAsync"/> method 
+		///     correctly delegates to the <see cref="IRoleService.AssignRoleAsync"/> method 
+		///     when provided with valid parameters, and returns a successful <see cref="ServiceResult"/>.
+		/// </summary>
+		/// <returns>
+		///     A task that represents the asynchronous test operation.
+		/// </returns>
+		[Fact]
+		public async Task AssignRoleAsync_ValidParameters_CallsRolesServiceAndReturnsResult()
+		{
+			// Arrange
+			const string UserId = "user123";
+
+			var expectedResult = new ServiceResult { Success = true };
+
+			_roleServiceMock
+				.Setup(rs => rs.AssignRoleAsync(UserId, Roles.User))
+				.ReturnsAsync(expectedResult);
+
+			// Act
+			var result = await _userService.AssignRoleAsync(UserId, Roles.User);
+
+			// Assert
+			Assert.True(result.Success);
+			_roleServiceMock.Verify(rs => rs.AssignRoleAsync(UserId, Roles.User), Times.Exactly(1));
+		}
+
+		/// <summary>
+		///     Verifies that the <see cref="UserService.RemoveRoleAsync"/> method 
+		///     throws an <see cref="ArgumentNullException"/> when provided with invalid parameters 
+		///     (null, empty, or whitespace) for both the user ID and role name.
+		/// </summary>
+		/// <param name="input">
+		///     The input string to use as both the user ID and role name, representing an invalid parameter.
+		/// </param>
+		/// <returns>
+		///     A task that represents the asynchronous test operation.
+		/// </returns>
+		[Theory]
+		[InlineData(null)]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task RemoveRoleAsync_InvalidParameters_ThrowsArgumentNullException(string input)
+		{
+			// Arrange
+			_parameterValidatorMock
+				.Setup(x => x.ValidateNotNullOrEmpty(It.IsAny<string>(), It.IsAny<string>()))
+				.Throws<ArgumentNullException>();
+
+			// Act & Assert
+			await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.RemoveRoleAsync(input, input));
+
+			VerifyCallsToParameterValidatorForString();
+		}
+
+		/// <summary>
+		///     Verifies that the <see cref="UserService.RemoveRoleAsync"/> method 
+		///     correctly delegates to the <see cref="IRoleService.RemoveRoleAsync"/> method 
+		///     when provided with valid parameters, and returns a successful <see cref="ServiceResult"/>.
+		/// </summary>
+		/// <returns>
+		///     A task that represents the asynchronous test operation.
+		/// </returns>
+		[Fact]
+		public async Task RemoveRoleAsync_ValidParameters_CallsRolesServiceAndReturnsResult()
+		{
+			// Arrange
+			const string UserId = "user123";
+
+			var expectedResult = new ServiceResult { Success = true };
+
+			_roleServiceMock
+				.Setup(rs => rs.RemoveRoleAsync(UserId, Roles.User))
+				.ReturnsAsync(expectedResult);
+
+			// Act
+			var result = await _userService.RemoveRoleAsync(UserId, Roles.User);
+
+			// Assert
+			Assert.True(result.Success);
+			_roleServiceMock.Verify(rs => rs.RemoveRoleAsync(UserId, Roles.User), Times.Exactly(1));
 		}
 
 		private static User ArrangeMockActivatedUser(string UserId)
