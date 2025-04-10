@@ -28,6 +28,7 @@ using IdentityServiceApi.Services.Utilities.ResultFactories.Common;
 using IdentityServiceApi.Services.Logging.Common;
 using IdentityServiceApi.Services.Logging.Implementations;
 using IdentityServiceApi.Services.Logging;
+using IdentityServiceApi.Models.Configurations;
 
 namespace IdentityServiceApi
 {
@@ -59,15 +60,31 @@ namespace IdentityServiceApi
 
             var builder = WebApplication.CreateBuilder(args);
 
+            var applicationDatabaseConnectionString = builder.Configuration.GetConnectionString("ApplicationDatabase")
+                ?? throw new InvalidOperationException("ApplicationDatabase connection string is missing in the configuration.");
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseLazyLoadingProxies()
-                    .UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDatabase"));
+                    .UseSqlServer(applicationDatabaseConnectionString);
             });
-            builder.Services.AddDbContext<HealthChecksDbContext>(options =>
+
+            if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthChecksDatabase"));
-            });
+                var healthChecksDatabaseConnectionString = builder.Configuration.GetConnectionString("HealthChecksDatabase")
+                    ?? throw new InvalidOperationException("HealthChecksDatabase connection string is missing in the configuration.");
+
+                builder.Services.AddHealthChecks()
+                    .AddDbContextCheck<ApplicationDbContext>("EntityFrameworkCore");
+
+                builder.Services.AddHealthChecksUI()
+                    .AddSqlServerStorage(healthChecksDatabaseConnectionString);
+
+                builder.Services.AddDbContext<HealthChecksDbContext>(options =>
+                {
+                    options.UseSqlServer(healthChecksDatabaseConnectionString);
+                });
+            }
 
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
@@ -75,7 +92,7 @@ namespace IdentityServiceApi
                 options.Password.RequiredLength = 8;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
                 options.User.RequireUniqueEmail = true;
@@ -145,11 +162,6 @@ namespace IdentityServiceApi
 
             builder.Services.AddTransient<DbInitializer>();
 
-            builder.Services.AddHealthChecks()
-                .AddDbContextCheck<ApplicationDbContext>("EntityFrameworkCore");
-            builder.Services.AddHealthChecksUI()
-                .AddSqlServerStorage(builder.Configuration.GetConnectionString("HealthChecksDatabase"));
-
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "IdentityServiceApi", Version = "v1" });
@@ -182,9 +194,15 @@ namespace IdentityServiceApi
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-            var secretKey = builder.Configuration["JwtSettings:SecretKey"];
-            var validIssuer = builder.Configuration["JwtSettings:ValidIssuer"];
-            var validAudience = builder.Configuration["JwtSettings:ValidAudience"];
+            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
+                ?? throw new InvalidOperationException("JwtSettings configuration section is missing.");
+
+            var secretKeyBytes = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+            if (secretKeyBytes.Length < 32)
+            {
+                throw new InvalidOperationException("JwtSettings.SecretKey must be at least 32 bytes (256 bits) for HS256 signing.");
+            }
 
             builder.Services.AddAuthentication(options =>
             {
@@ -200,9 +218,9 @@ namespace IdentityServiceApi
                    ValidateLifetime = true,
                    ValidateIssuerSigningKey = true,
 
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                   ValidIssuer = validIssuer,
-                   ValidAudience = validAudience
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+                   ValidIssuer = jwtSettings.ValidIssuer,
+                   ValidAudience = jwtSettings.ValidAudience
                };
            });
 
@@ -217,37 +235,39 @@ namespace IdentityServiceApi
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
 
+            if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+            {
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "IdentityServiceApi V1");
                     c.RoutePrefix = string.Empty;
                 });
+
+                app.UseHealthChecks("/health", new HealthCheckOptions()
+                {
+                    Predicate = _ => true,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
+
+                app.UseHealthChecks("/health/database", new HealthCheckOptions()
+                {
+                    Predicate = registration => registration.Name == "EntityFrameworkCore",
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
+
+                app.UseHealthChecksUI(config => config.UIPath = "/health-ui");
             }
+
             else
             {
                 app.UseMiddleware<GlobalExceptionMiddleware>();
             }
 
             app.UseMiddleware<PerformanceMonitoringMiddleware>();
-
             app.UseHttpsRedirection();
-
-            app.UseHealthChecks("/health", new HealthCheckOptions()
-            {
-                Predicate = _ => true,
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-            });
-
-            app.UseHealthChecks("/health/database", new HealthCheckOptions()
-            {
-                Predicate = registration => registration.Name == "EntityFrameworkCore",
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-            });
-
-            app.UseHealthChecksUI(config => config.UIPath = "/health-ui");
-
             app.UseStaticFiles();
             app.UseRouting();
 
@@ -260,7 +280,6 @@ namespace IdentityServiceApi
             }
 
             app.MapControllers();
-
             await app.RunAsync();
         }
     }
