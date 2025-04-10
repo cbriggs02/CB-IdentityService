@@ -2,14 +2,15 @@
 using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.UserManagement;
 using Newtonsoft.Json;
-using System.Security.Claims;
+using System.Security.Claims; 
 
 namespace IdentityServiceApi.Middleware
 {
     /// <summary>
-    ///     Middleware for validating JWT tokens to ensure that tokens belonging to recently deleted users are unauthorized.
-    ///     This middleware intercepts incoming requests, checks the validity of the JWT token, and verifies that the user still exists in the system.
-    ///     If the user has been deleted, it marks the token as unauthorized.
+    ///     Middleware for validating JWT tokens to ensure that tokens belonging to recently deleted 
+    ///     users are unauthorized. This middleware intercepts incoming requests, checks the validity 
+    ///     of the JWT token, and verifies that the user still exists in the system. If the user has 
+    ///     been deleted, it marks the token as unauthorized.
     /// </summary>
     /// <remarks>
     ///     @Author: Christian Briglio
@@ -58,7 +59,7 @@ namespace IdentityServiceApi.Middleware
         {
             try
             {
-                if (context.User.Identity.IsAuthenticated)
+                if (context.User.Identity?.IsAuthenticated == true)
                 {
                     var userId = GetUserIdFromClaims(context.User);
 
@@ -89,7 +90,7 @@ namespace IdentityServiceApi.Middleware
             }
         }
 
-        private static string GetUserIdFromClaims(ClaimsPrincipal principal)
+        private static string? GetUserIdFromClaims(ClaimsPrincipal principal)
         {
             return principal?.FindFirstValue(ClaimTypes.NameIdentifier);
         }

@@ -38,11 +38,13 @@ namespace IdentityServiceApi.Middleware
         }
 
         /// <summary>
-        ///     Asynchronously invokes the exception handling middleware. If an exception occurs during the HTTP request processing,
-        ///     it is caught, logged, and a standardized JSON error response is returned to the client.
+        ///     Asynchronously invokes the exception handling middleware. If an exception occurs during 
+        ///     the HTTP request processing, it is caught, logged, and a standardized JSON error response 
+        ///     is returned to the client.
         /// </summary>
         /// <param name="context">
-        ///     The <see cref="HttpContext"/> representing the current HTTP request, providing access to request and response data.
+        ///     The <see cref="HttpContext"/> representing the current HTTP request, providing access to 
+        ///     request and response data.
         /// </param>
         /// <returns>
         ///     A task representing the asynchronous operation of processing the request and handling any exceptions.
@@ -58,27 +60,20 @@ namespace IdentityServiceApi.Middleware
             }
             catch (Exception ex)
             {
-                await loggerService.LogExceptionAsync(ex); // Log exception in DB with audit logger
+                await loggerService.LogExceptionAsync(ex);
                 ConsoleLogExceptionDetails(context, ex);
-                await WriteServerErrorResponseAsync(context); // Return 500 status to client
+                await WriteServerErrorResponseAsync(context);
             }
         }
 
         private void ConsoleLogExceptionDetails(HttpContext context, Exception ex)
         {
-            var exceptionType = ex.GetType().Name;
-            var innerExceptionMessage = ex.InnerException?.Message ?? "No inner exception";
-            var stackTrace = ex.StackTrace ?? "No stack trace available";
+            var exceptionMessage = ex.Message ?? "No exception message";
             var requestPath = context.Request.Path.ToString() ?? "No request path";
-            var requestQuery = context.Request.QueryString.ToString() ?? "No query string";
-            var requestMethod = context.Request.Method ?? "No request method";
             var timestamp = DateTime.UtcNow;
 
-            _logger.LogError(ex, "{Message}. Exception of type {ExceptionType} occurred at {Timestamp}. " +
-                "Request: {Method} {Path}{QueryString}, " +
-                "Inner exception: {InnerExceptionMessage}, Stack Trace: {StackTrace}",
-                "An unhandled exception occurred", exceptionType, timestamp, requestMethod, requestPath, requestQuery,
-                innerExceptionMessage, stackTrace);
+            _logger.LogError(ex, "{Message}. Exception occurred at {Timestamp}. Request: {Path}, Exception Message: {ExceptionMessage}",
+                "An unhandled exception occurred", timestamp, requestPath, exceptionMessage);
         }
 
         private static async Task WriteServerErrorResponseAsync(HttpContext context)
