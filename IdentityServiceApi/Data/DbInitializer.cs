@@ -57,7 +57,7 @@ namespace IdentityServiceApi.Data
 
 				await context.Database.MigrateAsync();
 
-				if (app.Environment.IsDevelopment())
+				if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 				{
 					await InitializeUsersAsync(userManager);
 				}
