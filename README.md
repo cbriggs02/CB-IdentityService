@@ -6,3 +6,5 @@ Using ASP.NET models, I have encapsulated all data for different entities (objec
 The API is documented using Swagger UI (a tool for visualizing and interacting with the API) and uses ASP.NET Identity (a library for managing user authentication) to authenticate users with JWT (JSON Web Tokens, a compact token format used for secure transmission of information), manage user data, roles and passwords. This project is monitored using Azure DevOps (a set of tools for software development and project management) to ensure proper project management.
 
 All services are unit tested using xUnit (a popular testing framework for .NET that provides assertions, test runners, and support for test-driven development), and controllers/middleware are integration tested with xUnit to ensure reliability and correctness of the API.
+
+The API is containerized using Docker (a platform for developing, shipping, and running applications inside lightweight containers), allowing the application to be packaged with all its dependencies and run consistently across different environments. A Dockerfile defines the build instructions.
