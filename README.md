@@ -41,3 +41,9 @@ This API allows clients to communicate securely with a server via HTTPS using st
 - Fully containerized with Docker for cross-platform development and deployment.
 - Includes a Dockerfile to define build steps and runtime environment.
 - Easily deployable to cloud platforms or local environments.
+
+---
+
+##  Author
+
+Christian Briglio – 2025
