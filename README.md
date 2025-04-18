@@ -1,10 +1,36 @@
 # IdentityServiceApi
-This project is a REST API (an interface that allows clients to communicate with a server using standard web protocols) built using the ASP.NET Web API framework (a set of tools and libraries for building web applications) to create HTTPS services (secure web services) that can be accessed from clients via a browser. The system is designed with a modular approach (dividing the application into smaller, independent parts), breaking the application into interfaces (blueprints for how components should behave), services (classes that handle business logic), controllers (which manage HTTP requests), and models (objects that represent the data structure).
+A secure and modular RESTful API built with ASP.NET Core Web API for identity management, user authentication, and role-based access control. Designed for scalability, maintainability, and modern DevOps practices.
 
-Using ASP.NET models, I have encapsulated all data for different entities (objects that represent key parts of the system, like users), data transfer objects (simplified objects used to move data between layers), expected requests, and results. This system communicates with an MSSQL Server (a Microsoft database management system) leveraging Entity Framework Core (an open-source ORM or object-relational mapper that simplifies database operations) to streamline data access.
+## Overview
+This API allows clients to communicate securely with a server via HTTPS using standard web protocols. It’s built using a modular architecture, breaking the application into:
+* Interfaces – Contracts for services.
+* Services – Handle business logic.
+* Controllers – Manage HTTP requests and routing.
+* Models & DTOs – Represent entities, request/response payloads, and transfer data between layers.
 
-The API is documented using Swagger UI (a tool for visualizing and interacting with the API) and uses ASP.NET Identity (a library for managing user authentication) to authenticate users with JWT (JSON Web Tokens, a compact token format used for secure transmission of information), manage user data, roles and passwords. This project is monitored using Azure DevOps (a set of tools for software development and project management) to ensure proper project management.
 
-All services are unit tested using xUnit (a popular testing framework for .NET that provides assertions, test runners, and support for test-driven development), and controllers/middleware are integration tested with xUnit to ensure reliability and correctness of the API.
+## System Design
+* Modular Architecture: Separation of concerns using layers (interfaces, services, controllers, and models).
+* Entity Framework Core: Communicates with MSSQL Server to manage database operations using code-first migrations.
+* Dependency Injection: Services and components are injected for testability and flexibility.
+* Swagger UI: API documentation and interactive testing.
 
-The API is containerized using Docker (a platform for developing, shipping, and running applications inside lightweight containers), allowing the application to be packaged with all its dependencies and run consistently across different environments. A Dockerfile defines the build instructions.
+## Authentication & Authorization
+* ASP.NET Identity for user and role management.
+* JWT (JSON Web Tokens) for stateless, secure authentication.
+* Role-based Access Control (RBAC) to restrict and control access to resources.
+* Password hashing, validation, and history tracking for secure password management.
+
+## Testing
+xUnit for unit and integration testing.
+* Unit Tests: Validate service logic in isolation.
+* Integration Tests: Ensure controllers and middleware work end-to-end.
+
+## Documentation
+Swagger UI is enabled for this API.
+Interactive documentation is available at /swagger when the application is running.
+
+## Docker Support
+Fully containerized with Docker for cross-platform development and deployment.
+Includes a Dockerfile to define build steps and runtime environment.
+Easily deployable to cloud platforms or local environments.
