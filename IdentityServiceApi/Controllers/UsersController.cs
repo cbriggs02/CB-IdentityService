@@ -59,7 +59,7 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user 
         ///         who is not authenticated or does not have the required role.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin,Admin")]
+        [Authorize(Roles = RoleGroups.AdminOnly)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserListResponse))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -99,7 +99,7 @@ namespace IdentityServiceApi.Controllers
         ///         another user's account or admin tries to retrieve another admins account.   
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin,Admin,User")]
+        [Authorize(Roles = RoleGroups.AllStandardRoles)]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -176,7 +176,7 @@ namespace IdentityServiceApi.Controllers
         ///         user's account or a admin attempts to update another admins account.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin,Admin,User")]
+        [Authorize(Roles = RoleGroups.AllStandardRoles)]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -223,7 +223,7 @@ namespace IdentityServiceApi.Controllers
         ///         user's account or a admin tries to delete another admin account.     
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin,Admin,User")]
+        [Authorize(Roles = RoleGroups.AllStandardRoles)]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -270,7 +270,7 @@ namespace IdentityServiceApi.Controllers
         ///         user's account or a admin tries to activate another admin account.         
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin,Admin")]
+        [Authorize(Roles = RoleGroups.AdminOnly)]
         [HttpPatch("activate/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -317,7 +317,7 @@ namespace IdentityServiceApi.Controllers
         ///         user's account or a admin tries to deactivate another admin account.    
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin,Admin")]
+        [Authorize(Roles = RoleGroups.AdminOnly)]
         [HttpPatch("deactivate/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -365,7 +365,7 @@ namespace IdentityServiceApi.Controllers
         ///         by a user who is not authenticated or does not have the required role.    
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = Roles.SuperAdmin)]
         [HttpPost("{id}/roles")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -407,7 +407,7 @@ namespace IdentityServiceApi.Controllers
         ///         by a user who is not authenticated or does not have the required role.   
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = Roles.SuperAdmin)]
         [HttpDelete("{id}/roles/{roleName}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]

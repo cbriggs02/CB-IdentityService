@@ -62,5 +62,5 @@ namespace IdentityServiceApi.Controllers
 
 			return Ok(new CountriesListResponse { Countries = result.Countries });
 		}
-	}
+    }
 }

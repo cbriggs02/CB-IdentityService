@@ -101,7 +101,7 @@ namespace IdentityServiceApi.Controllers
         ///         to update another user's password or a admin attempts to update another admins password.      
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin,Admin,User")]
+        [Authorize(Roles = RoleGroups.AllStandardRoles)]
         [HttpPatch("users/{id}/password")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]

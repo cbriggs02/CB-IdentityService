@@ -56,7 +56,7 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
         ///         is not authenticated or does not have the required role.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = Roles.SuperAdmin)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuditLogListResponse))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -96,7 +96,7 @@ namespace IdentityServiceApi.Controllers
         ///         not authenticated or does not have the required role.  
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified audit log is not found.
         /// </returns>
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = Roles.SuperAdmin)]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
