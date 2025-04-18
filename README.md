@@ -29,7 +29,9 @@ This API allows clients to communicate securely with a server via HTTPS using st
 
 - **xUnit** for unit and integration testing.
   - *Unit Tests*: Validate service logic in isolation.
-  - *Integration Tests*: Ensure controllers and middleware work end-to-end.
+  - *Integration Tests*: Ensure controllers and middleware work end-to-end. <br />
+For detailed instructions on setting up and running the tests, refer to the [IdentityServiceApi.Tests README](./IdentityServiceApi.Tests/README.md).
+
 
 ## Documentation
 
@@ -41,6 +43,16 @@ This API allows clients to communicate securely with a server via HTTPS using st
 - Fully containerized with Docker for cross-platform development and deployment.
 - Includes a Dockerfile to define build steps and runtime environment.
 - Easily deployable to cloud platforms or local environments.
+
+## Automation Scripts
+
+A set of batch scripts is available for automating common tasks, such as:
+
+- Running the Docker container for the API.
+- Applying database migrations.
+- Running custom scripts for setup or maintenance.
+
+For detailed instructions on using the scripts, refer to the [Scripts README](./Scripts/README.md).
 
 ---
 
