@@ -232,11 +232,6 @@ namespace IdentityServiceApi
                 await dbInitializer.InitializeDatabaseAsync(app);
             }
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
             if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
             {
                 app.UseSwagger();
@@ -261,23 +256,21 @@ namespace IdentityServiceApi
                 app.UseHealthChecksUI(config => config.UIPath = "/health-ui");
             }
 
-            else
+            app.UseMiddleware<GlobalExceptionMiddleware>();
+            app.UseMiddleware<PerformanceMonitoringMiddleware>();
+
+            if (app.Environment.IsProduction())
             {
-                app.UseMiddleware<GlobalExceptionMiddleware>();
+                app.UseHsts();
             }
 
-            app.UseMiddleware<PerformanceMonitoringMiddleware>();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
-
-            if (app.Environment.IsProduction())
-            {
-                app.UseMiddleware<TokenValidatorMiddleware>();
-            }
+            app.UseMiddleware<TokenValidatorMiddleware>();
 
             app.MapControllers();
             await app.RunAsync();

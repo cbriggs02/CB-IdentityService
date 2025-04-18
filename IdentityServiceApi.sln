@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServiceApi", "IdentityServiceApi.csproj", "{C498F2EF-D97C-4A08-AF8A-3B00FE15D5E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServiceApi", "IdentityServiceApi\IdentityServiceApi.csproj", "{C498F2EF-D97C-4A08-AF8A-3B00FE15D5E1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServiceApi.Tests", "..\IdentityServiceApi.Tests\IdentityServiceApi.Tests.csproj", "{2CD4B543-35DC-4B3D-BD61-8D94F7FE1E6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServiceApi.Tests", "IdentityServiceApi.Tests\IdentityServiceApi.Tests.csproj", "{2CD4B543-35DC-4B3D-BD61-8D94F7FE1E6D}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2CD4B543-35DC-4B3D-BD61-8D94F7FE1E6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CD4B543-35DC-4B3D-BD61-8D94F7FE1E6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CD4B543-35DC-4B3D-BD61-8D94F7FE1E6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

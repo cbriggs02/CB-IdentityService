@@ -62,7 +62,7 @@ namespace IdentityServiceApi.Data
         /// <param name="modelBuilder">
         ///     The <see cref="ModelBuilder"/> used to define the database schema and configure entity properties.
         /// </param>
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
@@ -84,7 +84,7 @@ namespace IdentityServiceApi.Data
                 .HasOne(x => x.User)
                 .WithMany(x => x.Passwords)
                 .HasForeignKey(x => x.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<AuditLog>()
                 .ToTable("AuditLogs")
