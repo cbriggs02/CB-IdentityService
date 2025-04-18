@@ -32,6 +32,6 @@ namespace IdentityServiceApi.Interfaces.UserManagement
 		/// <returns>
 		///     A <see cref="Country"/> object if a match is found; otherwise, null.
 		/// </returns>
-		Task<Country> FindCountryByIdAsync(int id);
+		Task<Country?> FindCountryByIdAsync(int id);
 	}
 }

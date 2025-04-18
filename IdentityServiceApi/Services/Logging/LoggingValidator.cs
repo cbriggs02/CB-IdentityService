@@ -33,7 +33,7 @@ namespace IdentityServiceApi.Services.Logging
         ///     Thrown when the <paramref name="value"/> is null or empty. This ensures that all required 
         ///     logging context data is available before logging occurs.
         /// </exception>
-        public void ValidateContextData(string value, string fieldName)
+        public void ValidateContextData(string? value, string fieldName)
         {
             if (string.IsNullOrEmpty(fieldName))
             {

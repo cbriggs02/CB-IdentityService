@@ -27,7 +27,7 @@ namespace IdentityServiceApi.Services.Utilities
         /// <exception cref="ArgumentNullException">
         ///     Thrown when the <paramref name="parameter"/> is null or empty.
         /// </exception>
-        public void ValidateNotNullOrEmpty(string parameter, string parameterName)
+        public void ValidateNotNullOrEmpty(string? parameter, string parameterName)
         {
             if (string.IsNullOrEmpty(parameter))
             {
@@ -49,7 +49,7 @@ namespace IdentityServiceApi.Services.Utilities
         /// <exception cref="ArgumentNullException">
         ///     Thrown when the <paramref name="parameter"/> is null.
         /// </exception>
-        public void ValidateObjectNotNull(object parameter, string parameterName)
+        public void ValidateObjectNotNull(object? parameter, string parameterName)
         {
             if (parameter == null)
             {
@@ -73,7 +73,7 @@ namespace IdentityServiceApi.Services.Utilities
         /// <exception cref="ArgumentException">
         ///     Thrown when the <paramref name="collection"/> is empty (contains no elements).
         /// </exception>
-        public void ValidateCollectionNotEmpty(IEnumerable collection, string parameterName)
+        public void ValidateCollectionNotEmpty(IEnumerable? collection, string parameterName)
         {
             if (collection == null)
             {

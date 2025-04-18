@@ -40,7 +40,7 @@ namespace IdentityServiceApi.Services.Authentication
         /// <returns>
         ///     The claims principal representing the current user, or null if the user is not authenticated.
         /// </returns>
-        public ClaimsPrincipal GetClaimsPrincipal()
+        public ClaimsPrincipal? GetClaimsPrincipal()
         {
             return _httpContextAccessor.HttpContext?.User;
         }
@@ -55,7 +55,7 @@ namespace IdentityServiceApi.Services.Authentication
         /// <returns>
         ///     The user's ID as a string, or null if not found in the claims.
         /// </returns>
-        public string GetUserId(ClaimsPrincipal principal)
+        public string? GetUserId(ClaimsPrincipal principal)
         {
             if (principal == null)
             {
@@ -91,7 +91,7 @@ namespace IdentityServiceApi.Services.Authentication
         /// <returns>
         ///     The remote IP address of the client as an <see cref="IPAddress"/>.
         /// </returns>
-        public IPAddress GetAddress()
+        public IPAddress? GetAddress()
         {
             return _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress;
         }
@@ -103,7 +103,7 @@ namespace IdentityServiceApi.Services.Authentication
         /// <returns>
         ///     The request path as a string, or an empty string if not available.
         /// </returns>
-        public string GetRequestPath()
+        public string? GetRequestPath()
         {
             return _httpContextAccessor.HttpContext?.Request?.Path.Value;
         }

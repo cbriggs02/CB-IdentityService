@@ -77,11 +77,16 @@ namespace IdentityServiceApi.Services.Logging.Implementations
             }
 
             var principal = _userContextService.GetClaimsPrincipal();
-            var currentUserId = _userContextService.GetUserId(principal) ?? "Anonymous";
+            string? currentUserId = null;
+
+            if (principal != null)
+            {
+                currentUserId = _userContextService.GetUserId(principal);
+            }
+
             var ipAddress = _userContextService.GetAddress()?.ToString() ?? "Unknown";
             var requestPath = _userContextService.GetRequestPath() ?? "Unknown Path";
 
-            _loggingValidator.ValidateContextData(currentUserId, nameof(currentUserId));
             _loggingValidator.ValidateContextData(ipAddress, nameof(ipAddress));
             _loggingValidator.ValidateContextData(requestPath, nameof(requestPath));
 

@@ -61,7 +61,7 @@ namespace IdentityServiceApi.Services.UserManagement
 		/// <returns>
 		///     A <see cref="Country"/> object if found; otherwise, null.
 		/// </returns>
-		public async Task<Country> FindCountryByIdAsync(int id)
+		public async Task<Country?> FindCountryByIdAsync(int id)
 		{
 			return await _context.Countries
 				.AsNoTracking()

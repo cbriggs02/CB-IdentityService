@@ -74,8 +74,12 @@ namespace IdentityServiceApi.Services.Authorization
             }
 
             var currentUserId = _userContextService.GetUserId(principal);
-            var roles = _userContextService.GetRoles(principal);
+            if (currentUserId == null)
+            {
+                return false; // No id recovered from http context, deny by default
+            }
 
+            var roles = _userContextService.GetRoles(principal);
             if (roles == null || !roles.Any())
             {
                 return false; // No roles assigned, deny access
@@ -86,7 +90,7 @@ namespace IdentityServiceApi.Services.Authorization
                 return await ValidateAdminPermission(id, currentUserId);
             }
 
-            if(roles.Contains(Roles.SuperAdmin)) 
+            if (roles.Contains(Roles.SuperAdmin))
             {
                 return true; // super admin can access any endpoint and data.
             }
@@ -119,7 +123,7 @@ namespace IdentityServiceApi.Services.Authorization
             }
 
             var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
-            if(!userLookupResult.Success)
+            if (!userLookupResult.Success)
             {
                 return false;
             }

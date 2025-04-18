@@ -22,7 +22,7 @@ namespace IdentityServiceApi.Interfaces.Authentication
         /// <returns>
         ///     The claims principal representing the current user.
         /// </returns>
-        ClaimsPrincipal GetClaimsPrincipal();
+        ClaimsPrincipal? GetClaimsPrincipal();
 
         /// <summary>
         ///     Extracts the ID of the currently authenticated user from the provided 
@@ -35,7 +35,7 @@ namespace IdentityServiceApi.Interfaces.Authentication
         /// <returns>
         ///     The user's ID as a string, or null if not found in the claims.
         /// </returns>
-        string GetUserId(ClaimsPrincipal principal);
+        string? GetUserId(ClaimsPrincipal principal);
 
         /// <summary>
         ///     Retrieves a list of roles associated with the currently authenticated user
@@ -58,7 +58,7 @@ namespace IdentityServiceApi.Interfaces.Authentication
         /// <returns>
         ///     The remote IP address of the client as an <see cref="IPAddress"/>.
         /// </returns>
-        IPAddress GetAddress();
+        IPAddress? GetAddress();
 
         /// <summary>
         ///     Retrieves the request path from the current HTTP context. This 
@@ -68,6 +68,6 @@ namespace IdentityServiceApi.Interfaces.Authentication
         /// <returns>
         ///     The request path as a string, or an empty string if not available.
         /// </returns>
-        string GetRequestPath();
+        string? GetRequestPath();
     }
 }

@@ -23,6 +23,6 @@ namespace IdentityServiceApi.Interfaces.Logging
         /// <param name="fieldName">
         ///     The name of the field being validated, used for error reporting.
         /// </param>
-        void ValidateContextData(string value, string fieldName);
+        void ValidateContextData(string? value, string fieldName);
     }
 }

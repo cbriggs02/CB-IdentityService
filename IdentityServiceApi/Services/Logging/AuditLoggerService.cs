@@ -76,7 +76,7 @@ namespace IdentityServiceApi.Services.Logging
 
             var totalCount = await query.CountAsync();
             var auditLogs = await query
-                .OrderBy(x => x.Id)
+                .OrderBy(x => x.TimeStamp)
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .AsNoTracking()
@@ -140,7 +140,6 @@ namespace IdentityServiceApi.Services.Logging
         protected async Task AddLog(AuditLog log)
         {
             _parameterValidator.ValidateObjectNotNull(log, nameof(log));
-            _parameterValidator.ValidateNotNullOrEmpty(log.UserId, nameof(log.UserId));
             _parameterValidator.ValidateNotNullOrEmpty(log.Details, nameof(log.Details));
             _parameterValidator.ValidateNotNullOrEmpty(log.IpAddress, nameof(log.IpAddress));
 
