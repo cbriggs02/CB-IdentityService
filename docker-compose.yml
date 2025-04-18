@@ -1,0 +1,6 @@
+services:
+  identityserviceapi:
+    image: ${DOCKER_REGISTRY-}identityserviceapi
+    build:
+      context: IdentityServiceApi
+      dockerfile: Dockerfile
