@@ -52,7 +52,7 @@ A set of batch scripts is available for automating common tasks, such as:
 - Applying database migrations.
 - Running custom scripts for setup or maintenance.
 
-For detailed instructions on using the scripts, refer to the [Scripts README](./Scripts/README.md).
+For detailed instructions on using the scripts, refer to the [Scripts README](./scripts/README.md).
 
 ---
 
