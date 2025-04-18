@@ -129,7 +129,11 @@ This script will:
 * Docker not running: If you're unable to start the Docker container, make sure Docker Desktop is installed and running. You can verify by running docker ps to check if any containers are running.
 * Migrations not applying: If the migrations are not applying correctly, ensure your dotnet-ef tool is installed and that you're in the correct project directory when running the migration commands.
 
+---
 
+##  Author
+
+Christian Briglio – 2025
 
 
 
