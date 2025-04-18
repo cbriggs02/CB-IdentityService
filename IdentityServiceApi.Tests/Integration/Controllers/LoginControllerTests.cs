@@ -17,7 +17,7 @@ using IdentityServiceApi.Data;
 namespace IdentityServiceApi.Tests.Integration.Controllers
 {
     /// <summary>
-    ///     Unit tests for the <see cref="LoginController"/> class.
+    ///     Integration tests for the <see cref="LoginController"/> class.
     ///     This class contains test cases for various login controller HTTP/HTTPS scenarios, verifying the 
     ///     behavior of the login controller functionality.
     /// </summary>

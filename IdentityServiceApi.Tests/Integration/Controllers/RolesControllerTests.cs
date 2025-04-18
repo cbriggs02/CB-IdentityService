@@ -7,11 +7,16 @@ using System.Net.Http.Headers;
 using IdentityServiceApi.Constants;
 using Newtonsoft.Json;
 using IdentityServiceApi.Models.ApiResponseModels.RolesResponses;
+using Bogus;
+using IdentityServiceApi.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using IdentityServiceApi.Models.Entities;
 
 namespace IdentityServiceApi.Tests.Integration.Controllers
 {
     /// <summary>
-    ///     Unit tests for the <see cref="RolesController"/> class.
+    ///     Integration tests for the <see cref="RolesController"/> class.
     ///     This class contains test cases for various roles controller HTTP/HTTPS scenarios, verifying the 
     ///     behavior of the roles controller functionality.
     /// </summary>
@@ -74,14 +79,18 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-			AuthenticateClient(client, roleName, "user123", "id-123");
+            var user = await CreateTestUserWithPasswordAsync(true, roleName);
 
-			// Act
-			var response = await client.GetAsync(ApiRoutes.RolesController.BaseUri);
+            AuthenticateClient(client, roleName, user.UserName, user.Id);
+
+            // Act
+            var response = await client.GetAsync(ApiRoutes.RolesController.BaseUri);
 
 			// Assert
 			Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-		}
+
+            await CleanUpTestUserAsync(user.Email);
+        }
 
 		/// <summary>
 		///     Verifies that the <see cref="RolesController.GetRolesAsync"/> method returns an OK response (200) 
@@ -95,7 +104,9 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-			AuthenticateClient(client, Roles.SuperAdmin, "user123", "id-123");
+			var user = await CreateTestUserWithPasswordAsync(true, Roles.SuperAdmin);
+
+			AuthenticateClient(client, Roles.SuperAdmin, user.UserName, user.Id);
 
 			// Act
 			var response = await client.GetAsync(ApiRoutes.RolesController.BaseUri);
@@ -108,12 +119,49 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 
 			Assert.NotNull(getRolesResponse);
 			Assert.NotEmpty(getRolesResponse.Roles);
-		}
+
+            await CleanUpTestUserAsync(user.Email);
+        }
 
 		private static void AuthenticateClient(HttpClient client, string role, string userName, string userId)
 		{
 			var token = JwtTokenTestHelper.GenerateJwtToken(roles: new List<string> { role }, userName, userId);
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 		}
-	}
+
+        private async Task<User> CreateTestUserWithPasswordAsync(bool status, string role = null)
+        {
+            var createTestUserHelper = CreateTestUserHelper();
+
+            GenerateFakeUserData(out string userName, out string email, out string firstName, out string lastName, out string phoneNumber);
+
+            return await createTestUserHelper.CreateTestUserWithPasswordAsync(userName, firstName, lastName, email, phoneNumber, "Test@1234", status, role);
+        }
+
+        private async Task CleanUpTestUserAsync(string email)
+        {
+            var createTestUserHelper = CreateTestUserHelper();
+            await createTestUserHelper.DeleteTestUserAsync(email);
+        }
+
+        private CreateTestUserHelper CreateTestUserHelper()
+        {
+            var scope = _factory.Services.CreateScope();
+            var serviceProvider = scope.ServiceProvider;
+            var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+            var applicationDbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
+            var createTestUserHelper = new CreateTestUserHelper(userManager, applicationDbContext);
+            return createTestUserHelper;
+        }
+
+        private static void GenerateFakeUserData(out string userName, out string email, out string firstName, out string lastName, out string phoneNumber)
+        {
+            var faker = new Faker();
+            userName = faker.Internet.UserName();
+            email = faker.Internet.Email();
+            firstName = faker.Name.FirstName();
+            lastName = faker.Name.LastName();
+            phoneNumber = faker.Phone.PhoneNumber();
+        }
+    }
 }

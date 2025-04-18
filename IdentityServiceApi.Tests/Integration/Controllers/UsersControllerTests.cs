@@ -19,7 +19,7 @@ using IdentityServiceApi.Models.DTO;
 namespace IdentityServiceApi.Tests.Integration.Controllers
 {
 	/// <summary>
-	///     Unit tests for the <see cref="UsersController"/> class.
+	///     Integration tests for the <see cref="UsersController"/> class.
 	///     This class contains test cases for various password controller HTTP/HTTPS scenarios, verifying the 
 	///     behavior of the password controller functionality.
 	/// </summary>
@@ -107,7 +107,9 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-			AuthenticateClient(client, roleName, "user123", "id-123");
+            var user = await CreateTestUserWithoutPasswordAsync(true, roleName);
+
+            AuthenticateClient(client, roleName, user.UserName, user.Id);
 
 			string requestUri = $"{ApiRoutes.UsersController.BaseUri}/?Page=1&PageSize=5&AccountStatus=0";
 
@@ -122,7 +124,9 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 
 			Assert.NotNull(getUsersResponse);
 			Assert.NotEmpty(getUsersResponse.Users);
-		}
+
+            await CleanUpTestUserAsync(user.Email);
+        }
 
 		/// <summary>
 		///     Verifies that the <see cref="UsersController.GetUserAsync"/> method returns an 
@@ -1045,9 +1049,11 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-			AuthenticateClient(client, Roles.SuperAdmin, "user123", "id-123");
+            var user = await CreateTestUserWithoutPasswordAsync(true, Roles.SuperAdmin);
 
-			var jsonBody = CreateJsonPayloadForRoleOperations(Roles.User);
+            AuthenticateClient(client, Roles.SuperAdmin, user.UserName, user.Id);
+
+            var jsonBody = CreateJsonPayloadForRoleOperations(Roles.User);
 			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles";
 
 			// Act
@@ -1055,7 +1061,9 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 
 			// Assert
 			Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-		}
+
+            await CleanUpTestUserAsync(user.Email);
+        }
 
 		/// <summary>
 		///     Verifies that the <see cref="UsersController.AssignRoleAsync(string, string)"/> method returns a 
@@ -1262,16 +1270,20 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-			AuthenticateClient(client, Roles.SuperAdmin, "user123", "id-123");
+            var user = await CreateTestUserWithoutPasswordAsync(true, Roles.SuperAdmin);
 
-			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles/role-name";
+            AuthenticateClient(client, Roles.SuperAdmin, user.UserName, user.Id);
+
+            string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles/role-name";
 
 			// Act
 			var response = await client.DeleteAsync(RequestUri);
 
 			// Assert
 			Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-		}
+
+            await CleanUpTestUserAsync(user.Email);
+        }
 
 		/// <summary>
 		///     Verifies that the <see cref="UsersController.RemoveRoleAsync(string, string)"/> method 

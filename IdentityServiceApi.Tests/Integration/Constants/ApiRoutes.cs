@@ -75,5 +75,16 @@
             /// </summary>
             public const string BaseUri = "/api/v1/Users";
         }
+
+        /// <summary>
+        ///     Contains API route constants for the Test controller.
+        /// </summary>
+        public static class TestController
+        {
+            /// <summary>
+            ///     The base URI for accessing the Testing API endpoints.
+            /// </summary>
+            public const string BaseUri = "/api/Test";
+        }
     }
 }

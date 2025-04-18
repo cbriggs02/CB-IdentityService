@@ -196,10 +196,10 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
         private async Task DeletePasswordHistory(string userId)
         {
             var passwordHistories = await _context.PasswordHistories
-             .Where(x => x.UserId == userId)
-             .OrderBy(x => x.Id)
-             .AsNoTracking()
-             .ToListAsync();
+                .Where(x => x.UserId == userId)
+                .OrderBy(x => x.Id)
+                .AsNoTracking()
+                .ToListAsync();
 
             if (passwordHistories.Any())
             {

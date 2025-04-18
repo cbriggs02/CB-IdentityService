@@ -8,7 +8,7 @@ using System.Net;
 namespace IdentityServiceApi.Tests.Integration.Controllers
 {
     /// <summary>
-    ///     Unit tests for the <see cref="CountriesController"/> class.
+    ///     Integration tests for the <see cref="CountriesController"/> class.
     ///     This class contains test cases for various roles controller HTTP/HTTPS scenarios, verifying the 
     ///     behavior of the Country controller functionality.
     /// </summary>

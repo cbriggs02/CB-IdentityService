@@ -18,7 +18,7 @@ using IdentityServiceApi.Data;
 namespace IdentityServiceApi.Tests.Integration.Controllers
 {
     /// <summary>
-    ///     Unit tests for the <see cref="PasswordController"/> class.
+    ///     Integration tests for the <see cref="PasswordController"/> class.
     ///     This class contains test cases for various password controller HTTP/HTTPS scenarios, verifying the 
     ///     behavior of the password controller functionality.
     /// </summary>

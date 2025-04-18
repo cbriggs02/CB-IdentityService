@@ -15,16 +15,16 @@ using IdentityServiceApi.Models.Entities;
 
 namespace IdentityServiceApi.Tests.Integration.Controllers
 {
-	/// <summary>
-	///     Unit tests for the <see cref="AuditLogsController"/> class.
-	///     This class contains test cases for various audit logs controller HTTP/HTTPS scenarios, verifying the 
-	///     behavior of the audit logs controller functionality.
-	/// </summary>
-	/// <remarks>
-	///     @Author: Christian Briglio
-	///     @Created: 2025
-	/// </remarks>
-	[Trait("TestCategory", "IntegrationTest")]
+    /// <summary>
+    ///     Integration tests for the <see cref="AuditLogsController"/> class.
+    ///     This class contains test cases for various audit logs controller HTTP/HTTPS scenarios, verifying the 
+    ///     behavior of the audit logs controller functionality.
+    /// </summary>
+    /// <remarks>
+    ///     @Author: Christian Briglio
+    ///     @Created: 2025
+    /// </remarks>
+    [Trait("TestCategory", "IntegrationTest")]
 	public class AuditLogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		private readonly WebApplicationFactory<Program> _factory;
@@ -54,8 +54,11 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-			AuthenticateClient(client);
-			var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}?Page=1&PageSize=5&Action=0";
+            var user = await CreateTestUserWithPasswordAsync(true);
+
+            AuthenticateClient(client, user.UserName, user.Id);
+
+            var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}?Page=1&PageSize=5&Action=0";
 
 			// Act
 			var response = await client.GetAsync(requestUri);
@@ -68,7 +71,9 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 
 			Assert.NotNull(getLogsResponse);
 			Assert.NotEmpty(getLogsResponse.Logs);
-		}
+
+            await CleanUpTestUserAsync(user.Email);
+        }
 
 		/// <summary>
 		///     Verifies that the <see cref="AuditLogsController.GetLogsAsync"/> method returns an Unauthorized 
@@ -103,16 +108,20 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
+            var user = await CreateTestUserWithPasswordAsync(true);
 
-			AuthenticateClient(client);
-			var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}/nonexistent-log-id";
+            AuthenticateClient(client, user.UserName, user.Id);
+
+            var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}/nonexistent-log-id";
 
 			// Act
 			var response = await client.DeleteAsync(requestUri);
 
 			// Assert
 			Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-		}
+
+            await CleanUpTestUserAsync(user.Email);
+        }
 
 		/// <summary>
 		///     Verifies that the <see cref="AuditLogsController.DeleteLogAsync"/> method returns an Unauthorized 
@@ -147,9 +156,10 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-			AuthenticateClient(client);
+            var user = await CreateTestUserWithPasswordAsync(true);
 
-			var user = await CreateTestUserWithPasswordAsync(true);
+            AuthenticateClient(client, user.UserName, user.Id);
+
 			var auditLog = await CreateTestAuditLog(user.Id);
 
 			string requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}/{auditLog.Id}";
@@ -163,9 +173,9 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			await CleanUpTestUserAsync(user.Email);
 		}
 
-		private static void AuthenticateClient(HttpClient client)
+		private static void AuthenticateClient(HttpClient client, string userName, string userId)
 		{
-			var token = JwtTokenTestHelper.GenerateJwtToken(roles: new List<string> { Roles.SuperAdmin }, "user123", "id-123");
+			var token = JwtTokenTestHelper.GenerateJwtToken(roles: new List<string> { Roles.SuperAdmin }, userName, userId);
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 		}
 
@@ -208,7 +218,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			string lastName = faker.Name.LastName();
 			string phoneNumber = faker.Phone.PhoneNumber();
 
-			return await createTestUserHelper.CreateTestUserWithPasswordAsync(userName, firstName, lastName, email, phoneNumber, "Test@1234", status);
+			return await createTestUserHelper.CreateTestUserWithPasswordAsync(userName, firstName, lastName, email, phoneNumber, "Test@1234", status, Roles.SuperAdmin);
 		}
 
 		private async Task CleanUpTestUserAsync(string email)
