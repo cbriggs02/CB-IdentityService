@@ -1,19 +1,24 @@
 # Identity Service API - Setup & Instructions
 This guide provides the necessary steps to set up and run the Identity Service API in a development environment, including running the API, applying migrations, and configuring necessary environment variables.
 
-## Prerequisites
+# Prerequisites
 Before you begin, ensure you have the following installed:
 * Docker
 * .NET SDK 6.0
 * A SQL Server or Docker container with a SQL Server instance running
 
-## Setup Instructions
-### 1. Setting Up the API Project
-To run the API in a local development environment, you'll need to configure your appsettings.json file with the appropriate connection strings and other settings.
+# Setup Instructions
 
-Create an appsettings.Development.json or appsettings.json file in the root of the API project (if one doesn't exist) and include the following sample configuration: 
+## 1. Configuring the API Project
 
-<pre> {
+To run the API locally, create a configuration file with the correct settings.
+
+### Step 1: Create `appsettings.Development.json` or `appsettings.json`
+
+Place it in the **root of the API project**. Use the following sample template:
+
+```json
+{
   "ConnectionStrings": {
     "ApplicationDatabase": "Server=localhost;Database={replace with database name};User={replace with username};Password={replace with password};Encrypt=true;TrustServerCertificate=true;",
     "HealthChecksDatabase": "Server=localhost;Database={replace with database name};User={replace with username};Password={replace with password};Encrypt=true;TrustServerCertificate=true;"
@@ -21,7 +26,7 @@ Create an appsettings.Development.json or appsettings.json file in the root of t
   "JwtSettings": {
     "ValidIssuer": "https://localhost:52870",
     "ValidAudience": "https://localhost:3000",
-    "SecretKey": "{replace with your 32 bit secret key}"
+    "SecretKey": "{replace with your 32-byte secret key}"
   },
   "Logging": {
     "LogLevel": {
@@ -48,48 +53,77 @@ Create an appsettings.Development.json or appsettings.json file in the root of t
     },
     "Webhooks": []
   }
-}  </pre>
+}
+```
 
-* ConnectionStrings: Update the ApplicationDatabase and HealthChecksDatabase connection strings to match your local SQL Server or Docker-based instance.
-* JwtSettings: The SecretKey must be a 32-byte string. A sample key could be:
-"your32ByteSecretKeyHere1234567890123456"
-You can use a tool to generate a 32-byte key for better security.
+### Notes:
 
-### 2. Running the Development Environment
-Once the appsettings.json file is configured, you're ready to run the development environment. The following scripts will help you get started.
+- **Connection Strings**: Replace the values with your local or Docker SQL Server credentials.
+- **Secret Key**: Must be a **32-byte string** (e.g., `"your32ByteSecretKeyHere1234567890123456"`).
+- 🔐 You can use a password generator tool to securely create a random 32-byte key.
 
-#### Running the Development Environment
-1. Run API Development with Docker <br />
-&ensp;You need Docker running to launch the API with all necessary dependencies.
-* Open a terminal window.
-* Run the following script: <br />
-&ensp;run-api-dev.bat <br />
+---
 
-This will:
-* Start the Docker container for the development environment (if using Docker).
-* Run the application locally via Docker. <br />
-#### Note: Docker must be installed and running on your machine to use this script.
+## 2. Running the Development Environment
 
-#### Running the API Tests
-To run unit and integration tests for the API, use the run-api-tests.bat script.
-1. Run API Tests
-* Open a terminal window.
-* Run the following script: <br />
-&ensp;run-api-tests.bat <br />
+Before starting, ensure **Docker is installed and the Docker Engine is running**.
+
+### Running the API with Docker
+
+1. Open a terminal window.
+2. Run:
+
+```bash
+run-api-dev.bat
+```
 
 This will:
-* Execute all tests for the API using the configured testing framework.
 
-### 3. Applying Migrations
-To ensure the database schema is up to date, you need to run migrations. The migrations are applied using the dotnet-ef CLI.
-#### Apply Migrations Script
-1. Create and Apply Migrations The batch script apply-migrations.bat handles this process. This script will generate migrations and apply them to both the ApplicationDbContext and HealthChecksDbContext.
-* Open a terminal window.
-* Run the following script: <br />
-&ensp;apply-migrations.bat <br />
+- Start required Docker containers for the API.
+- Launch the application in a local development environment.
 
-The script will:
-* Generate and apply migrations for both the ApplicationDbContext and HealthChecksDbContext.
+> **Tip**: Ensure Docker Desktop is running before executing the script.
+
+---
+
+## 3. Running API Tests
+
+Run unit and integration tests using the included script:
+
+1. Open a terminal.
+2. Run:
+
+```bash
+run-api-tests.bat
+```
+
+This will:
+
+- Execute all configured tests using the test runner.
+
+---
+
+## 4. Applying Entity Framework Migrations
+
+Use the provided script to generate and apply migrations for the databases.
+
+### Running Migration Script
+
+1. Open a terminal window.
+2. Run:
+
+```bash
+apply-migrations.bat
+```
+
+This script will:
+
+- Automatically create migrations (if needed).
+- Apply migrations to both:
+  - `ApplicationDbContext`
+  - `HealthChecksDbContext`
+
+> **Note**: If `dotnet-ef` is not installed the first time, the script will install it. You may need to run the script again after installation.
 
 ## Troubleshooting
 * Docker not running: If you're unable to start the Docker container, make sure Docker Desktop is installed and running. You can verify by running docker ps to check if any containers are running.
