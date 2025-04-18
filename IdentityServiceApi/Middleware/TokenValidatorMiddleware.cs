@@ -1,8 +1,9 @@
 ﻿using IdentityServiceApi.Constants;
 using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.UserManagement;
+using IdentityServiceApi.Models.ApiResponseModels.Shared;
 using Newtonsoft.Json;
-using System.Security.Claims; 
+using System.Security.Claims;
 
 namespace IdentityServiceApi.Middleware
 {
@@ -71,10 +72,9 @@ namespace IdentityServiceApi.Middleware
 
                     using var scope = _scopeFactory.CreateScope();
                     var userLookupService = scope.ServiceProvider.GetRequiredService<IUserLookupService>();
-                    var userLookupResult = await userLookupService.FindUserByIdAsync(userId);
 
-                    // Validate tokens that are still active/valid but user has recently removed account
-                    if (!userLookupResult.Success)
+                    var userLookupResult = await userLookupService.FindUserByIdAsync(userId);
+                    if (!userLookupResult.Success) // Validate tokens that are still active/valid but user has recently removed account
                     {
                         await HandleAuthorizationBreachAsync(context, $"User with ID {userId} no longer exists in the system.", userId);
                         return;
@@ -86,7 +86,11 @@ namespace IdentityServiceApi.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred during token validation.");
-                await WriteServerUnauthorizedResponseAsync(context);
+
+                // Rethrow the exception to allow global exception middleware to handle it
+                // Global exception middleware should return a 500 Internal Server Error response
+
+                throw;
             }
         }
 
@@ -98,15 +102,7 @@ namespace IdentityServiceApi.Middleware
         private async Task HandleAuthorizationBreachAsync(HttpContext context, string reason, string userId)
         {
             _logger.LogWarning($"Unauthorized access attempt: Reason: {reason}, UserId: {userId}");
-            await LogAuthorizationBreachToDatabaseAsync();
             await WriteServerUnauthorizedResponseAsync(context);
-        }
-
-        private async Task LogAuthorizationBreachToDatabaseAsync()
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var loggerService = scope.ServiceProvider.GetRequiredService<ILoggerService>();
-            await loggerService.LogAuthorizationBreachAsync();
         }
 
         private static async Task WriteServerUnauthorizedResponseAsync(HttpContext context)
@@ -114,7 +110,11 @@ namespace IdentityServiceApi.Middleware
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "application/json";
 
-            var response = new { error = ErrorMessages.Authorization.Unauthorized };
+            var response = new ErrorResponse
+            {
+                Errors = new List<string> { ErrorMessages.Authorization.Unauthorized }
+            };
+
             var jsonResponse = JsonConvert.SerializeObject(response);
             await context.Response.WriteAsync(jsonResponse);
         }

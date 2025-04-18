@@ -1,5 +1,6 @@
 ﻿using IdentityServiceApi.Constants;
 using IdentityServiceApi.Interfaces.Logging;
+using IdentityServiceApi.Models.ApiResponseModels.Shared;
 using Newtonsoft.Json;
 
 namespace IdentityServiceApi.Middleware
@@ -17,6 +18,7 @@ namespace IdentityServiceApi.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<GlobalExceptionMiddleware> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IWebHostEnvironment _env;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GlobalExceptionMiddleware"/> class.
@@ -30,11 +32,19 @@ namespace IdentityServiceApi.Middleware
         /// <param name="scopeFactory">
         ///     The factory for creating service scopes to resolve scoped services.
         /// </param>
-        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger, IServiceScopeFactory scopeFactory)
+        /// <param name="env">
+        ///     The environment in which the application is running. This parameter is an instance of 
+        ///     <see cref="IWebHostEnvironment"/> and provides information about the
+        ///     application's environment (e.g., Development, Staging, Production). It is used 
+        ///     to configure environment-specific behaviors, such as logging or error handling, 
+        ///     based on the current environment.
+        /// </param>
+        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger, IServiceScopeFactory scopeFactory, IWebHostEnvironment env)
         {
             _next = next;
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _env = env;
         }
 
         /// <summary>
@@ -68,12 +78,19 @@ namespace IdentityServiceApi.Middleware
 
         private void ConsoleLogExceptionDetails(HttpContext context, Exception ex)
         {
-            var exceptionMessage = ex.Message ?? "No exception message";
             var requestPath = context.Request.Path.ToString() ?? "No request path";
             var timestamp = DateTime.UtcNow;
 
-            _logger.LogError(ex, "{Message}. Exception occurred at {Timestamp}. Request: {Path}, Exception Message: {ExceptionMessage}",
-                "An unhandled exception occurred", timestamp, requestPath, exceptionMessage);
+            if (_env.IsProduction())
+            {
+                _logger.LogError("Unhandled exception at {Timestamp}. Path: {Path}", timestamp, requestPath);
+            }
+            else
+            {
+                _logger.LogError(ex,
+                    "Unhandled exception at {Timestamp}. Path: {Path}. Message: {Message}. Exception Type: {ExceptionType}. Stack Trace: {StackTrace}. Inner Exception: {InnerException}",
+                    timestamp, requestPath, ex.Message, ex.GetType().ToString(), ex.StackTrace, ex.InnerException?.ToString() ?? "No inner exception");
+            }
         }
 
         private static async Task WriteServerErrorResponseAsync(HttpContext context)
@@ -81,9 +98,9 @@ namespace IdentityServiceApi.Middleware
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
-            var response = new
+            var response = new ErrorResponse
             {
-                error = ErrorMessages.General.GlobalExceptionMessage
+                Errors = new List<string> { ErrorMessages.General.GlobalExceptionMessage }
             };
 
             var jsonResponse = JsonConvert.SerializeObject(response);
