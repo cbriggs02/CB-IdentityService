@@ -11,6 +11,12 @@ This API allows clients to communicate securely with a server via HTTPS using st
 - **Controllers** – Manage HTTP requests and routing.
 - **Models & DTOs** – Represent entities, request/response payloads, and transfer data between layers.
 
+## Clients / Consumers
+
+This API is consumed by the following front-end application(s):
+
+- [Admin Portal (Angular)](https://github.com/cbriggs02/CB-IdentityAdminPortal)
+
 ## System Design
 
 - **Modular Architecture**: Separation of concerns using layers (interfaces, services, controllers, and models).
