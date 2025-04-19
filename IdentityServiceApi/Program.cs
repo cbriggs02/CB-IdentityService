@@ -32,248 +32,262 @@ using IdentityServiceApi.Models.Configurations;
 
 namespace IdentityServiceApi
 {
-    /// <summary>
-    ///     Entry point class for the ASP.NET Core application,
-    /// </summary>
-    /// <remarks>
-    ///     This application is designed to provide secure and scalable web services for managing user accounts, roles, 
-    ///     and permissions. It includes features like authentication, role-based access control, and CRUD operations for user data.
-    /// -----------------------------------------------------------------------------------------------
-    ///     Key configurations in this file include:
-    ///     - Middleware for request handling (e.g., exception handling, performance monitoring, token validating).
-    ///     - ASP.NET Identity, JWT Bearer Authentication.
-    ///     - Dependency injection setup for services.
-    ///     - Integration of Swagger for API documentation.
-    ///     - API Versioning and integration of an API Health Checks UI.
-    ///     - Database initialization and migration.
-    /// -----------------------------------------------------------------------------------------------
-    ///     @Author: Christian Briglio
-    ///     @Created: 2024
-    /// </remarks>
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateLogger();
+	/// <summary>
+	///     Entry point class for the ASP.NET Core application,
+	/// </summary>
+	/// <remarks>
+	///     This application is designed to provide secure and scalable web services for managing user accounts, roles, 
+	///     and permissions. It includes features like authentication, role-based access control, and CRUD operations for user data.
+	/// -----------------------------------------------------------------------------------------------
+	///     Key configurations in this file include:
+	///     - Middleware for request handling (e.g., exception handling, performance monitoring, token validating).
+	///     - ASP.NET Identity, JWT Bearer Authentication.
+	///     - Dependency injection setup for services.
+	///     - Integration of Swagger for API documentation.
+	///     - API Versioning and integration of an API Health Checks UI.
+	///     - Database initialization and migration.
+	/// -----------------------------------------------------------------------------------------------
+	///     @Author: Christian Briglio
+	///     @Created: 2024
+	/// </remarks>
+	public class Program
+	{
+		public static async Task Main(string[] args)
+		{
+			Log.Logger = new LoggerConfiguration()
+				.WriteTo.Console()
+				.CreateLogger();
 
-            var builder = WebApplication.CreateBuilder(args);
+			var builder = WebApplication.CreateBuilder(args);
 
-            var applicationDatabaseConnectionString = builder.Configuration.GetConnectionString("ApplicationDatabase")
-                ?? throw new InvalidOperationException("ApplicationDatabase connection string is missing in the configuration.");
+			var applicationDatabaseConnectionString = builder.Configuration.GetConnectionString("ApplicationDatabase")
+				?? throw new InvalidOperationException("ApplicationDatabase connection string is missing in the configuration.");
 
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseLazyLoadingProxies()
-                    .UseSqlServer(applicationDatabaseConnectionString);
-            });
+			builder.Services.AddDbContext<ApplicationDbContext>(options =>
+			{
+				options.UseLazyLoadingProxies()
+					.UseSqlServer(applicationDatabaseConnectionString);
+			});
 
-            if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
-            {
-                var healthChecksDatabaseConnectionString = builder.Configuration.GetConnectionString("HealthChecksDatabase")
-                    ?? throw new InvalidOperationException("HealthChecksDatabase connection string is missing in the configuration.");
+			if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
+			{
+				var healthChecksDatabaseConnectionString = builder.Configuration.GetConnectionString("HealthChecksDatabase")
+					?? throw new InvalidOperationException("HealthChecksDatabase connection string is missing in the configuration.");
 
-                builder.Services.AddHealthChecks()
-                    .AddDbContextCheck<ApplicationDbContext>("EntityFrameworkCore");
+				builder.Services.AddHealthChecks()
+					.AddDbContextCheck<ApplicationDbContext>("EntityFrameworkCore");
 
-                builder.Services.AddHealthChecksUI()
-                    .AddSqlServerStorage(healthChecksDatabaseConnectionString);
+				builder.Services.AddHealthChecksUI()
+					.AddSqlServerStorage(healthChecksDatabaseConnectionString);
 
-                builder.Services.AddDbContext<HealthChecksDbContext>(options =>
-                {
-                    options.UseSqlServer(healthChecksDatabaseConnectionString);
-                });
-            }
+				builder.Services.AddDbContext<HealthChecksDbContext>(options =>
+				{
+					options.UseSqlServer(healthChecksDatabaseConnectionString);
+				});
+			}
 
-            builder.Services.AddIdentity<User, IdentityRole>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 8;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = true;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
-                options.Lockout.MaxFailedAccessAttempts = 5;
-                options.Lockout.AllowedForNewUsers = true;
-                options.User.RequireUniqueEmail = true;
-            })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+			builder.Services.AddIdentity<User, IdentityRole>(options =>
+			{
+				options.Password.RequireDigit = true;
+				options.Password.RequiredLength = 8;
+				options.Password.RequireUppercase = true;
+				options.Password.RequireLowercase = true;
+				options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
+				options.Lockout.MaxFailedAccessAttempts = 5;
+				options.Lockout.AllowedForNewUsers = true;
+				options.User.RequireUniqueEmail = true;
+			})
+			.AddEntityFrameworkStores<ApplicationDbContext>()
+			.AddDefaultTokenProviders();
 
-            builder.Services.Configure<PasswordHasherOptions>(options =>
-            {
-                options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3;
-            });
+			builder.Services.Configure<PasswordHasherOptions>(options =>
+			{
+				options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3;
+			});
 
-            builder.Services.AddControllers(options =>
-            {
-                options.Filters.Add(new ProducesAttribute("application/json"));
-                options.Filters.Add(new ConsumesAttribute("application/json"));
-            });
+			builder.Services.AddControllers(options =>
+			{
+				options.Filters.Add(new ProducesAttribute("application/json"));
+				options.Filters.Add(new ConsumesAttribute("application/json"));
+			});
 
-            builder.Services.AddApiVersioning(options =>
-            {
-                options.DefaultApiVersion = new ApiVersion(1, 0);
-                options.AssumeDefaultVersionWhenUnspecified = true;
-                options.ReportApiVersions = true;
-                options.ApiVersionReader = new UrlSegmentApiVersionReader();
-            })
-            .AddApiExplorer(options =>
-            {
-                options.GroupNameFormat = "'v'VVV";
-                options.SubstituteApiVersionInUrl = true;
-            });
+			builder.Services.AddApiVersioning(options =>
+			{
+				options.DefaultApiVersion = new ApiVersion(1, 0);
+				options.AssumeDefaultVersionWhenUnspecified = true;
+				options.ReportApiVersions = true;
+				options.ApiVersionReader = new UrlSegmentApiVersionReader();
+			})
+			.AddApiExplorer(options =>
+			{
+				options.GroupNameFormat = "'v'VVV";
+				options.SubstituteApiVersionInUrl = true;
+			});
 
-            builder.Services.AddHttpContextAccessor();
+			builder.Services.AddHttpContextAccessor();
 
-            // Authentication related services
-            builder.Services.AddScoped<ILoginService, LoginService>();
-            builder.Services.AddScoped<IUserContextService, UserContextService>();
+			// Authentication related services
+			builder.Services.AddScoped<ILoginService, LoginService>();
+			builder.Services.AddScoped<IUserContextService, UserContextService>();
 
-            // Authorization related services
-            builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
-            builder.Services.AddScoped<IPermissionService, PermissionService>();
-            builder.Services.AddScoped<IRoleService, RoleService>();
+			// Authorization related services
+			builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
+			builder.Services.AddScoped<IPermissionService, PermissionService>();
+			builder.Services.AddScoped<IRoleService, RoleService>();
 
-            // Logging related services
-            builder.Services.AddScoped<IAuditLoggerService, AuditLoggerService>();
-            builder.Services.AddScoped<ILoggerService, LoggerService>();
-            builder.Services.AddScoped<IAuthorizationLoggerService, AuthorizationLoggerService>();
-            builder.Services.AddScoped<IExceptionLoggerService, ExceptionLoggerService>();
-            builder.Services.AddScoped<IPerformanceLoggerService, PerformanceLoggerService>();
-            builder.Services.AddScoped<ILoggingValidator, LoggingValidator>();
+			// Logging related services
+			builder.Services.AddScoped<IAuditLoggerService, AuditLoggerService>();
+			builder.Services.AddScoped<ILoggerService, LoggerService>();
+			builder.Services.AddScoped<IAuthorizationLoggerService, AuthorizationLoggerService>();
+			builder.Services.AddScoped<IExceptionLoggerService, ExceptionLoggerService>();
+			builder.Services.AddScoped<IPerformanceLoggerService, PerformanceLoggerService>();
+			builder.Services.AddScoped<ILoggingValidator, LoggingValidator>();
 
-            // User management related services
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IUserLookupService, UserLookupService>();
-            builder.Services.AddScoped<IPasswordService, PasswordService>();
-            builder.Services.AddScoped<IPasswordHistoryService, PasswordHistoryService>();
-            builder.Services.AddScoped<IPasswordHistoryCleanupService, PasswordHistoryCleanupService>();
-            builder.Services.AddScoped<ICountryService, CountryService>();
+			// User management related services
+			builder.Services.AddScoped<IUserService, UserService>();
+			builder.Services.AddScoped<IUserLookupService, UserLookupService>();
+			builder.Services.AddScoped<IPasswordService, PasswordService>();
+			builder.Services.AddScoped<IPasswordHistoryService, PasswordHistoryService>();
+			builder.Services.AddScoped<IPasswordHistoryCleanupService, PasswordHistoryCleanupService>();
+			builder.Services.AddScoped<ICountryService, CountryService>();
 
-            // Utility related services
-            builder.Services.AddScoped<IParameterValidator, ParameterValidator>();
+			// Utility related services
+			builder.Services.AddScoped<IParameterValidator, ParameterValidator>();
 
-            // Service result factory related services
-            builder.Services.AddScoped<IServiceResultFactory, ServiceResultFactory>();
-            builder.Services.AddScoped<IUserServiceResultFactory, UserServiceResultFactory>();
-            builder.Services.AddScoped<IUserLookupServiceResultFactory, UserLookupServiceResultFactory>();
-            builder.Services.AddScoped<ILoginServiceResultFactory, LoginServiceResultFactory>();
+			// Service result factory related services
+			builder.Services.AddScoped<IServiceResultFactory, ServiceResultFactory>();
+			builder.Services.AddScoped<IUserServiceResultFactory, UserServiceResultFactory>();
+			builder.Services.AddScoped<IUserLookupServiceResultFactory, UserLookupServiceResultFactory>();
+			builder.Services.AddScoped<ILoginServiceResultFactory, LoginServiceResultFactory>();
 
-            builder.Services.AddTransient<DbInitializer>();
+			builder.Services.AddTransient<DbInitializer>();
 
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "IdentityServiceApi", Version = "v1" });
+			builder.Services.AddSwaggerGen(c =>
+			{
+				c.SwaggerDoc("v1", new OpenApiInfo { Title = "IdentityServiceApi", Version = "v1" });
 
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                    Description = "Enter your JWT token here"
-                });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
-                    }
-                });
-                c.EnableAnnotations();
-            });
+				c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+				{
+					Name = "Authorization",
+					Type = SecuritySchemeType.Http,
+					Scheme = "bearer",
+					BearerFormat = "JWT",
+					In = ParameterLocation.Header,
+					Description = "Enter your JWT token here"
+				});
+				c.AddSecurityRequirement(new OpenApiSecurityRequirement
+				{
+					{
+						new OpenApiSecurityScheme
+						{
+							Reference = new OpenApiReference
+							{
+								Type = ReferenceType.SecurityScheme,
+								Id = "Bearer"
+							}
+						},
+						Array.Empty<string>()
+					}
+				});
+				c.EnableAnnotations();
+			});
 
-            builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+			builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-            var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
-                ?? throw new InvalidOperationException("JwtSettings configuration section is missing.");
+			builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+			var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
+				?? throw new InvalidOperationException("JwtSettings configuration section is missing.");
 
-            var secretKeyBytes = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
-            if (secretKeyBytes.Length < 32)
-            {
-                throw new InvalidOperationException("JwtSettings.SecretKey must be at least 32 bytes (256 bits) for HS256 signing.");
-            }
+			var secretKeyBytes = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+			if (secretKeyBytes.Length < 32)
+			{
+				throw new InvalidOperationException("JwtSettings.SecretKey must be at least 32 bytes (256 bits) for HS256 signing.");
+			}
 
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-           .AddJwtBearer(options =>
-           {
-               options.TokenValidationParameters = new TokenValidationParameters
-               {
-                   ValidateIssuer = true,
-                   ValidateAudience = true,
-                   ValidateLifetime = true,
-                   ValidateIssuerSigningKey = true,
+			builder.Services.AddAuthentication(options =>
+			{
+				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			})
+		   .AddJwtBearer(options =>
+		   {
+			   options.TokenValidationParameters = new TokenValidationParameters
+			   {
+				   ValidateIssuer = true,
+				   ValidateAudience = true,
+				   ValidateLifetime = true,
+				   ValidateIssuerSigningKey = true,
 
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
-                   ValidIssuer = jwtSettings.ValidIssuer,
-                   ValidAudience = jwtSettings.ValidAudience
-               };
-           });
+				   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+				   ValidIssuer = jwtSettings.ValidIssuer,
+				   ValidAudience = jwtSettings.ValidAudience
+			   };
+		   });
 
-            var app = builder.Build();
+			builder.Services.AddCors(options =>
+			{
+				options.AddPolicy("AllowAdminApp",
+					policy =>
+					{
+						policy.WithOrigins("http://localhost:4200")
+							.AllowAnyHeader()
+							.AllowAnyMethod()
+							.AllowCredentials();
+					});
+			});
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var dbInitializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
-                await dbInitializer.InitializeDatabaseAsync(app);
-            }
+			var app = builder.Build();
 
-            if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "IdentityServiceApi V1");
-                    c.RoutePrefix = string.Empty;
-                });
+			using (var scope = app.Services.CreateScope())
+			{
+				var dbInitializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+				await dbInitializer.InitializeDatabaseAsync(app);
+			}
 
-                app.UseHealthChecks("/health", new HealthCheckOptions()
-                {
-                    Predicate = _ => true,
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+			if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+			{
+				app.UseSwagger();
+				app.UseSwaggerUI(c =>
+				{
+					c.SwaggerEndpoint("/swagger/v1/swagger.json", "IdentityServiceApi V1");
+					c.RoutePrefix = string.Empty;
+				});
 
-                app.UseHealthChecks("/health/database", new HealthCheckOptions()
-                {
-                    Predicate = registration => registration.Name == "EntityFrameworkCore",
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+				app.UseHealthChecks("/health", new HealthCheckOptions()
+				{
+					Predicate = _ => true,
+					ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+				});
 
-                app.UseHealthChecksUI(config => config.UIPath = "/health-ui");
-            }
+				app.UseHealthChecks("/health/database", new HealthCheckOptions()
+				{
+					Predicate = registration => registration.Name == "EntityFrameworkCore",
+					ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+				});
 
-            app.UseMiddleware<GlobalExceptionMiddleware>();
-            app.UseMiddleware<PerformanceMonitoringMiddleware>();
+				app.UseHealthChecksUI(config => config.UIPath = "/health-ui");
+			}
 
-            if (app.Environment.IsProduction())
-            {
-                app.UseHsts();
-            }
+			app.UseMiddleware<GlobalExceptionMiddleware>();
+			app.UseMiddleware<PerformanceMonitoringMiddleware>();
 
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseRouting();
+			if (app.Environment.IsProduction())
+			{
+				app.UseHsts();
+			}
 
-            app.UseAuthentication();
-            app.UseAuthorization();
-            app.UseMiddleware<TokenValidatorMiddleware>();
+			app.UseHttpsRedirection();
+			app.UseStaticFiles();
+			app.UseRouting();
 
-            app.MapControllers();
-            await app.RunAsync();
-        }
-    }
+			app.UseCors("AllowAdminApp");
+
+			app.UseAuthentication();
+			app.UseAuthorization();
+			app.UseMiddleware<TokenValidatorMiddleware>();
+
+			app.MapControllers();
+			await app.RunAsync();
+		}
+	}
 }
