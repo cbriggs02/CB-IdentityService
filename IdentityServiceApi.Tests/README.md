@@ -62,7 +62,7 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
             .AddInMemoryCollection(new Dictionary<string, string>
             {
                 {"JwtSettings:ValidIssuer", "https://localhost:52870"},
-                {"JwtSettings:ValidAudience", "https://localhost:3000"},
+                {"JwtSettings:ValidAudience", "https://localhost:4200"},
                 {"JwtSettings:SecretKey", "{replace with your secret key}"}
             })
             .Build();
