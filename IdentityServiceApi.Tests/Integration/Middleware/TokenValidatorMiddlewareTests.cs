@@ -10,7 +10,7 @@ using IdentityServiceApi.Constants;
 using System.Text;
 using IdentityServiceApi.Models.RequestModels.Authentication;
 using IdentityServiceApi.Tests.Integration.Constants;
-using IdentityServiceApi.Models.ApiResponseModels.LoginResponses;
+using IdentityServiceApi.Models.ApiResponseModels.Login;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net;

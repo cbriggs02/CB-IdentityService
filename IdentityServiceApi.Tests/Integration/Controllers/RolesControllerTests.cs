@@ -6,7 +6,7 @@ using IdentityServiceApi.Tests.Integration.Helpers;
 using System.Net.Http.Headers;
 using IdentityServiceApi.Constants;
 using Newtonsoft.Json;
-using IdentityServiceApi.Models.ApiResponseModels.RolesResponses;
+using IdentityServiceApi.Models.ApiResponseModels.Roles;
 using Bogus;
 using IdentityServiceApi.Data;
 using Microsoft.AspNetCore.Identity;

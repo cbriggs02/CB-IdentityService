@@ -2,7 +2,7 @@
 using IdentityServiceApi.Constants;
 using IdentityServiceApi.Interfaces.Authentication;
 using IdentityServiceApi.Models.ApiResponseModels.Shared;
-using IdentityServiceApi.Models.ApiResponseModels.LoginResponses;
+using IdentityServiceApi.Models.ApiResponseModels.Login;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;

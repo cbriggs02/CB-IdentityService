@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using IdentityServiceApi.Constants;
 using IdentityServiceApi.Interfaces.Authorization;
-using IdentityServiceApi.Models.ApiResponseModels.RolesResponses;
+using IdentityServiceApi.Models.ApiResponseModels.Roles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;

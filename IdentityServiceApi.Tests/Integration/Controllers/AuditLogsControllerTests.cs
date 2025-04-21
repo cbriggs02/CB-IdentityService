@@ -1,5 +1,5 @@
 ﻿using IdentityServiceApi.Controllers;
-using IdentityServiceApi.Models.ApiResponseModels.AuditLogsResponses;
+using IdentityServiceApi.Models.ApiResponseModels.AuditLogs;
 using System.Net.Http.Headers;
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;

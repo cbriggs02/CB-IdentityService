@@ -1,5 +1,5 @@
 ﻿
-namespace IdentityServiceApi.Models.ApiResponseModels.LoginResponses
+namespace IdentityServiceApi.Models.ApiResponseModels.Login
 {
     /// <summary>
     ///     Represents the response returned by the login API after a successful user login.

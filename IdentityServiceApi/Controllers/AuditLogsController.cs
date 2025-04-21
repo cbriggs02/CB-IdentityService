@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using IdentityServiceApi.Constants;
 using IdentityServiceApi.Interfaces.Logging;
-using IdentityServiceApi.Models.ApiResponseModels.AuditLogsResponses;
+using IdentityServiceApi.Models.ApiResponseModels.AuditLogs;
 using IdentityServiceApi.Models.ApiResponseModels.Shared;
 using IdentityServiceApi.Models.RequestModels.Logging;
 using Microsoft.AspNetCore.Authorization;

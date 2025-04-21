@@ -13,8 +13,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Headers;
 using IdentityServiceApi.Models.Entities;
-using IdentityServiceApi.Models.ApiResponseModels.UsersResponses;
 using IdentityServiceApi.Models.DTO;
+using IdentityServiceApi.Models.ApiResponseModels.Users;
 
 namespace IdentityServiceApi.Tests.Integration.Controllers
 {
@@ -107,9 +107,9 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-            var user = await CreateTestUserWithoutPasswordAsync(true, roleName);
+			var user = await CreateTestUserWithoutPasswordAsync(true, roleName);
 
-            AuthenticateClient(client, roleName, user.UserName, user.Id);
+			AuthenticateClient(client, roleName, user.UserName, user.Id);
 
 			string requestUri = $"{ApiRoutes.UsersController.BaseUri}/?Page=1&PageSize=5&AccountStatus=0";
 
@@ -125,8 +125,8 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			Assert.NotNull(getUsersResponse);
 			Assert.NotEmpty(getUsersResponse.Users);
 
-            await CleanUpTestUserAsync(user.Email);
-        }
+			await CleanUpTestUserAsync(user.Email);
+		}
 
 		/// <summary>
 		///     Verifies that the <see cref="UsersController.GetUserAsync"/> method returns an 
@@ -1049,11 +1049,11 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-            var user = await CreateTestUserWithoutPasswordAsync(true, Roles.SuperAdmin);
+			var user = await CreateTestUserWithoutPasswordAsync(true, Roles.SuperAdmin);
 
-            AuthenticateClient(client, Roles.SuperAdmin, user.UserName, user.Id);
+			AuthenticateClient(client, Roles.SuperAdmin, user.UserName, user.Id);
 
-            var jsonBody = CreateJsonPayloadForRoleOperations(Roles.User);
+			var jsonBody = CreateJsonPayloadForRoleOperations(Roles.User);
 			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles";
 
 			// Act
@@ -1062,8 +1062,8 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			// Assert
 			Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
-            await CleanUpTestUserAsync(user.Email);
-        }
+			await CleanUpTestUserAsync(user.Email);
+		}
 
 		/// <summary>
 		///     Verifies that the <see cref="UsersController.AssignRoleAsync(string, string)"/> method returns a 
@@ -1270,11 +1270,11 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-            var user = await CreateTestUserWithoutPasswordAsync(true, Roles.SuperAdmin);
+			var user = await CreateTestUserWithoutPasswordAsync(true, Roles.SuperAdmin);
 
-            AuthenticateClient(client, Roles.SuperAdmin, user.UserName, user.Id);
+			AuthenticateClient(client, Roles.SuperAdmin, user.UserName, user.Id);
 
-            string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles/role-name";
+			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles/role-name";
 
 			// Act
 			var response = await client.DeleteAsync(RequestUri);
@@ -1282,8 +1282,8 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			// Assert
 			Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
-            await CleanUpTestUserAsync(user.Email);
-        }
+			await CleanUpTestUserAsync(user.Email);
+		}
 
 		/// <summary>
 		///     Verifies that the <see cref="UsersController.RemoveRoleAsync(string, string)"/> method 
@@ -1382,6 +1382,83 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 
 			await CleanUpTestUserAsync(requester.Email);
 			await CleanUpTestUserAsync(target.Email);
+		}
+
+		/// <summary>
+		///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
+		///     returns an Unauthorized (401) response when the request is made without authentication.
+		/// </summary>
+		/// <returns>
+		///     A task representing the asynchronous unit test operation.
+		/// </returns>
+		[Fact]
+		public async Task GetUserStateMetricsAsync_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
+		{
+			// Arrange
+			var client = _factory.CreateClient();
+			string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
+
+			// Act
+			var response = await client.GetAsync(RequestUri);
+
+			// Assert
+			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		}
+
+		/// <summary>
+		///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
+		///     returns a Forbidden (403) response when the authenticated user lacks the necessary privileges.
+		/// </summary>
+		/// <returns>
+		///     A task representing the asynchronous unit test operation.
+		/// </returns>
+		[Fact]
+		public async Task GetUserStateMetricsAsync_ReturnsForbidden_WhenUserHasInsufficientPrivileges()
+		{
+			// Arrange
+			var client = _factory.CreateClient();
+			AuthenticateClient(client, Roles.User, "user123", "id-123");
+
+			string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
+
+			// Act
+			var response = await client.GetAsync(RequestUri);
+
+			// Assert
+			Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+		}
+
+		/// <summary>
+		///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
+		///     returns an OK (200) response and a valid <see cref="UserStateMetricsResponse"/> object
+		///     when the request is made by an authenticated user with appropriate privileges.
+		/// </summary>
+		/// <returns>
+		///     A task representing the asynchronous unit test operation.
+		/// </returns>
+		[Fact]
+		public async Task GetUserStateMetricsAsync_ReturnsOK_WhenIsAuthenticatedWithCorrectPrivileges()
+		{
+			// Arrange
+			var client = _factory.CreateClient();
+			var user = await CreateTestUserWithoutPasswordAsync(true, Roles.Admin);
+
+			AuthenticateClient(client, Roles.Admin, user.UserName, user.Id);
+
+			string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
+
+			// Act
+			var response = await client.GetAsync(RequestUri);
+
+			// Assert
+			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+			var responseBody = await response.Content.ReadAsStringAsync();
+			var metricsResponse = JsonConvert.DeserializeObject<UserStateMetricsResponse>(responseBody);
+
+			Assert.NotNull(metricsResponse);
+
+			await CleanUpTestUserAsync(user.Email);
 		}
 
 		private static StringContent CreateJsonPayLoadForUserOperation(int countryId)

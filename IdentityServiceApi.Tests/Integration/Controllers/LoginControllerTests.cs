@@ -1,4 +1,4 @@
-﻿using IdentityServiceApi.Models.ApiResponseModels.LoginResponses;
+﻿using IdentityServiceApi.Models.ApiResponseModels.Login;
 using IdentityServiceApi.Models.ApiResponseModels.Shared;
 using IdentityServiceApi.Models.RequestModels.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;

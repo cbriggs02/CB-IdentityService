@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using IdentityServiceApi.Constants;
-using IdentityServiceApi.Models.ApiResponseModels.UsersResponses;
+using IdentityServiceApi.Models.ApiResponseModels.Users;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Models.ApiResponseModels.Shared;
 using Asp.Versioning;
@@ -371,7 +371,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [SwaggerOperation(Summary = ApiDocumentation.RolesApi.AssignRole)]
+        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.AssignRole)]
         public async Task<IActionResult> AssignRoleAsync([FromRoute][Required] string id, [FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
         {
             var result = await _userService.AssignRoleAsync(id, roleName);
@@ -413,7 +413,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [SwaggerOperation(Summary = ApiDocumentation.RolesApi.RemoveRole)]
+        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.RemoveRole)]
         public async Task<IActionResult> RemoveRoleAsync([FromRoute][Required] string id, [FromRoute][Required] string roleName)
         {
             var result = await _userService.RemoveRoleAsync(id, roleName);
@@ -429,6 +429,40 @@ namespace IdentityServiceApi.Controllers
             }
 
             return NoContent();
+        }
+
+        /// <summary>
+        ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
+        /// </summary>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a <see cref="UserStateMetricsResponse"/> containing user state metrics.
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no user data is available.
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is not 
+        ///     authenticated or does not have the required role.
+        /// </returns>
+        [Authorize(Roles = RoleGroups.AdminOnly)]
+        [HttpGet("state-metrics")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserStateMetricsResponse))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserStateMetrics)]
+        public async Task<ActionResult<UserListResponse>> GetUserStateMetricsAsync()
+        {
+           var result = await _userService.GetUserStateMetricsAsync();
+
+            if(result == null)
+            {
+                return NoContent();
+            }
+
+            var apiResponse = new UserStateMetricsResponse
+            {
+                TotalCount = result.TotalCount,
+                ActivatedUsers = result.ActivatedUsers,
+                DeactivatedUsers = result.DeactivatedUsers,
+            };
+
+            return Ok(apiResponse);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using IdentityServiceApi.Models.DTO;
 
-namespace IdentityServiceApi.Models.ApiResponseModels.RolesResponses
+namespace IdentityServiceApi.Models.ApiResponseModels.Roles
 {
     /// <summary>
     ///     Represents the response returned by the roles API when retrieving roles.

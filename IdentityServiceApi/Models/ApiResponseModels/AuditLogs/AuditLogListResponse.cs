@@ -1,7 +1,7 @@
 ﻿using IdentityServiceApi.Models.DTO;
 using IdentityServiceApi.Models.Shared;
 
-namespace IdentityServiceApi.Models.ApiResponseModels.AuditLogsResponses
+namespace IdentityServiceApi.Models.ApiResponseModels.AuditLogs
 {
     /// <summary>
     ///     Represents the response returned by the audit log API when retrieving audit logs with pagination.

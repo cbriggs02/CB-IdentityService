@@ -52,6 +52,21 @@
             ///     Summary for deactivating a user account by their ID.
             /// </summary>
             public const string DeactivateUser = "Deactivates a user account by their ID.";
+
+            /// <summary>
+            ///     Summary for assigning a role to a user.
+            /// </summary>
+            public const string AssignRole = "Assigns a role to a user.";
+
+            /// <summary>
+            ///     Summary for removing a role from a user.
+            /// </summary>
+            public const string RemoveRole = "Removes a role from a user.";
+
+            /// <summary>
+            ///     Summary for retrieving user state metrics.
+            /// </summary>
+            public const string GetUserStateMetrics = "Retrieves aggregated metrics for user states, including total, activated, and deactivated users.";
         }
 
         /// <summary>
@@ -96,16 +111,6 @@
             ///     Summary for retrieving all roles in the system.
             /// </summary>
             public const string GetRoles = "Retrieves all roles in the system.";
-
-            /// <summary>
-            ///     Summary for assigning a role to a user.
-            /// </summary>
-            public const string AssignRole = "Assigns a role to a user.";
-
-            /// <summary>
-            ///     Summary for removing a role from a user.
-            /// </summary>
-            public const string RemoveRole = "Removes a role from a user.";
 
             /// <summary>
             ///     Summary for creating a new role.

@@ -121,5 +121,14 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     A task that represents the asynchronous operation, returning a result object indicating the outcome of the role removal.
         /// </returns>
         Task<ServiceResult> RemoveRoleAsync(string id, string roleName);
+
+        /// <summary>
+        ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceStateMetricsResult"/>
+        ///     with the user state metrics.
+        /// </returns>
+        Task<UserServiceStateMetricsResult> GetUserStateMetricsAsync();
     }
 }

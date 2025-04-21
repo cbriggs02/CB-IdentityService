@@ -1,7 +1,7 @@
 ﻿using IdentityServiceApi.Models.DTO;
 using IdentityServiceApi.Models.Shared;
 
-namespace IdentityServiceApi.Models.ApiResponseModels.UsersResponses
+namespace IdentityServiceApi.Models.ApiResponseModels.Users
 {
     /// <summary>
     ///     Represents the response returned by the users API when retrieving users with pagination.
