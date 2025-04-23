@@ -101,6 +101,8 @@ This will:
 
 - Execute all configured tests using the test runner.
 
+> **Tip**: For detailed instructions on setting up the tests refer to the [IdentityServiceApi.Tests README](./IdentityServiceApi.Tests/README.md).
+
 ---
 
 ## 4. Applying Entity Framework Migrations
