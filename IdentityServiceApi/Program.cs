@@ -279,7 +279,6 @@ namespace IdentityServiceApi
 			app.UseHttpsRedirection();
 			app.UseStaticFiles();
 			app.UseRouting();
-
 			app.UseCors("AllowAdminApp");
 
 			app.UseAuthentication();

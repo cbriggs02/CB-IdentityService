@@ -13,35 +13,35 @@ using IdentityServiceApi.Models.RequestModels.UserManagement;
 
 namespace IdentityServiceApi.Controllers
 {
-    /// <summary>
-    ///     Controller for handling API operations related to users.
-    ///     This controller processes all incoming requests related to user management and delegates
-    ///     them to the user service, which implements the business logic.
-    /// </summary>
-    /// <remarks>
-    ///     @Author: Christian Briglio
-    ///     @Created: 2024
-    /// </remarks>
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[Controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
-    {
-        private readonly IUserService _userService;
+	/// <summary>
+	///     Controller for handling API operations related to users.
+	///     This controller processes all incoming requests related to user management and delegates
+	///     them to the user service, which implements the business logic.
+	/// </summary>
+	/// <remarks>
+	///     @Author: Christian Briglio
+	///     @Created: 2024
+	/// </remarks>
+	[ApiVersion("1.0")]
+	[Route("api/v{version:apiVersion}/[Controller]")]
+	[ApiController]
+	public class UsersController : ControllerBase
+	{
+		private readonly IUserService _userService;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="UsersController"/> class with the specified dependencies.
-        /// </summary>
-        /// <param name="userService">
-        ///     User service used for all user-related operations.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown if any of the parameters are null.
-        /// </exception>
-        public UsersController(IUserService userService)
-        {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-        }
+		/// <summary>
+		///     Initializes a new instance of the <see cref="UsersController"/> class with the specified dependencies.
+		/// </summary>
+		/// <param name="userService">
+		///     User service used for all user-related operations.
+		/// </param>
+		/// <exception cref="ArgumentNullException">
+		///     Thrown if any of the parameters are null.
+		/// </exception>
+		public UsersController(IUserService userService)
+		{
+			_userService = userService ?? throw new ArgumentNullException(nameof(userService));
+		}
 
         /// <summary>
         ///     Asynchronously processes requests to retrieve a paginated list of users from the system, based on 
@@ -58,31 +58,32 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no users are found for the specified page.    
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user 
         ///         who is not authenticated or does not have the required role.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AdminOnly)]
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserListResponse))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[HttpGet]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserListResponse))]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUsers)]
-        public async Task<ActionResult<UserListResponse>> GetUsersAsync([FromQuery] UserListRequest request)
-        {
-            var result = await _userService.GetUsersAsync(request);
+		public async Task<ActionResult<UserListResponse>> GetUsersAsync([FromQuery] UserListRequest request)
+		{
+			var result = await _userService.GetUsersAsync(request);
+			if (result.Users == null || !result.Users.Any())
+			{
+				return NoContent();
+			}
 
-            if (result.Users == null || !result.Users.Any())
-            {
-                return NoContent();
-            }
+			var response = new UserListResponse
+			{
+				Users = result.Users,
+				PaginationMetadata = result.PaginationMetadata
+			};
 
-            var response = new UserListResponse
-            {
-                Users = result.Users,
-                PaginationMetadata = result.PaginationMetadata
-            };
-
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(response.PaginationMetadata));
-            return Ok(response);
-        }
+			Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(response.PaginationMetadata));
+			return Ok(response);
+		}
 
         /// <summary>
         ///     Asynchronously processes requests for retrieving a user from the system by the provided ID, 
@@ -98,31 +99,61 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user tries to retrieve
         ///         another user's account or admin tries to retrieve another admins account.   
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AllStandardRoles)]
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpGet("{id}")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserById)]
-        public async Task<ActionResult<UserResponse>> GetUserAsync([FromRoute][Required] string id)
-        {
-            var result = await _userService.GetUserAsync(id);
+		public async Task<ActionResult<UserResponse>> GetUserAsync([FromRoute][Required] string id)
+		{
+			var result = await _userService.GetUserAsync(id);
+			if (!result.Success)
+			{
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
+				{
+					return Forbid();
+				}
 
-            if (!result.Success)
-            {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return Forbid();
-                }
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+				{
+					return NotFound();
+				}
+			}
 
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
-                }
-            }
             return Ok(new UserResponse { User = result.User });
+        }
+
+        /// <summary>
+        ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
+        /// </summary>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a <see cref="UserStateMetricsResponse"/> containing user state metrics.
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no user data is available.
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is not 
+        ///			authenticated or does not have the required role.
+		///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
+        /// </returns>
+        [Authorize(Roles = RoleGroups.AdminOnly)]
+        [HttpGet("state-metrics")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserStateMetricsResponse))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserStateMetrics)]
+        public async Task<ActionResult<UserStateMetricsResponse>> GetUserStateMetricsAsync()
+        {
+            var result = await _userService.GetUserStateMetricsAsync();
+            if (result == null)
+            {
+                return NoContent();
+            }
+
+            return Ok(new UserStateMetricsResponse { TotalCount = result.TotalCount, ActivatedUsers = result.ActivatedUsers, DeactivatedUsers = result.DeactivatedUsers });
         }
 
         /// <summary>
@@ -135,26 +166,26 @@ namespace IdentityServiceApi.Controllers
         /// <returns>
         ///     - <see cref="StatusCodes.Status201Created"/> (Created) with a User DTO of the newly created user.    
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of validation or creation 
-        ///         errors encountered during user creation.
+        ///			errors encountered during user creation.
+		///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [AllowAnonymous]
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResponse))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.CreateUser)]
+		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResponse))]
+		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+		[SwaggerOperation(Summary = ApiDocumentation.UsersApi.CreateUser)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserResponse>> CreateUserAsync([FromBody] UserDTO user)
-        {
-            var result = await _userService.CreateUserAsync(user);
+		{
+			var result = await _userService.CreateUserAsync(user);
+			if (!result.Success)
+			{
+				return BadRequest(new ErrorResponse { Errors = result.Errors });
+			}
 
-            if (!result.Success)
-            {
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
-            }
-
-            var response = new UserResponse { User = result.User };
-
-            return CreatedAtAction("GetUser", new { id = response.User.Id }, response.User);
-        }
+			var response = new UserResponse { User = result.User };
+			return CreatedAtAction("GetUser", new { id = response.User.Id }, response.User);
+		}
 
         /// <summary>
         ///     Asynchronously processes requests for updating a user account in the system by the provided ID,
@@ -175,36 +206,37 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts to update another 
         ///         user's account or a admin attempts to update another admins account.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AllStandardRoles)]
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPut("{id}")]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.UpdateUser)]
-        public async Task<IActionResult> UpdateUserAsync([FromRoute][Required] string id, [FromBody] UserDTO user)
-        {
-            var result = await _userService.UpdateUserAsync(id, user);
+		public async Task<IActionResult> UpdateUserAsync([FromRoute][Required] string id, [FromBody] UserDTO user)
+		{
+			var result = await _userService.UpdateUserAsync(id, user);
+			if (!result.Success)
+			{
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
+				{
+					return Forbid();
+				}
 
-            if (!result.Success)
-            {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return Forbid();
-                }
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+				{
+					return NotFound();
+				}
 
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
-                }
+				return BadRequest(new ErrorResponse { Errors = result.Errors });
+			}
 
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
-            }
-
-            return NoContent();
-        }
+			return NoContent();
+		}
 
         /// <summary>
         ///     Asynchronously processes requests for deleting a user account in the system by the provided ID,
@@ -222,36 +254,37 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts to delete another 
         ///         user's account or a admin tries to delete another admin account.     
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AllStandardRoles)]
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpDelete("{id}")]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.DeleteUser)]
-        public async Task<IActionResult> DeleteUserAsync([FromRoute][Required] string id)
-        {
-            var result = await _userService.DeleteUserAsync(id);
+		public async Task<IActionResult> DeleteUserAsync([FromRoute][Required] string id)
+		{
+			var result = await _userService.DeleteUserAsync(id);
+			if (!result.Success)
+			{
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
+				{
+					return Forbid();
+				}
 
-            if (!result.Success)
-            {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return Forbid();
-                }
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+				{
+					return NotFound();
+				}
 
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
-                }
+				return BadRequest(new ErrorResponse { Errors = result.Errors });
+			}
 
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
-            }
-
-            return NoContent();
-        }
+			return NoContent();
+		}
 
         /// <summary>
         ///     Asynchronously processes requests for activating a user account in the system by the provided ID,
@@ -269,36 +302,37 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts to activate another 
         ///         user's account or a admin tries to activate another admin account.         
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AdminOnly)]
-        [HttpPatch("activate/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPatch("activate/{id}")]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.ActivateUser)]
-        public async Task<IActionResult> ActivateUserAsync([FromRoute][Required] string id)
-        {
-            var result = await _userService.ActivateUserAsync(id);
+		public async Task<IActionResult> ActivateUserAsync([FromRoute][Required] string id)
+		{
+			var result = await _userService.ActivateUserAsync(id);
+			if (!result.Success)
+			{
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
+				{
+					return Forbid();
+				}
 
-            if (!result.Success)
-            {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return Forbid();
-                }
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+				{
+					return NotFound();
+				}
 
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
-                }
+				return BadRequest(new ErrorResponse { Errors = result.Errors });
+			}
 
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
-            }
-
-            return NoContent();
-        }
+			return NoContent();
+		}
 
         /// <summary>
         ///     Asynchronously processes requests for deactivating a user account in the system by the provided ID,
@@ -316,36 +350,37 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts to deactivate another 
         ///         user's account or a admin tries to deactivate another admin account.    
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AdminOnly)]
-        [HttpPatch("deactivate/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPatch("deactivate/{id}")]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.DeactivateUser)]
-        public async Task<IActionResult> DeactivateUserAsync([FromRoute][Required] string id)
-        {
-            var result = await _userService.DeactivateUserAsync(id);
+		public async Task<IActionResult> DeactivateUserAsync([FromRoute][Required] string id)
+		{
+			var result = await _userService.DeactivateUserAsync(id);
+			if (!result.Success)
+			{
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
+				{
+					return Forbid();
+				}
 
-            if (!result.Success)
-            {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return Forbid();
-                }
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+				{
+					return NotFound();
+				}
 
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
-                }
+				return BadRequest(new ErrorResponse { Errors = result.Errors });
+			}
 
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
-            }
-
-            return NoContent();
-        }
+			return NoContent();
+		}
 
         /// <summary>
         ///     Asynchronously processes requests for assigning a role to a user in the system
@@ -364,30 +399,31 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made 
         ///         by a user who is not authenticated or does not have the required role.    
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = Roles.SuperAdmin)]
-        [HttpPost("{id}/roles")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPost("{id}/roles")]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.AssignRole)]
-        public async Task<IActionResult> AssignRoleAsync([FromRoute][Required] string id, [FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
-        {
-            var result = await _userService.AssignRoleAsync(id, roleName);
+		public async Task<IActionResult> AssignRoleAsync([FromRoute][Required] string id, [FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
+		{
+			var result = await _userService.AssignRoleAsync(id, roleName);
+			if (!result.Success)
+			{
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+				{
+					return NotFound();
+				}
 
-            if (!result.Success)
-            {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
-                }
+				return BadRequest(new ErrorResponse { Errors = result.Errors });
+			}
 
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
-            }
-
-            return NoContent();
-        }
+			return NoContent();
+		}
 
         /// <summary>
         ///     Asynchronously processes requests for removing a role from a user in the system
@@ -406,63 +442,30 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made 
         ///         by a user who is not authenticated or does not have the required role.   
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = Roles.SuperAdmin)]
-        [HttpDelete("{id}/roles/{roleName}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpDelete("{id}/roles/{roleName}")]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.RemoveRole)]
-        public async Task<IActionResult> RemoveRoleAsync([FromRoute][Required] string id, [FromRoute][Required] string roleName)
-        {
-            var result = await _userService.RemoveRoleAsync(id, roleName);
+		public async Task<IActionResult> RemoveRoleAsync([FromRoute][Required] string id, [FromRoute][Required] string roleName)
+		{
+			var result = await _userService.RemoveRoleAsync(id, roleName);
+			if (!result.Success)
+			{
+				if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+				{
+					return NotFound();
+				}
 
-            if (!result.Success)
-            {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
-                }
+				return BadRequest(new ErrorResponse { Errors = result.Errors });
+			}
 
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
-            }
-
-            return NoContent();
-        }
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
-        /// </summary>
-        /// <returns>
-        ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a <see cref="UserStateMetricsResponse"/> containing user state metrics.
-        ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no user data is available.
-        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is not 
-        ///     authenticated or does not have the required role.
-        /// </returns>
-        [Authorize(Roles = RoleGroups.AdminOnly)]
-        [HttpGet("state-metrics")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserStateMetricsResponse))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserStateMetrics)]
-        public async Task<ActionResult<UserListResponse>> GetUserStateMetricsAsync()
-        {
-           var result = await _userService.GetUserStateMetricsAsync();
-
-            if(result == null)
-            {
-                return NoContent();
-            }
-
-            var apiResponse = new UserStateMetricsResponse
-            {
-                TotalCount = result.TotalCount,
-                ActivatedUsers = result.ActivatedUsers,
-                DeactivatedUsers = result.DeactivatedUsers,
-            };
-
-            return Ok(apiResponse);
-        }
-    }
+			return NoContent();
+		}
+	}
 }

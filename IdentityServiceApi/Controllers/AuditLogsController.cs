@@ -55,17 +55,18 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no audit logs are found in the system.     
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
         ///         is not authenticated or does not have the required role.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
         /// </returns>
         [Authorize(Roles = Roles.SuperAdmin)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuditLogListResponse))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLogs)]
         public async Task<ActionResult<AuditLogListResponse>> GetLogsAsync([FromQuery] AuditLogListRequest request)
         {
             var result = await _auditLogService.GetLogsAsync(request);
-
             if (result.Logs == null || !result.Logs.Any())
             {
                 return NoContent();
@@ -95,6 +96,7 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is 
         ///         not authenticated or does not have the required role.  
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified audit log is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
         /// </returns>
         [Authorize(Roles = Roles.SuperAdmin)]
         [HttpDelete("{id}")]
@@ -102,11 +104,11 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.DeleteLog)]
         public async Task<IActionResult> DeleteLogAsync([FromRoute][Required] string id)
         {
             var result = await _auditLogService.DeleteLogAsync(id);
-
             if (!result.Success)
             {
                 if (result.Errors.Any(error => error.Contains(ErrorMessages.AuditLog.NotFound, StringComparison.OrdinalIgnoreCase)))

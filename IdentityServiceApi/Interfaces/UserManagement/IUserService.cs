@@ -36,16 +36,25 @@ namespace IdentityServiceApi.Interfaces.UserManagement
 		/// </returns>
 		Task<UserServiceResult> GetUserAsync(string id);
 
-		/// <summary>
-		///     Asynchronously creates a new user in the system using the specified user data transfer object.
-		/// </summary>
-		/// <param name="userDTO">
-		///     A data transfer object containing information used for user creation.
-		/// </param>
-		/// <returns>
-		///     A task representing the asynchronous operation that returns a <see cref="UserServiceResult"/> object.
-		/// </returns>
-		Task<UserServiceResult> CreateUserAsync(UserDTO userDTO);
+        /// <summary>
+        ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceStateMetricsResult"/>
+        ///     with the user state metrics.
+        /// </returns>
+        Task<UserServiceStateMetricsResult> GetUserStateMetricsAsync();
+
+        /// <summary>
+        ///     Asynchronously creates a new user in the system using the specified user data transfer object.
+        /// </summary>
+        /// <param name="userDTO">
+        ///     A data transfer object containing information used for user creation.
+        /// </param>
+        /// <returns>
+        ///     A task representing the asynchronous operation that returns a <see cref="UserServiceResult"/> object.
+        /// </returns>
+        Task<UserServiceResult> CreateUserAsync(UserDTO userDTO);
 
 		/// <summary>
 		///     Asynchronously updates a user in the system by ID using the specified user data transfer object.
@@ -121,14 +130,5 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     A task that represents the asynchronous operation, returning a result object indicating the outcome of the role removal.
         /// </returns>
         Task<ServiceResult> RemoveRoleAsync(string id, string roleName);
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
-        /// </summary>
-        /// <returns>
-        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceStateMetricsResult"/>
-        ///     with the user state metrics.
-        /// </returns>
-        Task<UserServiceStateMetricsResult> GetUserStateMetricsAsync();
     }
 }

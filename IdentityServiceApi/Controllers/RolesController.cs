@@ -48,17 +48,18 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no roles are found in the system.  
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
         ///         is not authenticated or does not have the required role.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.   
         /// </returns>
         [Authorize(Roles = "SuperAdmin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RolesListResponse))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.GetRoles)]
         public async Task<ActionResult<RolesListResponse>> GetRolesAsync()
         {
             var result = await _roleService.GetRolesAsync();
-
             if (result.Roles == null || !result.Roles.Any())
             {
                 return NoContent();

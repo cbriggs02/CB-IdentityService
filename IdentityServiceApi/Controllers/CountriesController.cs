@@ -38,23 +38,24 @@ namespace IdentityServiceApi.Controllers
 			_countryService = countryService ?? throw new ArgumentNullException(nameof(countryService));
 		}
 
-		/// <summary>
-		///     Asynchronously retrieves a list of available countries from the system and delegates 
-		///     the request to the required service.
-		/// </summary>
-		/// <returns>
-		///     - <see cref="StatusCodes.Status200OK"/> (OK) with a list of country objects.
-		///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no countries are available.
-		/// </returns>
-		[AllowAnonymous]
+        /// <summary>
+        ///     Asynchronously retrieves a list of available countries from the system and delegates 
+        ///     the request to the required service.
+        /// </summary>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a list of country objects.
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no countries are available.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.  
+        /// </returns>
+        [AllowAnonymous]
 		[HttpGet]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CountriesListResponse))]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[SwaggerOperation(Summary = ApiDocumentation.CountriesApi.GetCountries)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = ApiDocumentation.CountriesApi.GetCountries)]
 		public async Task<ActionResult<CountriesListResponse>> GetCountriesAsync()
 		{
 			var result = await _countryService.GetCountriesAsync();
-
 			if (result.Countries == null || !result.Countries.Any())
 			{
 				return NoContent();
