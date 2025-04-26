@@ -54,11 +54,23 @@ namespace IdentityServiceApi
 	{
 		public static async Task Main(string[] args)
 		{
-			Log.Logger = new LoggerConfiguration()
-				.WriteTo.Console()
-				.CreateLogger();
-
 			var builder = WebApplication.CreateBuilder(args);
+
+			builder.Host.UseSerilog((context, services, config) =>
+			{
+				var env = context.HostingEnvironment;
+
+				config.Enrich.FromLogContext();
+
+				if (env.IsDevelopment())
+				{
+					config.WriteTo.Console();
+				}
+				else
+				{
+					config.WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day);
+				}
+			});
 
 			var applicationDatabaseConnectionString = builder.Configuration.GetConnectionString("ApplicationDatabase")
 				?? throw new InvalidOperationException("ApplicationDatabase connection string is missing in the configuration.");
@@ -165,7 +177,6 @@ namespace IdentityServiceApi
 			builder.Services.AddSwaggerGen(c =>
 			{
 				c.SwaggerDoc("v1", new OpenApiInfo { Title = "IdentityServiceApi", Version = "v1" });
-
 				c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
 				{
 					Name = "Authorization",
@@ -288,5 +299,6 @@ namespace IdentityServiceApi
 			app.MapControllers();
 			await app.RunAsync();
 		}
+
 	}
 }

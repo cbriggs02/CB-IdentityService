@@ -69,7 +69,7 @@ namespace IdentityServiceApi.Controllers
         {
             var result = await _passwordService.SetPasswordAsync(id, request);
             if (!result.Success)
-            {   
+            {
                 if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
                 {
                     return NotFound();

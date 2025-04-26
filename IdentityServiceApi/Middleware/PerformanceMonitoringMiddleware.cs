@@ -70,7 +70,7 @@ namespace IdentityServiceApi.Middleware
 			var cpuUsage = GetCpuUsage();
 
 			await CheckPerformanceAsync(requestDuration);
-			ConsoleLogPerformanceMetrics(context, requestId, requestDuration, cpuUsage);
+			LogPerformanceMetrics(context, requestId, requestDuration, cpuUsage);
 		}
 
 		private static Stopwatch StartRequestTimer()
@@ -100,7 +100,7 @@ namespace IdentityServiceApi.Middleware
 			}
 		}
 
-		private void ConsoleLogPerformanceMetrics(HttpContext context, string requestId, long requestDuration, double cpuUsage)
+		private void LogPerformanceMetrics(HttpContext context, string requestId, long requestDuration, double cpuUsage)
 		{
 			string metrics = $"Request ID: {requestId}, " +
 				$"Request Path: {context.Request.Path}, " +

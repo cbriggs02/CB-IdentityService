@@ -79,7 +79,7 @@ namespace IdentityServiceApi.Controllers
                 return BadRequest(new ErrorResponse { Errors = result.Errors });
             }
 
-            if(string.IsNullOrEmpty(result.Token))
+            if (string.IsNullOrEmpty(result.Token))
             {
                 return Unauthorized();
             }

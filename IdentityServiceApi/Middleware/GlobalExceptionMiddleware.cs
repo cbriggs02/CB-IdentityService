@@ -71,12 +71,12 @@ namespace IdentityServiceApi.Middleware
             catch (Exception ex)
             {
                 await loggerService.LogExceptionAsync(ex);
-                ConsoleLogExceptionDetails(context, ex);
+                LogExceptionDetails(context, ex);
                 await WriteServerErrorResponseAsync(context);
             }
         }
 
-        private void ConsoleLogExceptionDetails(HttpContext context, Exception ex)
+        private void LogExceptionDetails(HttpContext context, Exception ex)
         {
             var requestPath = context.Request.Path.ToString() ?? "No request path";
             var timestamp = DateTime.UtcNow;
