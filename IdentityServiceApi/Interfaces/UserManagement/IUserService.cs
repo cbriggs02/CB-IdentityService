@@ -54,7 +54,6 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         /// </returns>
         Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync();
 
-
         /// <summary>
         ///     Asynchronously creates a new user in the system using the specified user data transfer object.
         /// </summary>
