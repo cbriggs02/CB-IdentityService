@@ -67,6 +67,12 @@
             ///     Summary for retrieving user state metrics.
             /// </summary>
             public const string GetUserStateMetrics = "Retrieves aggregated metrics for user states, including total, activated, and deactivated users.";
+
+            /// <summary>
+            ///     Retrieves the number of users grouped by their creation date.
+            /// </summary>
+            public const string GetUserCreationStats = "Returns aggregated user counts based on account creation dates.";
+
         }
 
         /// <summary>

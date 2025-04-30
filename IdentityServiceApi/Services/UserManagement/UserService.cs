@@ -178,6 +178,25 @@ namespace IdentityServiceApi.Services.UserManagement
         }
 
         /// <summary>
+        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceCreationStatsResult"/>
+        ///     with the user creation date metrics.
+        /// </returns>
+        public async Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync()
+        {
+            var stats = await _userManager.Users
+                .AsNoTracking()
+                .GroupBy(u => u.CreatedAt.Date)
+                .Select( g=> new UserCreationStatDTO { Date = g.Key, Count = g.Count() })
+                .OrderBy(x => x.Date)
+                .ToListAsync();
+
+            return new UserServiceCreationStatsResult { UserCreationStats = stats };
+        }
+
+        /// <summary>
         ///     Asynchronously creates a new user in the system and stores their details in the database.
         /// </summary>
         /// <param name="user">

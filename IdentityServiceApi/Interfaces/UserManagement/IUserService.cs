@@ -46,6 +46,16 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         Task<UserServiceStateMetricsResult> GetUserStateMetricsAsync();
 
         /// <summary>
+        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceCreationStatsResult"/>
+        ///     with the user creation date metrics.
+        /// </returns>
+        Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync();
+
+
+        /// <summary>
         ///     Asynchronously creates a new user in the system using the specified user data transfer object.
         /// </summary>
         /// <param name="userDTO">
