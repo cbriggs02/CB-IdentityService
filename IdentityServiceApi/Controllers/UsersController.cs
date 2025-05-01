@@ -86,6 +86,34 @@ namespace IdentityServiceApi.Controllers
         }
 
         /// <summary>
+        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
+        /// </summary>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a <see cref="UserCreationStatsResponse"/> containing user creation date metrics.
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no user creation data is available.
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is not 
+        ///         authenticated or does not have the required role.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
+        /// </returns>
+        [Authorize(Roles = RoleGroups.AdminOnly)]
+        [HttpGet("creation-stats")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserCreationStatsResponse))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserCreationStats)]
+        public async Task<ActionResult<UserCreationStatsResponse>> GetUserCreationStatsAsync()
+        {
+            var result = await _userService.GetUserCreationStatsAsync();
+            if (result == null || !result.UserCreationStats.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(new UserCreationStatsResponse { UserCreationStats = result.UserCreationStats });
+        }
+
+        /// <summary>
         ///     Asynchronously processes requests for retrieving a user from the system by the provided ID, 
         ///     delegating the operation to the appropriate service.
         /// </summary>
@@ -154,34 +182,6 @@ namespace IdentityServiceApi.Controllers
             }
 
             return Ok(new UserStateMetricsResponse { TotalCount = result.TotalCount, ActivatedUsers = result.ActivatedUsers, DeactivatedUsers = result.DeactivatedUsers });
-        }
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
-        /// </summary>
-        /// <returns>
-        ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a <see cref="UserCreationStatsResponse"/> containing user creation date metrics.
-        ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no user creation data is available.
-        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is not 
-        ///         authenticated or does not have the required role.
-        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
-        /// </returns>
-        [Authorize(Roles = RoleGroups.AdminOnly)]
-        [HttpGet("creation-stats")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserCreationStatsResponse))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserCreationStats)]
-        public async Task<ActionResult<UserCreationStatsResponse>> GetUserCreationStatsAsync()
-        {
-            var result = await _userService.GetUserCreationStatsAsync();
-            if (result == null || !result.UserCreationStats.Any())
-            {
-                return NoContent();
-            }
-
-            return Ok(new UserCreationStatsResponse { UserCreationStats = result.UserCreationStats });
         }
 
         /// <summary>

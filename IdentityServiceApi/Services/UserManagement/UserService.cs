@@ -124,6 +124,25 @@ namespace IdentityServiceApi.Services.UserManagement
         }
 
         /// <summary>
+        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceCreationStatsResult"/>
+        ///     with the user creation date metrics.
+        /// </returns>
+        public async Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync()
+        {
+            var stats = await _userManager.Users
+                .AsNoTracking()
+                .GroupBy(u => u.CreatedAt.Date)
+                .Select(g => new UserCreationStatDTO { Date = g.Key, Count = g.Count() })
+                .OrderBy(x => x.Date)
+                .ToListAsync();
+
+            return new UserServiceCreationStatsResult { UserCreationStats = stats };
+        }
+
+        /// <summary>
         ///     Asynchronously retrieves a specific user from the database by their unique identifier.
         /// </summary>
         /// <param name="id">
@@ -175,25 +194,6 @@ namespace IdentityServiceApi.Services.UserManagement
             var deactivatedUsers = totalCount - activatedUsers;
 
             return new UserServiceStateMetricsResult { TotalCount = totalCount, ActivatedUsers = activatedUsers, DeactivatedUsers = deactivatedUsers };
-        }
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
-        /// </summary>
-        /// <returns>
-        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceCreationStatsResult"/>
-        ///     with the user creation date metrics.
-        /// </returns>
-        public async Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync()
-        {
-            var stats = await _userManager.Users
-                .AsNoTracking()
-                .GroupBy(u => u.CreatedAt.Date)
-                .Select( g=> new UserCreationStatDTO { Date = g.Key, Count = g.Count() })
-                .OrderBy(x => x.Date)
-                .ToListAsync();
-
-            return new UserServiceCreationStatsResult { UserCreationStats = stats };
         }
 
         /// <summary>

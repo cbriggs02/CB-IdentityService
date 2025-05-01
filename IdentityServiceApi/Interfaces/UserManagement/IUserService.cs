@@ -25,16 +25,25 @@ namespace IdentityServiceApi.Interfaces.UserManagement
 		/// </returns>
 		Task<UserServiceListResult> GetUsersAsync(UserListRequest request);
 
-		/// <summary>
-		///     Asynchronously retrieves a user by ID from the system.
-		/// </summary>
-		/// <param name="id">
-		///     The ID of the user to be retrieved.
-		/// </param>
-		/// <returns>
-		///     A task representing the asynchronous operation that returns a <see cref="UserServiceResult"/> object.
-		/// </returns>
-		Task<UserServiceResult> GetUserAsync(string id);
+        /// <summary>
+        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceCreationStatsResult"/>
+        ///     with the user creation date metrics.
+        /// </returns>
+        Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync();
+
+        /// <summary>
+        ///     Asynchronously retrieves a user by ID from the system.
+        /// </summary>
+        /// <param name="id">
+        ///     The ID of the user to be retrieved.
+        /// </param>
+        /// <returns>
+        ///     A task representing the asynchronous operation that returns a <see cref="UserServiceResult"/> object.
+        /// </returns>
+        Task<UserServiceResult> GetUserAsync(string id);
 
         /// <summary>
         ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
@@ -44,15 +53,6 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     with the user state metrics.
         /// </returns>
         Task<UserServiceStateMetricsResult> GetUserStateMetricsAsync();
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
-        /// </summary>
-        /// <returns>
-        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceCreationStatsResult"/>
-        ///     with the user creation date metrics.
-        /// </returns>
-        Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync();
 
         /// <summary>
         ///     Asynchronously creates a new user in the system using the specified user data transfer object.
