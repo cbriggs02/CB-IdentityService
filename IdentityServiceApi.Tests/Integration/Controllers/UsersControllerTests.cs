@@ -129,161 +129,6 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		}
 
         /// <summary>
-        ///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
-        ///     returns an Unauthorized (401) response when the request is made without authentication.
-        /// </summary>
-        /// <returns>
-        ///     A task representing the asynchronous unit test operation.
-        /// </returns>
-        [Fact]
-        public async Task GetUserStateMetricsAsync_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
-        {
-            // Arrange
-            var client = _factory.CreateClient();
-            string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
-
-            // Act
-            var response = await client.GetAsync(RequestUri);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        }
-
-        /// <summary>
-        ///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
-        ///     returns a Forbidden (403) response when the authenticated user lacks the necessary privileges.
-        /// </summary>
-        /// <returns>
-        ///     A task representing the asynchronous unit test operation.
-        /// </returns>
-        [Fact]
-        public async Task GetUserStateMetricsAsync_ReturnsForbidden_WhenUserHasInsufficientPrivileges()
-        {
-            // Arrange
-            var client = _factory.CreateClient();
-            AuthenticateClient(client, Roles.User, "user123", "id-123");
-
-            string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
-
-            // Act
-            var response = await client.GetAsync(RequestUri);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        }
-
-        /// <summary>
-        ///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
-        ///     returns an OK (200) response and a valid <see cref="UserStateMetricsResponse"/> object
-        ///     when the request is made by an authenticated user with appropriate privileges.
-        /// </summary>
-        /// <returns>
-        ///     A task representing the asynchronous unit test operation.
-        /// </returns>
-        [Fact]
-        public async Task GetUserStateMetricsAsync_ReturnsOK_WhenIsAuthenticatedWithCorrectPrivileges()
-        {
-            // Arrange
-            var client = _factory.CreateClient();
-            var user = await CreateTestUserWithoutPasswordAsync(true, Roles.Admin);
-
-            AuthenticateClient(client, Roles.Admin, user.UserName, user.Id);
-
-            string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
-
-            // Act
-            var response = await client.GetAsync(RequestUri);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var metricsResponse = JsonConvert.DeserializeObject<UserStateMetricsResponse>(responseBody);
-
-            Assert.NotNull(metricsResponse);
-
-            await CleanUpTestUserAsync(user.Email);
-        }
-
-        /// <summary>
-        ///     Verifies that the <see cref="UsersController.GetUserCreationStatsAsync"/> method
-        ///     returns an Unauthorized (401) response when the user is not authenticated.
-        /// </summary>
-        /// <returns>
-        ///     A task representing the asynchronous unit test operation.
-        /// </returns>
-        [Fact]
-        public async Task GetUserCreationStatsAsync_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
-        {
-            // Arrange
-            var client = _factory.CreateClient();
-            string RequestUri = ApiRoutes.UsersController.BaseUri + "/creation-stats";
-
-            // Act
-            var response = await client.GetAsync(RequestUri);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        }
-
-        /// <summary>
-        ///     Verifies that the <see cref="UsersController.GetUserCreationStatsAsync"/> method
-        ///     returns a Forbidden (403) response when the user is authenticated but has insufficient privileges.
-        /// </summary>
-        /// <returns>
-        ///     A task representing the asynchronous unit test operation.
-        /// </returns>
-        [Fact]
-        public async Task GetUserCreationStatsAsync_ReturnsForbidden_WhenUserHasInsufficientPrivileges()
-        {
-            // Arrange
-            var client = _factory.CreateClient();
-            AuthenticateClient(client, Roles.User, "user123", "id-123");
-
-            string RequestUri = ApiRoutes.UsersController.BaseUri + "/creation-stats";
-
-            // Act
-            var response = await client.GetAsync(RequestUri);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        }
-
-        /// <summary>
-        ///     Verifies that the <see cref="UsersController.GetUserCreationStatsAsync"/> method
-        ///     returns an OK (200) response and a valid <see cref="UserCreationStatsResponse"/> object
-        ///     when the request is made by an authenticated user with the correct privileges.
-        /// </summary>
-        /// <returns>
-        ///     A task representing the asynchronous unit test operation.
-        /// </returns>
-        [Fact]
-        public async Task GetUserCreationStatsAsync_ReturnsOK_WhenIsAuthenticatedWithCorrectPrivileges()
-        {
-            // Arrange
-            var client = _factory.CreateClient();
-            var user = await CreateTestUserWithoutPasswordAsync(true, Roles.Admin);
-
-            AuthenticateClient(client, Roles.Admin, user.UserName, user.Id);
-
-            string RequestUri = ApiRoutes.UsersController.BaseUri + "/creation-stats";
-
-            // Act
-            var response = await client.GetAsync(RequestUri);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var statsResponse = JsonConvert.DeserializeObject<UserCreationStatsResponse>(responseBody);
-
-            Assert.NotNull(statsResponse);
-			Assert.NotEmpty(statsResponse.UserCreationStats);
-
-            await CleanUpTestUserAsync(user.Email);
-        }
-
-        /// <summary>
         ///     Verifies that the <see cref="UsersController.GetUserAsync"/> method returns an 
         ///     Unauthorized (401) response when the user is not authenticated.
         /// </summary>
@@ -478,17 +323,172 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			await CleanUpTestUserAsync(target.Email);
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="UsersController.CreateUserAsync"/> method returns a 
-		///     BadRequest (400) response when an invalid or non-existent country ID is provided.
-		/// </summary>
-		/// <param name="countryId">
-		///     The invalid country ID used when attempting to create a user.
-		/// </param>
-		/// <returns>
-		///     A task that represents the asynchronous unit test operation.
-		/// </returns>
-		[Theory]
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
+        ///     returns an Unauthorized (401) response when the request is made without authentication.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetUserStateMetricsAsync_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
+
+            // Act
+            var response = await client.GetAsync(RequestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
+        ///     returns a Forbidden (403) response when the authenticated user lacks the necessary privileges.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetUserStateMetricsAsync_ReturnsForbidden_WhenUserHasInsufficientPrivileges()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            AuthenticateClient(client, Roles.User, "user123", "id-123");
+
+            string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
+
+            // Act
+            var response = await client.GetAsync(RequestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.GetUserStateMetricsAsync"/> method
+        ///     returns an OK (200) response and a valid <see cref="UserStateMetricsResponse"/> object
+        ///     when the request is made by an authenticated user with appropriate privileges.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetUserStateMetricsAsync_ReturnsOK_WhenIsAuthenticatedWithCorrectPrivileges()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var user = await CreateTestUserWithoutPasswordAsync(true, Roles.Admin);
+
+            AuthenticateClient(client, Roles.Admin, user.UserName, user.Id);
+
+            string RequestUri = ApiRoutes.UsersController.BaseUri + "/state-metrics";
+
+            // Act
+            var response = await client.GetAsync(RequestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var metricsResponse = JsonConvert.DeserializeObject<UserStateMetricsResponse>(responseBody);
+
+            Assert.NotNull(metricsResponse);
+
+            await CleanUpTestUserAsync(user.Email);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.GetUserCreationStatsAsync"/> method
+        ///     returns an Unauthorized (401) response when the user is not authenticated.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetUserCreationStatsAsync_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            string RequestUri = ApiRoutes.UsersController.BaseUri + "/creation-stats";
+
+            // Act
+            var response = await client.GetAsync(RequestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.GetUserCreationStatsAsync"/> method
+        ///     returns a Forbidden (403) response when the user is authenticated but has insufficient privileges.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetUserCreationStatsAsync_ReturnsForbidden_WhenUserHasInsufficientPrivileges()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            AuthenticateClient(client, Roles.User, "user123", "id-123");
+
+            string RequestUri = ApiRoutes.UsersController.BaseUri + "/creation-stats";
+
+            // Act
+            var response = await client.GetAsync(RequestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.GetUserCreationStatsAsync"/> method
+        ///     returns an OK (200) response and a valid <see cref="UserCreationStatsResponse"/> object
+        ///     when the request is made by an authenticated user with the correct privileges.
+        /// </summary>
+        /// <returns>
+        ///     A task representing the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetUserCreationStatsAsync_ReturnsOK_WhenIsAuthenticatedWithCorrectPrivileges()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var user = await CreateTestUserWithoutPasswordAsync(true, Roles.Admin);
+
+            AuthenticateClient(client, Roles.Admin, user.UserName, user.Id);
+
+            string RequestUri = ApiRoutes.UsersController.BaseUri + "/creation-stats";
+
+            // Act
+            var response = await client.GetAsync(RequestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var statsResponse = JsonConvert.DeserializeObject<UserCreationStatsResponse>(responseBody);
+
+            Assert.NotNull(statsResponse);
+            Assert.NotEmpty(statsResponse.UserCreationStats);
+
+            await CleanUpTestUserAsync(user.Email);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.CreateUserAsync"/> method returns a 
+        ///     BadRequest (400) response when an invalid or non-existent country ID is provided.
+        /// </summary>
+        /// <param name="countryId">
+        ///     The invalid country ID used when attempting to create a user.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
 		[InlineData(0)]
 		[InlineData(-100)]
 		[InlineData(1000)]
@@ -1539,7 +1539,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			await CleanUpTestUserAsync(target.Email);
 		}
 
-		private static StringContent CreateJsonPayLoadForUserOperation(int countryId)
+        private static StringContent CreateJsonPayLoadForUserOperation(int countryId)
 		{
 			var faker = new Faker();
 			string userName = faker.Internet.UserName();

@@ -19,9 +19,9 @@ namespace IdentityServiceApi.Controllers
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
+    [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[Controller]")]
-    [ApiController]
     public class PasswordController : ControllerBase
     {
         private readonly IPasswordService _passwordService;

@@ -12,19 +12,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServiceApi.Controllers
 {
-	/// <summary>
-	///     Controller for handling API operations related to audit logs.
-	///     This controller processes all incoming requests related to audit log management and delegates
-	///     them to the audit log service, which implements the business logic.
-	/// </summary>
-	/// <remarks>
-	///     @Author: Christian Briglio
-	///     @Created: 2024
-	/// </remarks>
-	[ApiVersion("1.0")]
+    /// <summary>
+    ///     Controller for handling API operations related to audit logs.
+    ///     This controller processes all incoming requests related to audit log management and delegates
+    ///     them to the audit log service, which implements the business logic.
+    /// </summary>
+    /// <remarks>
+    ///     @Author: Christian Briglio
+    ///     @Created: 2024
+    /// </remarks>
+    [ApiController]
+    [ApiVersion("1.0")]
 	[Route("api/v{version:apiVersion}/[Controller]")]
-	[ApiController]
-	public class AuditLogsController : ControllerBase
+    [Authorize(Roles = Roles.SuperAdmin)]
+    public class AuditLogsController : ControllerBase
 	{
 		private readonly IAuditLoggerService _auditLogService;
 
@@ -57,7 +58,6 @@ namespace IdentityServiceApi.Controllers
 		///         is not authenticated or does not have the required role.
 		///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
 		/// </returns>
-		[Authorize(Roles = Roles.SuperAdmin)]
 		[HttpGet]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuditLogListResponse))]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -98,7 +98,6 @@ namespace IdentityServiceApi.Controllers
 		///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified audit log is not found.
 		///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
 		/// </returns>
-		[Authorize(Roles = Roles.SuperAdmin)]
 		[HttpDelete("{id}")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]

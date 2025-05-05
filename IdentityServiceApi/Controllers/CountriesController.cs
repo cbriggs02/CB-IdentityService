@@ -17,9 +17,10 @@ namespace IdentityServiceApi.Controllers
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
+    [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[Controller]")]
-    [ApiController]
+    [AllowAnonymous]
     public class CountriesController : ControllerBase
     {
         private readonly ICountryService _countryService;
@@ -47,7 +48,6 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no countries are available.
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.  
         /// </returns>
-        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CountriesListResponse))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -297,7 +297,7 @@ namespace IdentityServiceApi
 			app.UseMiddleware<TokenValidatorMiddleware>();
 
 			app.MapControllers();
-			await app.RunAsync();
+			app.Run();
 		}
 
 	}
