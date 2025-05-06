@@ -23,64 +23,64 @@ namespace IdentityServiceApi.Controllers
     /// </remarks>
     [ApiController]
     [ApiVersion("1.0")]
-	[Route("api/v{version:apiVersion}/[Controller]")]
-	[Authorize(Roles = Roles.SuperAdmin)]
+    [Route("api/v{version:apiVersion}/[Controller]")]
+    [Authorize(Roles = Roles.SuperAdmin)]
     public class AuditLogsController : ControllerBase
-	{
-		private readonly IAuditLoggerService _auditLogService;
+    {
+        private readonly IAuditLoggerService _auditLogService;
 
-		/// <summary>
-		///     Initializes a new instance of the <see cref="AuditLogsController"/> 
-		///     class with the specified dependencies.
-		/// </summary>
-		/// <param name="auditLogService">
-		///     audit log service used for all audit-log-related operations.
-		/// </param>
-		/// <exception cref="ArgumentNullException">
-		///     Thrown if any of the parameters are null.
-		/// </exception>
-		public AuditLogsController(IAuditLoggerService auditLogService)
-		{
-			_auditLogService = auditLogService ?? throw new ArgumentNullException(nameof(auditLogService));
-		}
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="AuditLogsController"/> 
+        ///     class with the specified dependencies.
+        /// </summary>
+        /// <param name="auditLogService">
+        ///     audit log service used for all audit-log-related operations.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        ///     Thrown if any of the parameters are null.
+        /// </exception>
+        public AuditLogsController(IAuditLoggerService auditLogService)
+        {
+            _auditLogService = auditLogService ?? throw new ArgumentNullException(nameof(auditLogService));
+        }
 
-		/// <summary>
-		///     Asynchronously processes requests for retrieving a list of all audit logs in the system,
-		///     delegating the operation to the required service.
-		/// </summary>
-		/// <param name="request">
-		///     A model containing pagination details, such as the page number and page size and audit action for optional filtering.
-		/// </param>
-		/// <returns>
-		///     - <see cref="StatusCodes.Status200OK"/> (OK) with a list of audit logs and pagination .
-		///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no audit logs are found in the system.     
-		///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
-		///         is not authenticated or does not have the required role.
-		///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
-		/// </returns>
-		[HttpGet]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuditLogListResponse))]
-		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		[SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLogs)]
-		public async Task<ActionResult<AuditLogListResponse>> GetLogsAsync([FromQuery] AuditLogListRequest request)
-		{
-			var result = await _auditLogService.GetLogsAsync(request);
-			if (result.Logs == null || !result.Logs.Any())
-			{
-				return NoContent();
-			}
+        /// <summary>
+        ///     Asynchronously processes requests for retrieving a list of all audit logs in the system,
+        ///     delegating the operation to the required service.
+        /// </summary>
+        /// <param name="request">
+        ///     A model containing pagination details, such as the page number and page size and audit action for optional filtering.
+        /// </param>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a list of audit logs and pagination .
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no audit logs are found in the system.     
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
+        ///         is not authenticated or does not have the required role.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
+        /// </returns>
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuditLogListResponse))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLogs)]
+        public async Task<ActionResult<AuditLogListResponse>> GetLogsAsync([FromQuery] AuditLogListRequest request)
+        {
+            var result = await _auditLogService.GetLogsAsync(request);
+            if (result.Logs == null || !result.Logs.Any())
+            {
+                return NoContent();
+            }
 
-			var response = new AuditLogListResponse
-			{
-				Logs = result.Logs,
-				PaginationMetadata = result.PaginationMetadata
-			};
+            var response = new AuditLogListResponse
+            {
+                Logs = result.Logs,
+                PaginationMetadata = result.PaginationMetadata
+            };
 
-			Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(response.PaginationMetadata));
-			return Ok(response);
-		}
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(response.PaginationMetadata));
+            return Ok(response);
+        }
 
         /// <summary>
         ///     Retrieves the audit log entry by its unique identifier.
@@ -92,7 +92,7 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status200OK"/> (OK) if the audit log is found.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (NotFound) if no audit log is found with the given ID.
         ///		- <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
-		///         is not authenticated or does not have the required role.
+        ///         is not authenticated or does not have the required role.
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.    
         /// </returns>
         [HttpGet("{id}")]
@@ -132,26 +132,26 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
         /// </returns>
         [HttpDelete("{id}")]
-		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		[SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.DeleteLog)]
-		public async Task<IActionResult> DeleteLogAsync([FromRoute][Required] string id)
-		{
-			var result = await _auditLogService.DeleteLogAsync(id);
-			if (!result.Success)
-			{
-				if (result.Errors.Any(error => error.Contains(ErrorMessages.AuditLog.NotFound, StringComparison.OrdinalIgnoreCase)))
-				{
-					return NotFound();
-				}
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.DeleteLog)]
+        public async Task<IActionResult> DeleteLogAsync([FromRoute][Required] string id)
+        {
+            var result = await _auditLogService.DeleteLogAsync(id);
+            if (!result.Success)
+            {
+                if (result.Errors.Any(error => error.Contains(ErrorMessages.AuditLog.NotFound, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return NotFound();
+                }
 
-				return BadRequest(new ErrorResponse { Errors = result.Errors });
-			}
+                return BadRequest(new ErrorResponse { Errors = result.Errors });
+            }
 
-			return NoContent();
-		}
-	}
+            return NoContent();
+        }
+    }
 }
