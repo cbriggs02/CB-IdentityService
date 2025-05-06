@@ -16,7 +16,7 @@ namespace IdentityServiceApi.Interfaces.Logging
     {
         /// <summary>
         ///     Asynchronously retrieves a paginated list of audit logs based on the provided request parameters.
-        /// </summary>
+        /// </summary> 
         /// <param name="request">
         ///     The request parameters including pagination details such as page number, size, and filters.
         /// </param>
@@ -25,6 +25,17 @@ namespace IdentityServiceApi.Interfaces.Logging
         ///     The result contains a list of audit logs along with pagination metadata.
         /// </returns>
         Task<AuditLogServiceListResult> GetLogsAsync(AuditLogListRequest request);
+
+        /// <summary>
+        ///     Asynchronously retrieves a specific audit log entry by its unique identifier.
+        /// </summary>
+        /// <param name="id">
+        ///     The unique identifier of the audit log entry to retrieve.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous operation. The result contains the audit log entry details if found.
+        /// </returns>
+        Task<AuditLogServiceResult> GetLogAsync(string id);
 
         /// <summary>
         ///     Asynchronously deletes a audit log in the system by ID.

@@ -24,7 +24,7 @@ namespace IdentityServiceApi.Controllers
     [ApiController]
     [ApiVersion("1.0")]
 	[Route("api/v{version:apiVersion}/[Controller]")]
-    [Authorize(Roles = Roles.SuperAdmin)]
+	[Authorize(Roles = Roles.SuperAdmin)]
     public class AuditLogsController : ControllerBase
 	{
 		private readonly IAuditLoggerService _auditLogService;
@@ -82,23 +82,56 @@ namespace IdentityServiceApi.Controllers
 			return Ok(response);
 		}
 
-		/// <summary>
-		///     Asynchronously processes requests for deleting a audit logs in the system by the provided ID,
-		///     delegating the operation to the required service.
-		/// </summary>
-		/// <param name="id">
-		///     The ID of the audit log to delete.
-		/// </param>
-		/// <returns>
-		///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if the audit log deletion was successful.    
-		///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors encountered during 
-		///         the audit log deletion.    
-		///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is 
-		///         not authenticated or does not have the required role.  
-		///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified audit log is not found.
-		///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
-		/// </returns>
-		[HttpDelete("{id}")]
+        /// <summary>
+        ///     Retrieves the audit log entry by its unique identifier.
+        /// </summary>
+        /// <param name="id">
+        ///     The unique identifier of the audit log.
+        /// </param>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status200OK"/> (OK) if the audit log is found.
+        ///     - <see cref="StatusCodes.Status404NotFound"/> (NotFound) if no audit log is found with the given ID.
+        ///		- <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
+		///         is not authenticated or does not have the required role.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.    
+        /// </returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuditLogResponse))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLog)]
+        public async Task<ActionResult<AuditLogResponse>> GetLogAsync([FromRoute][Required] string id)
+        {
+            var result = await _auditLogService.GetLogAsync(id);
+            if (!result.Success)
+            {
+                if (result.Errors.Any(error => error.Contains(ErrorMessages.AuditLog.NotFound, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return NotFound();
+                }
+            }
+
+            return Ok(new AuditLogResponse { AuditLog = result.AuditLog });
+        }
+
+        /// <summary>
+        ///     Asynchronously processes requests for deleting a audit logs in the system by the provided ID,
+        ///     delegating the operation to the required service.
+        /// </summary>
+        /// <param name="id">
+        ///     The ID of the audit log to delete.
+        /// </param>
+        /// <returns>
+        ///     - <see cref="StatusCodes.Status204NoContent"/> (NoContent) if the audit log deletion was successful.    
+        ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors encountered during 
+        ///         the audit log deletion.    
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is 
+        ///         not authenticated or does not have the required role.  
+        ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified audit log is not found.
+        ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
+        /// </returns>
+        [HttpDelete("{id}")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]

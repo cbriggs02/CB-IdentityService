@@ -142,6 +142,11 @@
             public const string GetLogs = "Retrieves all audit logs.";
 
             /// <summary>
+            ///     Summary for retrieving audit log details by ID.
+            /// </summary>
+            public const string GetLog = "Retrieves details of a audit log by ID.";
+
+            /// <summary>
             ///     Summary for deleting an audit log by its ID.
             /// </summary>
             public const string DeleteLog = "Deletes an audit log by its ID.";

@@ -28,7 +28,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
         private readonly Mock<ILoggingValidator> _loggingValidatorMock;
         private readonly Mock<ApplicationDbContext> _dbContextMock;
         private readonly Mock<IParameterValidator> _parameterValidatorMock;
-        private readonly Mock<IServiceResultFactory> _serviceResultFactoryMock;
+        private readonly Mock<IAuditLoggerServiceResultFactory> _serviceResultFactoryMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly PerformanceLoggerService _performanceLoggerService;
         private const long ValidResponseTime = 100;
@@ -43,7 +43,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
             _loggingValidatorMock = new Mock<ILoggingValidator>();
             _dbContextMock = new Mock<ApplicationDbContext>();
             _parameterValidatorMock = new Mock<IParameterValidator>();
-            _serviceResultFactoryMock = new Mock<IServiceResultFactory>();
+            _serviceResultFactoryMock = new Mock<IAuditLoggerServiceResultFactory>();
             _mapperMock = new Mock<IMapper>();
 
             _performanceLoggerService = new PerformanceLoggerService(_userContextServiceMock.Object, _loggingValidatorMock.Object, _dbContextMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object, _mapperMock.Object);

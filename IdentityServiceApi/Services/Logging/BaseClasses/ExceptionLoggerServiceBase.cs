@@ -28,13 +28,13 @@ namespace IdentityServiceApi.Services.Logging.AbstractClasses
         /// <param name="parameterValidator">
         ///     An instance of <see cref="IParameterValidator"/> used for validating input parameters.
         /// </param>
-        /// <param name="serviceResultFactory">
-        ///     A factory used to create standardized service result objects.
+        /// <param name="auditLogServiceResultFactory">
+        ///     A factory used to create audit log service result objects.
         /// </param>
         /// <param name="mapper">
         ///     An instance of AutoMapper used for mapping objects during logging.
         /// </param>
-        protected ExceptionLoggerServiceBase(ApplicationDbContext context, IParameterValidator parameterValidator, IServiceResultFactory serviceResultFactory, IMapper mapper) : base(context, parameterValidator, serviceResultFactory, mapper)
+        protected ExceptionLoggerServiceBase(ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLogServiceResultFactory, IMapper mapper) : base(context, parameterValidator, auditLogServiceResultFactory, mapper)
         {
         }
 

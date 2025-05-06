@@ -96,14 +96,98 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="AuditLogsController.DeleteLogAsync"/> method returns a 
-		///     NotFound response (404) when trying to delete a log that does not exist.
-		/// </summary>
-		/// <returns>
-		///     A task that represents the asynchronous unit test operation.
-		/// </returns>
-		[Fact]
+        /// <summary>
+        ///     Verifies that the <see cref="AuditLogsController.GetLogAsync"/> method returns an Unauthorized 
+        ///     response (401) when the user is not authenticated.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetLogAsync_ReturnsUnauthorized_WhenNotAuthenticated()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}/valid-log-id";
+
+            // Act
+            var response = await client.GetAsync(requestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="AuditLogsController.GetLogAsync"/> method returns a Not Found 
+        ///     response (404) when the requested audit log ID does not exist in the database.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetLogAsync_ReturnsNotFound_WhenLogDoesNotExist()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var user = await CreateTestUserWithPasswordAsync(true);
+
+            AuthenticateClient(client, user.UserName, user.Id);
+
+            var requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}/nonexistent-log-id";
+
+            // Act
+            var response = await client.GetAsync(requestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+            await CleanUpTestUserAsync(user.Email);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="AuditLogsController.GetLogAsync"/> method returns an OK 
+        ///     response (200) along with the expected audit log data when the user is authenticated 
+        ///     and the log entry exists.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetLogAsync_ReturnsOK_WhenUserIsAuthenticatedAndLogWasFound()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var user = await CreateTestUserWithPasswordAsync(true);
+
+            AuthenticateClient(client, user.UserName, user.Id);
+
+            var auditLog = await CreateTestAuditLog(user.Id);
+
+            string requestUri = $"{ApiRoutes.AuditLogsController.BaseUri}/{auditLog.Id}";
+
+            // Act
+            var response = await client.GetAsync(requestUri);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var getLogResponse = JsonConvert.DeserializeObject<AuditLogResponse>(responseBody);
+
+            Assert.NotNull(getLogResponse);
+            Assert.NotNull(getLogResponse.AuditLog);
+
+            await CleanUpTestUserAsync(user.Email);
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="AuditLogsController.DeleteLogAsync"/> method returns a 
+        ///     NotFound response (404) when trying to delete a log that does not exist.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
 		public async Task DeleteLogAsync_ReturnsNotFound_WhenLogDoesNotExist()
 		{
 			// Arrange

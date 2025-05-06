@@ -29,6 +29,7 @@ using IdentityServiceApi.Services.Logging.Common;
 using IdentityServiceApi.Services.Logging.Implementations;
 using IdentityServiceApi.Services.Logging;
 using IdentityServiceApi.Models.Configurations;
+using IdentityServiceApi.Services.Utilities.ResultFactories.Logging;
 
 namespace IdentityServiceApi
 {
@@ -171,6 +172,7 @@ namespace IdentityServiceApi
 			builder.Services.AddScoped<IUserServiceResultFactory, UserServiceResultFactory>();
 			builder.Services.AddScoped<IUserLookupServiceResultFactory, UserLookupServiceResultFactory>();
 			builder.Services.AddScoped<ILoginServiceResultFactory, LoginServiceResultFactory>();
+			builder.Services.AddScoped<IAuditLoggerServiceResultFactory, AuditLoggerServiceResultFactory>();
 
 			builder.Services.AddTransient<DbInitializer>();
 

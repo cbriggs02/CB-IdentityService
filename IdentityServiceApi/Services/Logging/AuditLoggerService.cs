@@ -23,7 +23,7 @@ namespace IdentityServiceApi.Services.Logging
     public class AuditLoggerService : IAuditLoggerService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IServiceResultFactory _serviceResultFactory;
+        private readonly IAuditLoggerServiceResultFactory _auditLoggerServiceResultFactory;
         private readonly IParameterValidator _parameterValidator;
         private readonly IMapper _mapper;
 
@@ -40,17 +40,17 @@ namespace IdentityServiceApi.Services.Logging
         /// <param name="mapper">
         ///     Object mapper for converting between entities and data transfer objects (DTOs).
         /// </param>
-        /// <param name="serviceResultFactory">
+        /// <param name="auditLoggerServiceResultFactory">
         ///     The service used for creating the result objects being returned in operations.
         /// </param>
         /// <exception cref="ArgumentNullException">
         ///     Thrown if the context is null.
         /// </exception>
-        public AuditLoggerService(ApplicationDbContext context, IParameterValidator parameterValidator, IServiceResultFactory serviceResultFactory, IMapper mapper)
+        public AuditLoggerService(ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLoggerServiceResultFactory, IMapper mapper)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-            _serviceResultFactory = serviceResultFactory ?? throw new ArgumentNullException(nameof(serviceResultFactory));
+            _auditLoggerServiceResultFactory = auditLoggerServiceResultFactory ?? throw new ArgumentNullException(nameof(auditLoggerServiceResultFactory));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
@@ -64,36 +64,60 @@ namespace IdentityServiceApi.Services.Logging
         ///     A task that represents the asynchronous operation. The task result contains
         ///     the audit logs and pagination metadata.
         /// </returns>
-        public async Task<AuditLogServiceListResult> GetLogsAsync(AuditLogListRequest request)
-        {
-            _parameterValidator.ValidateObjectNotNull(request, nameof(request));
+		public async Task<AuditLogServiceListResult> GetLogsAsync(AuditLogListRequest request)
+		{
+			_parameterValidator.ValidateObjectNotNull(request, nameof(request));
 
-            var query = _context.AuditLogs.AsQueryable();
-            if (request.Action.HasValue)
+			var query = _context.AuditLogs.AsQueryable();
+			if (request.Action.HasValue)
+			{
+				query = query.Where(x => x.Action == request.Action.Value);
+			}
+
+			var totalCount = await query.CountAsync();
+			var auditLogs = await query
+				.Select(x => new SimplifiedAuditLogDTO { Id = x.Id, Action = x.Action, TimeStamp = x.TimeStamp })
+				.OrderBy(x => x.TimeStamp)
+				.Skip((request.Page - 1) * request.PageSize)
+				.Take(request.PageSize)
+				.AsNoTracking()
+				.ToListAsync();
+
+			var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
+
+			PaginationModel paginationMetadata = new()
+			{
+				TotalCount = totalCount,
+				PageSize = request.PageSize,
+				CurrentPage = request.Page,
+				TotalPages = totalPages
+			};
+
+			return new AuditLogServiceListResult { Logs = auditLogs, PaginationMetadata = paginationMetadata };
+		}
+
+        /// <summary>
+        ///     Asynchronously retrieves a specific audit log entry from the database using its unique identifier.
+        /// </summary>
+        /// <param name="id">
+        ///     The unique identifier of the audit log entry to retrieve.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous operation. The result contains the audit log entry details
+        ///     wrapped in a <see cref="AuditLogServiceResult"/>, or an error result if the log was not found.
+        /// </returns>
+        public async Task<AuditLogServiceResult> GetLogAsync(string id)
+        {
+            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+
+            var log = await _context.AuditLogs.FindAsync(id);
+            if(log == null)
             {
-                query = query.Where(x => x.Action == request.Action.Value);
+                return _auditLoggerServiceResultFactory.AuditLoggerOperationFailure(new[] { ErrorMessages.AuditLog.NotFound });
             }
 
-            var totalCount = await query.CountAsync();
-            var auditLogs = await query
-                .OrderBy(x => x.TimeStamp)
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .AsNoTracking()
-                .ToListAsync();
-
-            var logDTOs = auditLogs.Select(log => _mapper.Map<AuditLogDTO>(log)).ToList();
-            var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
-
-            PaginationModel paginationMetadata = new()
-            {
-                TotalCount = totalCount,
-                PageSize = request.PageSize,
-                CurrentPage = request.Page,
-                TotalPages = totalPages
-            };
-
-            return new AuditLogServiceListResult { Logs = logDTOs, PaginationMetadata = paginationMetadata };
+            var auditLogDTO = _mapper.Map<AuditLogDTO>(log);
+            return _auditLoggerServiceResultFactory.AuditLoggerOperationSuccess(auditLogDTO);
         }
 
         /// <summary>
@@ -114,7 +138,7 @@ namespace IdentityServiceApi.Services.Logging
             var log = await _context.AuditLogs.FindAsync(id);
             if (log == null)
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.AuditLog.NotFound });
+                return _auditLoggerServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.AuditLog.NotFound });
             }
 
             _context.AuditLogs.Remove(log);
@@ -122,10 +146,10 @@ namespace IdentityServiceApi.Services.Logging
             int result = await _context.SaveChangesAsync();
             if (result != 1)
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.AuditLog.DeletionFailed });
+                return _auditLoggerServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.AuditLog.DeletionFailed });
             }
 
-            return _serviceResultFactory.GeneralOperationSuccess();
+            return _auditLoggerServiceResultFactory.GeneralOperationSuccess();
         }
 
         /// <summary>

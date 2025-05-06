@@ -13,10 +13,10 @@ namespace IdentityServiceApi.Models.ApiResponseModels.AuditLogs
     public class AuditLogListResponse
     {
         /// <summary>
-        ///     The list of audit logs retrieved from the service that is returned by the API.
+        ///     The list of Simplified audit logs retrieved from the service that is returned by the API.
         ///     This collection may be empty if no audit logs are available.
         /// </summary>
-        public IEnumerable<AuditLogDTO> Logs { get; set; } = new List<AuditLogDTO>();
+        public IEnumerable<SimplifiedAuditLogDTO> Logs { get; set; } = new List<SimplifiedAuditLogDTO>();
 
         /// <summary>
         ///     Metadata for pagination, such as total count and page details.

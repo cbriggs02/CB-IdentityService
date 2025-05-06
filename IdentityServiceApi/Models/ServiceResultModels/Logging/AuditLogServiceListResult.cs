@@ -13,9 +13,9 @@ namespace IdentityServiceApi.Models.ServiceResultModels.Logging
     public class AuditLogServiceListResult
     {
         /// <summary>
-        ///     Gets or sets the collection of audit logs returned from the service operation.
+        ///     Gets or sets the collection of simplified audit logs returned from the service operation.
         /// </summary>
-        public IEnumerable<AuditLogDTO> Logs { get; set; } = new List<AuditLogDTO>();
+        public IEnumerable<SimplifiedAuditLogDTO> Logs { get; set; } = new List<SimplifiedAuditLogDTO>();
 
         /// <summary>
         ///     Gets or sets the pagination metadata associated with the audit log retrieval operation.

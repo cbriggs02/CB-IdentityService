@@ -38,7 +38,7 @@ namespace IdentityServiceApi.Services.Logging.Implementations
         /// <param name="parameterValidator">
         ///     An instance of <see cref="IParameterValidator"/> used for validating input parameters.
         /// </param>
-        /// <param name="serviceResultFactory">
+        /// <param name="auditLogServiceResultFactory">
         ///     A factory used to create standardized service result objects.
         /// </param>
         /// <param name="mapper">
@@ -47,7 +47,7 @@ namespace IdentityServiceApi.Services.Logging.Implementations
         /// <exception cref="ArgumentNullException">
         ///     Thrown if <paramref name="userContextService"/> is null.
         /// </exception>
-        public PerformanceLoggerService(IUserContextService userContextService, ILoggingValidator loggingValidator, ApplicationDbContext context, IParameterValidator parameterValidator, IServiceResultFactory serviceResultFactory, IMapper mapper) : base(context, parameterValidator, serviceResultFactory, mapper)
+        public PerformanceLoggerService(IUserContextService userContextService, ILoggingValidator loggingValidator, ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLogServiceResultFactory, IMapper mapper) : base(context, parameterValidator, auditLogServiceResultFactory, mapper)
         {
             _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
             _loggingValidator = loggingValidator ?? throw new ArgumentNullException(nameof(loggingValidator));
