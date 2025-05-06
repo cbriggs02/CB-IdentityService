@@ -64,37 +64,37 @@ namespace IdentityServiceApi.Services.Logging
         ///     A task that represents the asynchronous operation. The task result contains
         ///     the audit logs and pagination metadata.
         /// </returns>
-		public async Task<AuditLogServiceListResult> GetLogsAsync(AuditLogListRequest request)
-		{
-			_parameterValidator.ValidateObjectNotNull(request, nameof(request));
+        public async Task<AuditLogServiceListResult> GetLogsAsync(AuditLogListRequest request)
+        {
+            _parameterValidator.ValidateObjectNotNull(request, nameof(request));
 
-			var query = _context.AuditLogs.AsQueryable();
-			if (request.Action.HasValue)
-			{
-				query = query.Where(x => x.Action == request.Action.Value);
-			}
+            var query = _context.AuditLogs.AsQueryable();
+            if (request.Action.HasValue)
+            {
+                query = query.Where(x => x.Action == request.Action.Value);
+            }
 
-			var totalCount = await query.CountAsync();
-			var auditLogs = await query
-				.Select(x => new SimplifiedAuditLogDTO { Id = x.Id, Action = x.Action, TimeStamp = x.TimeStamp })
-				.OrderBy(x => x.TimeStamp)
-				.Skip((request.Page - 1) * request.PageSize)
-				.Take(request.PageSize)
-				.AsNoTracking()
-				.ToListAsync();
+            var totalCount = await query.CountAsync();
+            var auditLogs = await query
+                .Select(x => new SimplifiedAuditLogDTO { Id = x.Id, Action = x.Action, TimeStamp = x.TimeStamp })
+                .OrderBy(x => x.TimeStamp)
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
 
-			var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
+            var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
 
-			PaginationModel paginationMetadata = new()
-			{
-				TotalCount = totalCount,
-				PageSize = request.PageSize,
-				CurrentPage = request.Page,
-				TotalPages = totalPages
-			};
+            PaginationModel paginationMetadata = new()
+            {
+                TotalCount = totalCount,
+                PageSize = request.PageSize,
+                CurrentPage = request.Page,
+                TotalPages = totalPages
+            };
 
-			return new AuditLogServiceListResult { Logs = auditLogs, PaginationMetadata = paginationMetadata };
-		}
+            return new AuditLogServiceListResult { Logs = auditLogs, PaginationMetadata = paginationMetadata };
+        }
 
         /// <summary>
         ///     Asynchronously retrieves a specific audit log entry from the database using its unique identifier.
