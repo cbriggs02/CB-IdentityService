@@ -3,7 +3,7 @@
 namespace IdentityServiceApi.Extensions
 {
     /// <summary>
-    /// 
+    ///     Provides extension methods to configure Swagger services for the IdentityServiceApi.
     /// </summary>
     /// <remarks>
     ///     @Author: Christian Briglio
@@ -12,10 +12,14 @@ namespace IdentityServiceApi.Extensions
     public static class SwaggerServiceExtensions
     {
         /// <summary>
-        /// 
+        ///     Adds and configures Swagger generation and JWT bearer security to the service collection.
         /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
+        /// <param name="services">
+        ///     The <see cref="IServiceCollection"/> to which the Swagger services will be added.
+        /// </param>
+        /// <returns>
+        ///     The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.
+        /// </returns>
         public static IServiceCollection AddSwaggerServices(this IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
