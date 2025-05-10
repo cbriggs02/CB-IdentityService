@@ -120,7 +120,6 @@ namespace IdentityServiceApi.Data
 			const string Password = "superPassword123!";
 
 			var superAdmin = await userManager.FindByEmailAsync(Email);
-
 			if (superAdmin == null)
 			{
 				superAdmin = new User
@@ -138,7 +137,6 @@ namespace IdentityServiceApi.Data
 				};
 
 				var result = await userManager.CreateAsync(superAdmin, Password);
-
 				if (result.Succeeded)
 				{
 					await userManager.AddToRoleAsync(superAdmin, Roles.SuperAdmin);
@@ -152,7 +150,6 @@ namespace IdentityServiceApi.Data
 			const string Password = "AdminPassword123!";
 
 			var adminUser = await userManager.FindByEmailAsync(Email);
-
 			if (adminUser == null)
 			{
 				adminUser = new User
@@ -170,7 +167,6 @@ namespace IdentityServiceApi.Data
 				};
 
 				var result = await userManager.CreateAsync(adminUser, Password);
-
 				if (result.Succeeded)
 				{
 					await userManager.AddToRoleAsync(adminUser, Roles.Admin);
@@ -181,7 +177,6 @@ namespace IdentityServiceApi.Data
 		private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
 		{
 			string[] roleNames = { Roles.SuperAdmin, Roles.Admin, Roles.User };
-
 			foreach (var roleName in roleNames)
 			{
 				if (!await roleManager.RoleExistsAsync(roleName))

@@ -11,6 +11,7 @@ using IdentityServiceApi.Models.Shared;
 using IdentityServiceApi.Models.ServiceResultModels.Shared;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
 using IdentityServiceApi.Models.RequestModels.UserManagement;
+using System.Xml.Linq;
 
 namespace IdentityServiceApi.Services.UserManagement
 {
@@ -102,16 +103,20 @@ namespace IdentityServiceApi.Services.UserManagement
 
             var totalCount = await query.CountAsync();
             var users = await query
-                .Include(user => user.Country)
-                .OrderBy(user => user.LastName)
+                .Select(x => new SimplifiedUserDTO 
+                { 
+                    Id = x.Id, 
+                    UserName = x.UserName, 
+                    Name = $"{x.FirstName} {x.LastName}", 
+                    AccountStatus = x.AccountStatus 
+                })
+                .OrderBy(user => user.UserName)
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .AsNoTracking()
                 .ToListAsync();
 
-            var userDTOs = users.Select(user => _mapper.Map<UserDTO>(user)).ToList();
             var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
-
             PaginationModel paginationMetadata = new()
             {
                 TotalCount = totalCount,
@@ -120,7 +125,7 @@ namespace IdentityServiceApi.Services.UserManagement
                 TotalPages = totalPages
             };
 
-            return new UserServiceListResult { Users = userDTOs, PaginationMetadata = paginationMetadata };
+            return new UserServiceListResult { Users = users, PaginationMetadata = paginationMetadata };
         }
 
         /// <summary>

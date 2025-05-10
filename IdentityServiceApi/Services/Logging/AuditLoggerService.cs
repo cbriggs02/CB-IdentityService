@@ -84,7 +84,6 @@ namespace IdentityServiceApi.Services.Logging
                 .ToListAsync();
 
             var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
-
             PaginationModel paginationMetadata = new()
             {
                 TotalCount = totalCount,
