@@ -110,24 +110,19 @@
             public const string NotFound = "Role not found.";
 
             /// <summary>
-            ///     Message displayed when attempting to create a role that already exists.
-            /// </summary>
-            public const string AlreadyExist = "Role already exists.";
-
-            /// <summary>
             ///     Message displayed when assigning a role to an inactive user account.
             /// </summary>
             public const string InactiveUser = "Cannot assign role to an inactive user account.";
 
             /// <summary>
-            ///     Message displayed when a role is missing from a user.
+            ///     Error message indicating that the specified user currently has no role assigned.
             /// </summary>
-            public const string MissingRole = "The specified role is not assigned to the user.";
+            public const string MissingRole = "The specified user currently has no role assigned.";
 
             /// <summary>
-            ///     Message displayed when a user already has the specified role.
+            ///     Message displayed when a user already has a role assigned.
             /// </summary>
-            public const string HasRole = "The user is already assigned this role.";
+            public const string UserAlreadyHasRole = "User already has a role assigned. Only one role is allowed.";
         }
 
         /// <summary>

@@ -1363,18 +1363,18 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 		}
 
 		/// <summary>
-		///     Verifies that the <see cref="UsersController.RemoveRoleAsync(string, string)"/> method 
+		///     Verifies that the <see cref="UsersController.RemoveAssignedRoleAsync(string)"/> method 
 		///     returns an Unauthorized (401) response when a request is made by an unauthenticated user.
 		/// </summary>
 		/// <returns>
 		///     A task that represents the asynchronous unit test operation.
 		/// </returns>
 		[Fact]
-		public async Task RemoveRoleAsync_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
+		public async Task RemoveAssignedRoleAsync_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
 		{
 			// Arrange
 			var client = _factory.CreateClient();
-			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles/role-name";
+			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles";
 
 			// Act
 			var response = await client.DeleteAsync(RequestUri);
@@ -1383,28 +1383,28 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="UsersController.RemoveRoleAsync(string, string)"/>
-		///     method returns a Forbidden (403) response when the authenticated user has insufficient privileges
-		///     to remove a role.
-		/// </summary>
-		/// <param name="userRole">
-		///     The role used to authenticate the client, which should not grant sufficient privileges
-		///     for removing the role from the user.
-		/// </param>
-		/// <returns>
-		///     A task that represents the asynchronous unit test operation.
-		/// </returns>
-		[Theory]
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.RemoveAssignedRoleAsync(string)"/>
+        ///     method returns a Forbidden (403) response when the authenticated user has insufficient privileges
+        ///     to remove a role.
+        /// </summary>
+        /// <param name="userRole">
+        ///     The role used to authenticate the client, which should not grant sufficient privileges
+        ///     for removing the role from the user.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Theory]
 		[InlineData(Roles.Admin)]
 		[InlineData(Roles.User)]
-		public async Task RemoveRoleAsync_ReturnsForbidden_WhenUserHasInsufficientPrivileges(string userRole)
+		public async Task RemoveAssignedRoleAsync_ReturnsForbidden_WhenUserHasInsufficientPrivileges(string userRole)
 		{
 			// Arrange
 			var client = _factory.CreateClient();
 			AuthenticateClient(client, userRole, "user123", "id-123");
 
-			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles/role-name";
+			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles";
 
 			// Act
 			var response = await client.DeleteAsync(RequestUri);
@@ -1413,15 +1413,15 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="UsersController.RemoveRoleAsync(string, string)"/>
-		///     method returns a NotFound (404) response when the specified user does not exist.
-		/// </summary>
-		/// <returns>
-		///     A task that represents the asynchronous unit test operation.
-		/// </returns>
-		[Fact]
-		public async Task RemoveRoleAsync_ReturnsNotFound_WhenUserDoesNotExist()
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.RemoveAssignedRoleAsync(string)"/>
+        ///     method returns a NotFound (404) response when the specified user does not exist.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+		public async Task RemoveAssignedRoleAsync_ReturnsNotFound_WhenUserDoesNotExist()
 		{
 			// Arrange
 			var client = _factory.CreateClient();
@@ -1429,7 +1429,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 
 			AuthenticateClient(client, Roles.SuperAdmin, user.UserName, user.Id);
 
-			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles/role-name";
+			string RequestUri = ApiRoutes.UsersController.BaseUri + "/id-123/roles";
 
 			// Act
 			var response = await client.DeleteAsync(RequestUri);
@@ -1440,15 +1440,15 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			await CleanUpTestUserAsync(user.Email);
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="UsersController.RemoveRoleAsync(string, string)"/> method 
-		///     returns a BadRequest (400) response when the requested role does not exist in the system.
-		/// </summary>
-		/// <returns>
-		///     A task that represents the asynchronous unit test operation.
-		/// </returns>
-		[Fact]
-		public async Task RemoveRoleAsync_ReturnsBadRequest_WhenRequestedRoleDoesNotExist()
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.RemoveAssignedRoleAsync(string)"/> method 
+        ///     returns a BadRequest (400) response when the target user does not have the specified role assigned.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+		public async Task RemoveAssignedRoleAsync_ReturnsBadRequest_WhenTargetUserDoesNotHaveRole()
 		{
 			// Arrange
 			var client = _factory.CreateClient();
@@ -1457,7 +1457,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			AuthenticateClient(client, Roles.SuperAdmin, requester.UserName, requester.Id);
 
 			var target = await CreateTestUserWithoutPasswordAsync(true);
-			string RequestUri = ApiRoutes.UsersController.BaseUri + $"/{target.Id}/roles/nonexistent-role";
+			string RequestUri = ApiRoutes.UsersController.BaseUri + $"/{target.Id}/roles";
 
 			// Act
 			var response = await client.DeleteAsync(RequestUri);
@@ -1475,50 +1475,15 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			await CleanUpTestUserAsync(target.Email);
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="UsersController.RemoveRoleAsync(string, string)"/> method 
-		///     returns a BadRequest (400) response when the target user does not have the specified role assigned.
-		/// </summary>
-		/// <returns>
-		///     A task that represents the asynchronous unit test operation.
-		/// </returns>
-		[Fact]
-		public async Task RemoveRoleAsync_ReturnsBadRequest_WhenTargetUserDoesNotHaveRole()
-		{
-			// Arrange
-			var client = _factory.CreateClient();
-			var requester = await CreateTestUserWithoutPasswordAsync(true, Roles.SuperAdmin);
-
-			AuthenticateClient(client, Roles.SuperAdmin, requester.UserName, requester.Id);
-
-			var target = await CreateTestUserWithoutPasswordAsync(true);
-			string RequestUri = ApiRoutes.UsersController.BaseUri + $"/{target.Id}/roles/{Roles.User}";
-
-			// Act
-			var response = await client.DeleteAsync(RequestUri);
-
-			// Assert
-			Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-			var responseBody = await response.Content.ReadAsStringAsync();
-			var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseBody);
-
-			Assert.NotNull(errorResponse);
-			Assert.NotEmpty(errorResponse.Errors);
-
-			await CleanUpTestUserAsync(requester.Email);
-			await CleanUpTestUserAsync(target.Email);
-		}
-
-		/// <summary>
-		///     Verifies that the <see cref="UsersController.RemoveRoleAsync(string, string)"/> method 
-		///     returns a NoContent (204) response when the specified role is successfully removed from the target user.
-		/// </summary>
-		/// <returns>
-		///     A task that represents the asynchronous unit test operation.
-		/// </returns>
-		[Fact]
-		public async Task RemoveRoleAsync_ReturnsNoContent_WhenRoleIsSuccessfullyRemoved()
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.RemoveAssignedRoleAsync(string)"/> method 
+        ///     returns a NoContent (204) response when the specified role is successfully removed from the target user.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+		public async Task RemoveAssignedRoleAsync_ReturnsNoContent_WhenRoleIsSuccessfullyRemoved()
 		{
 			// Arrange
 			var client = _factory.CreateClient();
@@ -1527,7 +1492,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			AuthenticateClient(client, Roles.SuperAdmin, requester.UserName, requester.Id);
 
 			var target = await CreateTestUserWithoutPasswordAsync(true, Roles.User);
-			string RequestUri = ApiRoutes.UsersController.BaseUri + $"/{target.Id}/roles/{Roles.User}";
+			string RequestUri = ApiRoutes.UsersController.BaseUri + $"/{target.Id}/roles";
 
 			// Act
 			var response = await client.DeleteAsync(RequestUri);

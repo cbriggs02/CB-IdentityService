@@ -69,6 +69,18 @@ namespace IdentityServiceApi.Models.DTO
         /// </summary>
         [SwaggerSchema(ReadOnly = true)]
         public string? CountryName { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the account status of the user.
+        /// </summary>
+        [SwaggerSchema(ReadOnly = true)]
+        public int AccountStatus { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the role identifier associated with the user.
+        /// </summary>
+        [SwaggerSchema(ReadOnly = true)]
+        public string? RoleId { get; set; }
     }
 }
 

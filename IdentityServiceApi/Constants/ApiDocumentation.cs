@@ -119,14 +119,9 @@
             public const string GetRoles = "Retrieves all roles in the system.";
 
             /// <summary>
-            ///     Summary for creating a new role.
+            ///     Summary for retrieving role details by its ID.
             /// </summary>
-            public const string CreateRole = "Creates a new role.";
-
-            /// <summary>
-            ///     Summary for deleting a role.
-            /// </summary>
-            public const string DeleteRole = "Deletes a role.";
+            public const string GetRoleById = "Retrieves details of a role by its ID.";
         }
 
         /// <summary>

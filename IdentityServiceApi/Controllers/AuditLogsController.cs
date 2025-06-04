@@ -23,7 +23,7 @@ namespace IdentityServiceApi.Controllers
     /// </remarks>
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[Controller]")]
+    [Route("api/v{version:apiVersion}/audit-logs")]
     [Authorize(Roles = Roles.SuperAdmin)]
     public class AuditLogsController : ControllerBase
     {
@@ -54,14 +54,17 @@ namespace IdentityServiceApi.Controllers
         /// <returns>
         ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a list of audit logs and pagination .
         ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no audit logs are found in the system.     
-        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
-        ///         is not authenticated or does not have the required role.
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is 
+        ///         not authenticated.  
+        ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
+        ///         who has insufficient privileges.
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
         /// </returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuditLogListResponse))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLogs)]
         public async Task<ActionResult<AuditLogListResponse>> GetLogsAsync([FromQuery] AuditLogListRequest request)
@@ -90,26 +93,26 @@ namespace IdentityServiceApi.Controllers
         /// </param>
         /// <returns>
         ///     - <see cref="StatusCodes.Status200OK"/> (OK) if the audit log is found.
+        ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is 
+        ///         not authenticated.  
+        ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
+        ///         who has insufficient privileges.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (NotFound) if no audit log is found with the given ID.
-        ///		- <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who 
-        ///         is not authenticated or does not have the required role.
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.    
         /// </returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuditLogResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLog)]
         public async Task<ActionResult<AuditLogResponse>> GetLogAsync([FromRoute][Required] string id)
         {
             var result = await _auditLogService.GetLogAsync(id);
-            if (!result.Success)
+            if (!result.Success && result.Errors.Any(error => error.Contains(ErrorMessages.AuditLog.NotFound, StringComparison.OrdinalIgnoreCase)))
             {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.AuditLog.NotFound, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return NotFound();
-                }
+                return NotFound();
             }
 
             return Ok(new AuditLogResponse { AuditLog = result.AuditLog });
@@ -127,7 +130,9 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors encountered during 
         ///         the audit log deletion.    
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the request is made by a user who is 
-        ///         not authenticated or does not have the required role.  
+        ///         not authenticated.  
+        ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
+        ///         who has insufficient privileges.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified audit log is not found.
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
         /// </returns>
@@ -135,6 +140,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.DeleteLog)]

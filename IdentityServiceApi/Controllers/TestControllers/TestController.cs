@@ -15,7 +15,7 @@ namespace IdentityServiceApi.Controllers.TestControllers
     /// </remarks>
     [ApiExplorerSettings(IgnoreApi = true)]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/test")]
     public class TestController : ControllerBase
     {
         /// <summary>

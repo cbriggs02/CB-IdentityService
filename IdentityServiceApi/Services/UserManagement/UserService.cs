@@ -11,7 +11,6 @@ using IdentityServiceApi.Models.Shared;
 using IdentityServiceApi.Models.ServiceResultModels.Shared;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
 using IdentityServiceApi.Models.RequestModels.UserManagement;
-using System.Xml.Linq;
 
 namespace IdentityServiceApi.Services.UserManagement
 {
@@ -25,6 +24,7 @@ namespace IdentityServiceApi.Services.UserManagement
     public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserServiceResultFactory _userServiceResultFactory;
         private readonly IPasswordHistoryCleanupService _cleanupService;
         private readonly IPermissionService _permissionService;
@@ -39,6 +39,9 @@ namespace IdentityServiceApi.Services.UserManagement
         /// </summary>
         /// <param name="userManager">
         ///     The user manager responsible for handling user management operations.
+        /// </param>
+        /// <param name="roleManager">
+        ///     The role manager for handling user-role operations within the system.
         /// </param>
         /// <param name="userServiceResultFactory">
         ///     The service used for creating the result objects being returned in operations.
@@ -67,9 +70,10 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <exception cref="ArgumentNullException">
         ///     Thrown when any of the provided service parameters are null.
         /// </exception>
-        public UserService(UserManager<User> userManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IRoleService roleService, IMapper mapper)
+        public UserService(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IRoleService roleService, IMapper mapper)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _userServiceResultFactory = userServiceResultFactory ?? throw new ArgumentNullException(nameof(userServiceResultFactory));
             _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
@@ -155,7 +159,9 @@ namespace IdentityServiceApi.Services.UserManagement
             }
 
             var user = userLookupResult.UserFound;
+            var roleId = await GetUserRoleIdAsync(user);
             var userDTO = _mapper.Map<UserDTO>(user);
+            userDTO.RoleId = roleId;
 
             return _userServiceResultFactory.UserOperationSuccess(userDTO);
         }
@@ -470,27 +476,38 @@ namespace IdentityServiceApi.Services.UserManagement
         }
 
         /// <summary>
-        ///     Asynchronously removes a specified role to a user identified by their unique ID.
+        ///     Asynchronously removes an assigned role from a user identified by their unique ID.
         /// </summary>
         /// <param name="id">
         ///     The unique ID of the user to whom the role is being removed.
-        /// </param>
-        /// <param name="roleName">
-        ///     The name of the role to remove from the user.
         /// </param>
         /// <returns>
         ///     A task representing the asynchronous operation, returning a <see cref="ServiceResult"/>
         ///     indicating the removal status:
         ///     - If successful, returns a result with Success set to true.
-        ///     - If the user ID or role name is invalid, returns an error message.
+        ///     - If the user ID is invalid, returns an error message.
         ///     - If an error occurs during removal, returns a result with an error message.
         /// </returns>
-        public async Task<ServiceResult> RemoveRoleAsync(string id, string roleName)
+        public async Task<ServiceResult> RemoveAssignedRoleAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
-            _parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
 
-            return await _roleService.RemoveRoleAsync(id, roleName);
+            return await _roleService.RemoveAssignedRoleAsync(id);
+        }
+
+        private async Task<string?> GetUserRoleIdAsync(User user)
+        {
+            _parameterValidator.ValidateObjectNotNull(user, nameof(user));
+
+            var roleNames = await _userManager.GetRolesAsync(user);
+            if (!roleNames.Any())
+            {
+                return null;
+            }
+                
+            var roleName = roleNames.First();
+            var role = await _roleManager.FindByNameAsync(roleName);
+            return role?.Id;
         }
 
         private void ValidateUserDTO(UserDTO user)

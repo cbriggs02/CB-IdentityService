@@ -28,7 +28,8 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 	public class UserServiceTests
 	{
 		private readonly Mock<UserManager<User>> _userManagerMock;
-		private readonly Mock<ILogger<UserManager<User>>> _userManagerLoggerMock;
+        private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
+        private readonly Mock<ILogger<UserManager<User>>> _userManagerLoggerMock;
 		private readonly Mock<IUserStore<User>> _userStoreMock;
 		private readonly Mock<IOptions<IdentityOptions>> _optionsMock;
 		private readonly Mock<IPasswordHasher<User>> _userHasherMock;
@@ -37,7 +38,10 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 		private readonly Mock<ILookupNormalizer> _keyNormalizerMock;
 		private readonly Mock<IdentityErrorDescriber> _errorsMock;
 		private readonly Mock<IServiceProvider> _serviceProviderMock;
-		private readonly Mock<IUserServiceResultFactory> _userServiceResultFactoryMock;
+        private readonly Mock<ILogger<RoleManager<IdentityRole>>> _roleManagerLoggerMock;
+        private readonly Mock<IRoleStore<IdentityRole>> _roleStoreMock;
+        private readonly List<IRoleValidator<IdentityRole>> _roleValidatorsMock;
+        private readonly Mock<IUserServiceResultFactory> _userServiceResultFactoryMock;
 		private readonly Mock<IPasswordHistoryCleanupService> _userHistoryCleanupServiceMock;
 		private readonly Mock<IPermissionService> _permissionServiceMock;
 		private readonly Mock<IParameterValidator> _parameterValidatorMock;
@@ -76,7 +80,19 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 				_userManagerLoggerMock.Object
 			);
 
-			_userServiceResultFactoryMock = new Mock<IUserServiceResultFactory>();
+            _roleStoreMock = new Mock<IRoleStore<IdentityRole>>();
+            _roleValidatorsMock = new List<IRoleValidator<IdentityRole>> { new RoleValidator<IdentityRole>() };
+            _roleManagerLoggerMock = new Mock<ILogger<RoleManager<IdentityRole>>>();
+
+            _roleManagerMock = new Mock<RoleManager<IdentityRole>>(
+                _roleStoreMock.Object,
+                _roleValidatorsMock,
+                _keyNormalizerMock.Object,
+                _errorsMock.Object,
+                _roleManagerLoggerMock.Object
+            );
+
+            _userServiceResultFactoryMock = new Mock<IUserServiceResultFactory>();
 			_userHistoryCleanupServiceMock = new Mock<IPasswordHistoryCleanupService>();
 			_permissionServiceMock = new Mock<IPermissionService>();
 			_parameterValidatorMock = new Mock<IParameterValidator>();
@@ -85,7 +101,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			_roleServiceMock = new Mock<IRoleService>();
 			_mapperMock = new Mock<IMapper>();
 
-			_userService = new UserService(_userManagerMock.Object, _userServiceResultFactoryMock.Object, _userHistoryCleanupServiceMock.Object, _permissionServiceMock.Object, _parameterValidatorMock.Object, _userLookupServiceMock.Object, _countryServiceMock.Object, _roleServiceMock.Object, _mapperMock.Object);
+			_userService = new UserService(_userManagerMock.Object, _roleManagerMock.Object, _userServiceResultFactoryMock.Object, _userHistoryCleanupServiceMock.Object, _permissionServiceMock.Object, _parameterValidatorMock.Object, _userLookupServiceMock.Object, _countryServiceMock.Object, _roleServiceMock.Object, _mapperMock.Object);
 		}
 
 		/// <summary>
@@ -96,7 +112,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 		public void UserService_NullDependencies_ThrowsArgumentNullException()
 		{
 			//Act & Assert
-			Assert.Throws<ArgumentNullException>(() => new UserService(null, null, null, null, null, null, null, null, null));
+			Assert.Throws<ArgumentNullException>(() => new UserService(null, null, null, null, null, null, null, null, null, null));
 		}
 
 		/// <summary>
@@ -223,7 +239,14 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 
 			ArrangeUserLookupServiceMock(user, UserId, "");
 
-			var userDTO = new UserDTO { UserName = user.UserName };
+            _userManagerMock
+				.Setup(m => m.GetRolesAsync(It.Is<User>(u => u.Id == UserId)))
+				.ReturnsAsync(new List<string> { Roles.Admin });
+            _roleManagerMock
+                .Setup(r => r.FindByNameAsync(Roles.Admin))
+                .ReturnsAsync(new IdentityRole { Id = "admin-role-id", Name = Roles.Admin });
+
+            var userDTO = new UserDTO { UserName = user.UserName };
 			_mapperMock.Setup(m => m.Map<UserDTO>(It.IsAny<User>())).Returns(userDTO);
 
 			ArrangeUserOperationSuccessResult(userDTO);
@@ -234,21 +257,64 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			// Assert
 			Assert.NotNull(result);
 			Assert.NotNull(result.User);
-			Assert.True(result.Success);
+            Assert.Equal("admin-role-id", result.User.RoleId);
+            Assert.True(result.Success);
 
 			VerifyCallsToLookupService(UserId);
 			VerifyCallsToParameterValidatorForString();
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="UserService.CreateUserAsync"/> method 
-		///     throws an <see cref="ArgumentNullException"/> when the provided 
-		///     <paramref name="user"/> parameter is null.
-		/// </summary>
-		/// <returns>
-		///     A task that represents the asynchronous unit test operation.
-		/// </returns>
-		[Fact]
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.GetUserAsync"/> method returns 
+        ///     a success result and a user object with a <c>null</c> RoleId when the user has no roles assigned.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
+        public async Task GetUser_UserHasNoRoles_ReturnsUserWithNullRoleId()
+        {
+            // Arrange 
+            const string UserId = "user-id";
+            var user = ArrangeMockUser(UserId);
+
+            _permissionServiceMock
+                .Setup(p => p.ValidatePermissionsAsync(UserId))
+                .ReturnsAsync(new ServiceResult { Success = true });
+
+            ArrangeUserLookupServiceMock(user, UserId, "");
+
+            _userManagerMock
+                .Setup(m => m.GetRolesAsync(It.Is<User>(u => u.Id == UserId)))
+                .ReturnsAsync(new List<string>());
+
+            var userDTO = new UserDTO { UserName = user.UserName };
+            _mapperMock.Setup(m => m.Map<UserDTO>(It.IsAny<User>())).Returns(userDTO);
+
+            ArrangeUserOperationSuccessResult(userDTO);
+
+            // Act
+            var result = await _userService.GetUserAsync(UserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.User);
+            Assert.Null(result.User.RoleId);
+            Assert.True(result.Success);
+
+            VerifyCallsToLookupService(UserId);
+            VerifyCallsToParameterValidatorForString();
+        }
+
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.CreateUserAsync"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when the provided 
+        ///     <paramref name="user"/> parameter is null.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
 		public async Task CreateUser_NullRequestParameterObject_ThrowsArgumentNullException()
 		{
 			// Arrange 
@@ -356,7 +422,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			_countryServiceMock
 				.Setup(f => f.FindCountryByIdAsync(user.CountryId))
 				.ReturnsAsync(new Country { Id = user.CountryId, Name = Countries.CANADA });
-
 			_userManagerMock
 				.Setup(c => c.CreateAsync(It.IsAny<User>()))
 				.ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = ExpectedErrorMessage }));
@@ -394,11 +459,9 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			_countryServiceMock
 				.Setup(f => f.FindCountryByIdAsync(user.CountryId))
 				.ReturnsAsync(new Country { Id = user.CountryId, Name = Countries.CANADA });
-
 			_userManagerMock
 				.Setup(c => c.CreateAsync(It.IsAny<User>()))
 				.ReturnsAsync(IdentityResult.Success);
-
 			_userServiceResultFactoryMock
 				.Setup(f => f.UserOperationSuccess(It.IsAny<UserDTO>()))
 				.Returns((UserDTO u) => new UserServiceResult { Success = true, User = u });
@@ -655,7 +718,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			_countryServiceMock
 				.Setup(f => f.FindCountryByIdAsync(user.CountryId))
 				.ReturnsAsync(new Country { Id = user.CountryId, Name = Countries.CANADA });
-
 			_permissionServiceMock
 				.Setup(p => p.ValidatePermissionsAsync(UserId))
 				.ReturnsAsync(new ServiceResult { Success = true });
@@ -703,7 +765,6 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			_countryServiceMock
 				.Setup(f => f.FindCountryByIdAsync(user.CountryId))
 				.ReturnsAsync(new Country { Id = user.CountryId, Name = Countries.CANADA });
-
 			_permissionServiceMock
 				.Setup(p => p.ValidatePermissionsAsync(UserId))
 				.ReturnsAsync(new ServiceResult { Success = true });
@@ -1503,22 +1564,22 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			_roleServiceMock.Verify(rs => rs.AssignRoleAsync(UserId, Roles.User), Times.Exactly(1));
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="UserService.RemoveRoleAsync"/> method 
-		///     throws an <see cref="ArgumentNullException"/> when provided with invalid parameters 
-		///     (null, empty, or whitespace) for both the user ID and role name.
-		/// </summary>
-		/// <param name="input">
-		///     The input string to use as both the user ID and role name, representing an invalid parameter.
-		/// </param>
-		/// <returns>
-		///     A task that represents the asynchronous test operation.
-		/// </returns>
-		[Theory]
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.RemoveAssignedRoleAsync(string)"/> method 
+        ///     throws an <see cref="ArgumentNullException"/> when provided with invalid parameters 
+        ///     (null, empty, or whitespace) for the user ID.
+        /// </summary>
+        /// <param name="input">
+        ///     The input string to use as both the user ID and role name, representing an invalid parameter.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous test operation.
+        /// </returns>
+        [Theory]
 		[InlineData(null)]
 		[InlineData("")]
 		[InlineData(" ")]
-		public async Task RemoveRoleAsync_InvalidParameters_ThrowsArgumentNullException(string input)
+		public async Task RemoveAssignedRoleAsync_InvalidIdParameter_ThrowsArgumentNullException(string input)
 		{
 			// Arrange
 			_parameterValidatorMock
@@ -1526,20 +1587,20 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 				.Throws<ArgumentNullException>();
 
 			// Act & Assert
-			await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.RemoveRoleAsync(input, input));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.RemoveAssignedRoleAsync(input));
 
 			VerifyCallsToParameterValidatorForString();
 		}
 
-		/// <summary>
-		///     Verifies that the <see cref="UserService.RemoveRoleAsync"/> method 
-		///     correctly delegates to the <see cref="IRoleService.RemoveRoleAsync"/> method 
-		///     when provided with valid parameters, and returns a successful <see cref="ServiceResult"/>.
-		/// </summary>
-		/// <returns>
-		///     A task that represents the asynchronous test operation.
-		/// </returns>
-		[Fact]
+        /// <summary>
+        ///     Verifies that the <see cref="UserService.RemoveAssignedRoleAsync(string)"/> method 
+        ///     correctly delegates to the <see cref="IRoleService.RemoveAssignedRoleAsync(string)"/> method 
+        ///     when provided with valid parameters, and returns a successful <see cref="ServiceResult"/>.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous test operation.
+        /// </returns>
+        [Fact]
 		public async Task RemoveRoleAsync_ValidParameters_CallsRolesServiceAndReturnsResult()
 		{
 			// Arrange
@@ -1548,15 +1609,15 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			var expectedResult = new ServiceResult { Success = true };
 
 			_roleServiceMock
-				.Setup(rs => rs.RemoveRoleAsync(UserId, Roles.User))
+				.Setup(rs => rs.RemoveAssignedRoleAsync(UserId))
 				.ReturnsAsync(expectedResult);
 
 			// Act
-			var result = await _userService.RemoveRoleAsync(UserId, Roles.User);
+			var result = await _userService.RemoveAssignedRoleAsync(UserId);
 
 			// Assert
 			Assert.True(result.Success);
-			_roleServiceMock.Verify(rs => rs.RemoveRoleAsync(UserId, Roles.User), Times.Exactly(1));
+			_roleServiceMock.Verify(rs => rs.RemoveAssignedRoleAsync(UserId), Times.Exactly(1));
 		}
 
 		private static User ArrangeMockActivatedUser(string UserId)

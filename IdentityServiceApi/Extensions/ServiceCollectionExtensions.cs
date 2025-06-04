@@ -15,6 +15,7 @@ using IdentityServiceApi.Services.Utilities.ResultFactories.Common;
 using IdentityServiceApi.Services.Utilities.ResultFactories.Logging;
 using IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement;
 using IdentityServiceApi.Services.Utilities;
+using IdentityServiceApi.Services.Utilities.ResultFactories.Authorization;
 
 namespace IdentityServiceApi.Extensions
 {
@@ -99,6 +100,7 @@ namespace IdentityServiceApi.Extensions
             services.AddScoped<IUserLookupServiceResultFactory, UserLookupServiceResultFactory>();
             services.AddScoped<ILoginServiceResultFactory, LoginServiceResultFactory>();
             services.AddScoped<IAuditLoggerServiceResultFactory, AuditLoggerServiceResultFactory>();
+            services.AddScoped<IRoleServiceResultFactory, RoleServiceResultFactory>();
             return services;
         }
 

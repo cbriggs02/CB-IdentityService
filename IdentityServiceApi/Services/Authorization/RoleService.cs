@@ -23,7 +23,7 @@ namespace IdentityServiceApi.Services.Authorization
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
         private readonly IParameterValidator _parameterValidator;
-        private readonly IServiceResultFactory _serviceResultFactory;
+        private readonly IRoleServiceResultFactory _serviceResultFactory;
         private readonly IUserLookupService _userLookupService;
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace IdentityServiceApi.Services.Authorization
         ///     The parameter validator service used for defense checking service parameters.
         /// </param>
         /// <param name="serviceResultFactory">
-        ///     The service used for creating the result objects being returned in operations.
+        ///     The service used for creating the result objects being returned in operations specific to roles.
         /// </param>
         /// <param name="userLookupService">'
         ///     The service used for looking up users in the system.
@@ -47,7 +47,7 @@ namespace IdentityServiceApi.Services.Authorization
         /// <exception cref="ArgumentNullException">
         ///     Thrown when any of the parameters are null.
         /// </exception>
-        public RoleService(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IParameterValidator parameterValidator, IServiceResultFactory serviceResultFactory, IUserLookupService userLookupService)
+        public RoleService(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IParameterValidator parameterValidator, IRoleServiceResultFactory serviceResultFactory, IUserLookupService userLookupService)
         {
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -72,6 +72,29 @@ namespace IdentityServiceApi.Services.Authorization
                 .ToListAsync();
 
             return new RoleServiceListResult { Roles = roles };
+        }
+
+        /// <summary>
+        ///     Asynchronously retrieves a role from the database using the specified role ID.
+        /// </summary>
+        /// <param name="roleId">
+        ///     The unique identifier of the role to retrieve.
+        /// </param>
+        /// <returns>
+        ///     A task representing the asynchronous operation that returns a <see cref="RoleServiceResult"/>
+        ///     containing the role information if found, or an error result if the role does not exist.
+        /// </returns>
+        public async Task<RoleServiceResult> GetRoleAsync(string roleId)
+        {
+            _parameterValidator.ValidateNotNullOrEmpty(roleId, nameof(roleId));
+
+            var role = await _roleManager.FindByIdAsync(roleId);
+            if (role == null)
+            {
+                return _serviceResultFactory.RoleOperationFailure(new[] { ErrorMessages.Role.NotFound });
+            }
+
+            return _serviceResultFactory.RoleOperationSuccess(new RoleDTO { Id = role.Id, Name = role.Name });
         }
 
         /// <summary>
@@ -114,9 +137,10 @@ namespace IdentityServiceApi.Services.Authorization
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.InvalidRole });
             }
 
-            if (await HasRole(user, roleName))
+            var existingRoles = await _userManager.GetRolesAsync(user);
+            if (existingRoles.Any())
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.HasRole });
+                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.UserAlreadyHasRole });
             }
 
             var result = await _userManager.AddToRoleAsync(user, roleName);
@@ -129,25 +153,21 @@ namespace IdentityServiceApi.Services.Authorization
         }
 
         /// <summary>
-        ///     Asynchronously removes a specified role to a user identified by their unique ID.
+        ///     Asynchronously removes an assigned role from a user identified by their unique ID.
         /// </summary>
         /// <param name="id">
         ///     The unique ID of the user to whom the role is being removed.
-        /// </param>
-        /// <param name="roleName">
-        ///     The name of the role to remove from the user.
         /// </param>
         /// <returns>
         ///     A task representing the asynchronous operation, returning a <see cref="ServiceResult"/>
         ///     indicating the removal status:
         ///     - If successful, returns a result with Success set to true.
-        ///     - If the user ID or role name is invalid, returns an error message.
+        ///     - If the user ID is invalid, returns an error message.
         ///     - If an error occurs during removal, returns a result with an error message.
         /// </returns>
-        public async Task<ServiceResult> RemoveRoleAsync(string id, string roleName)
+        public async Task<ServiceResult> RemoveAssignedRoleAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
-            _parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
 
             var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
@@ -157,15 +177,13 @@ namespace IdentityServiceApi.Services.Authorization
 
             var user = userLookupResult.UserFound;
 
-            if (!await DoesRoleExist(roleName))
-            {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.InvalidRole });
-            }
-
-            if (!await HasRole(user, roleName))
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Any())
             {
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.MissingRole });
             }
+
+            var roleName = roles.First();
 
             var result = await _userManager.RemoveFromRoleAsync(user, roleName);
             if (!result.Succeeded)
@@ -179,12 +197,6 @@ namespace IdentityServiceApi.Services.Authorization
         private async Task<bool> DoesRoleExist(string roleName)
         {
             return await _roleManager.RoleExistsAsync(roleName);
-        }
-
-        private async Task<bool> HasRole(User user, string roleName)
-        {
-            var roles = await _userManager.GetRolesAsync(user);
-            return roles.Any(role => role == roleName);
         }
 
         private static bool IsUserActive(User user)

@@ -18,7 +18,7 @@
             /// <summary>
             ///     The base URI for accessing the Audit Logs API endpoints.
             /// </summary>
-            public const string BaseUri = "/api/v1/AuditLogs";
+            public const string BaseUri = "/api/v1/audit-logs";
         }
 
         /// <summary>
@@ -29,7 +29,7 @@
             /// <summary>
             ///     The request URI for obtaining authentication tokens.
             /// </summary>
-            public const string RequestUri = "/api/v1/Login/tokens";
+            public const string RequestUri = "/api/v1/login/tokens";
         }
 
         /// <summary>
@@ -40,7 +40,7 @@
             /// <summary>
             ///     The base URI for accessing the Password API endpoints.
             /// </summary>
-            public const string BaseUri = "/api/v1/Password/";
+            public const string BaseUri = "/api/v1/password/";
         }
 
         /// <summary>
@@ -51,7 +51,7 @@
             /// <summary>
             ///     The base URI for accessing the Roles API endpoints.
             /// </summary>
-            public const string BaseUri = "/api/v1/Roles/";
+            public const string RequestUri = "/api/v1/roles";
         }
 
         /// <summary>
@@ -62,7 +62,7 @@
             /// <summary>
             ///     The request URI for obtaining list of countries.
             /// </summary>
-            public const string RequestUri = "/api/v1/Countries";
+            public const string RequestUri = "/api/v1/countries";
         }
 
         /// <summary>
@@ -73,7 +73,7 @@
             /// <summary>
             ///     The base URI for accessing the Users API endpoints.
             /// </summary>
-            public const string BaseUri = "/api/v1/Users";
+            public const string BaseUri = "/api/v1/users";
         }
 
         /// <summary>
@@ -84,7 +84,7 @@
             /// <summary>
             ///     The base URI for accessing the Testing API endpoints.
             /// </summary>
-            public const string BaseUri = "/api/Test";
+            public const string BaseUri = "/api/test";
         }
     }
 }

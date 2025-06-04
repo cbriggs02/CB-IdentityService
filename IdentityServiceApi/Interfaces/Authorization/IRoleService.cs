@@ -21,6 +21,18 @@ namespace IdentityServiceApi.Interfaces.Authorization
         Task<RoleServiceListResult> GetRolesAsync();
 
         /// <summary>
+        ///     Asynchronously retrieves a role by its unique identifier.
+        /// </summary>
+        /// <param name="roleId">
+        ///     The unique identifier of the role to retrieve.
+        /// </param>
+        /// <returns>
+        ///     A task that represents the asynchronous operation, containing a <see cref="RoleServiceResult"/> 
+        ///     with the requested role details if found, or an error result if not found or invalid.
+        /// </returns>
+        Task<RoleServiceResult> GetRoleAsync(string roleId);
+
+        /// <summary>
         ///     Asynchronously assigns a specified role to a user identified by their ID.
         /// </summary>
         /// <param name="id">
@@ -35,17 +47,14 @@ namespace IdentityServiceApi.Interfaces.Authorization
         Task<ServiceResult> AssignRoleAsync(string id, string roleName);
 
         /// <summary>
-        ///     Asynchronously removes a specified role to a user identified by their ID.
+        ///     Asynchronously removes an assigned role from a user identified by their ID.
         /// </summary>
         /// <param name="id">
         ///     The unique identifier of the user to whom the role will be removed.
         /// </param>
-        /// <param name="roleName">
-        ///     The name of the role that is being removed to the user.
-        /// </param>
         /// <returns>
         ///     A task that represents the asynchronous operation, returning a result object indicating the outcome of the role removal.
         /// </returns>
-        Task<ServiceResult> RemoveRoleAsync(string id, string roleName);
+        Task<ServiceResult> RemoveAssignedRoleAsync(string id);
     }
 }

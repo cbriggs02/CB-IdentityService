@@ -21,7 +21,7 @@ namespace IdentityServiceApi.Controllers
     /// </remarks>
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[Controller]")]
+    [Route("api/v{version:apiVersion}/login")]
     [AllowAnonymous]
     public class LoginController : ControllerBase
     {

@@ -19,7 +19,7 @@ namespace IdentityServiceApi.Controllers
     /// </remarks>
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[Controller]")]
+    [Route("api/v{version:apiVersion}/countries")]
     [AllowAnonymous]
     public class CountriesController : ControllerBase
     {
