@@ -46,11 +46,14 @@ namespace IdentityServiceApi.Controllers
         /// <returns>
         ///     - <see cref="StatusCodes.Status200OK"/> (OK) with a list of country objects.
         ///     - <see cref="StatusCodes.Status204NoContent"/> (No Content) if no countries are available.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.  
         /// </returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CountriesListResponse))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.CountriesApi.GetCountries)]
         public async Task<ActionResult<CountriesListResponse>> GetCountriesAsync()

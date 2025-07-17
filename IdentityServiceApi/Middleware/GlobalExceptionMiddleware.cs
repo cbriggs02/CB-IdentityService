@@ -70,7 +70,15 @@ namespace IdentityServiceApi.Middleware
             }
             catch (Exception ex)
             {
-                await loggerService.LogExceptionAsync(ex);
+                try
+                {
+                    await loggerService.LogExceptionAsync(ex);
+                }
+                catch (Exception logEx)
+                {
+                    _logger.LogWarning(logEx, "Failed to log exception during global exception handling.");
+                }
+
                 LogExceptionDetails(context, ex);
                 await WriteServerErrorResponseAsync(context);
             }

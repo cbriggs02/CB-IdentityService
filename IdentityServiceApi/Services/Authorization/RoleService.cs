@@ -1,4 +1,5 @@
 ﻿using IdentityServiceApi.Constants;
+using IdentityServiceApi.Helpers.CacheKeys;
 using IdentityServiceApi.Interfaces.Authorization;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
@@ -8,6 +9,7 @@ using IdentityServiceApi.Models.ServiceResultModels.Authorization;
 using IdentityServiceApi.Models.ServiceResultModels.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IdentityServiceApi.Services.Authorization
 {
@@ -20,6 +22,7 @@ namespace IdentityServiceApi.Services.Authorization
     /// </remarks>
     public class RoleService : IRoleService
     {
+        private readonly IMemoryCache _cache;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
         private readonly IParameterValidator _parameterValidator;
@@ -29,6 +32,9 @@ namespace IdentityServiceApi.Services.Authorization
         /// <summary>
         ///     Initializes a new instance of the <see cref="RoleService"/> class.
         /// </summary>
+        /// <param name="cache">
+        ///     The in-memory cache used for storing and retrieving cached role data.
+        /// </param>
         /// <param name="roleManager">
         ///     The role manager for handling role operations within the system.
         /// </param>
@@ -47,8 +53,9 @@ namespace IdentityServiceApi.Services.Authorization
         /// <exception cref="ArgumentNullException">
         ///     Thrown when any of the parameters are null.
         /// </exception>
-        public RoleService(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IParameterValidator parameterValidator, IRoleServiceResultFactory serviceResultFactory, IUserLookupService userLookupService)
+        public RoleService(IMemoryCache cache, RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IParameterValidator parameterValidator, IRoleServiceResultFactory serviceResultFactory, IUserLookupService userLookupService)
         {
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
@@ -65,13 +72,22 @@ namespace IdentityServiceApi.Services.Authorization
         /// </returns>
         public async Task<RoleServiceListResult> GetRolesAsync()
         {
-            var roles = await _roleManager.Roles
-                .OrderBy(x => x.Name)
-                .Select(x => new RoleDTO { Id = x.Id, Name = x.Name })
-                .AsNoTracking()
-                .ToListAsync();
+            if (!_cache.TryGetValue(RolesCacheKeys.RoleList, out RoleServiceListResult cachedRoles))
+            {
+                var roles = await _roleManager.Roles
+                    .OrderBy(x => x.Name)
+                    .Select(x => new RoleDTO { Id = x.Id, Name = x.Name })
+                    .AsNoTracking()
+                    .ToListAsync();
 
-            return new RoleServiceListResult { Roles = roles };
+                cachedRoles = new RoleServiceListResult { Roles = roles };
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetPriority(CacheItemPriority.NeverRemove);
+
+                _cache.Set(RolesCacheKeys.RoleList, cachedRoles, cacheOptions);
+            }
+
+            return cachedRoles;
         }
 
         /// <summary>
@@ -111,7 +127,7 @@ namespace IdentityServiceApi.Services.Authorization
         ///     The result indicates the assignment status:
         ///     - If successful, Success is true.
         ///     - If the user ID or role name is invalid, an error message is returned.
-        ///     - If the user already has the role, an error is returned.
+        ///     - If the user already has a role, an error is returned.
         ///     - If an error occurs during the assignment, an error message is returned.
         /// </returns>
         public async Task<ServiceResult> AssignRoleAsync(string id, string roleName)
@@ -126,13 +142,12 @@ namespace IdentityServiceApi.Services.Authorization
             }
 
             var user = userLookupResult.UserFound;
-
-            if (!IsUserActive(user))
+            if (user.AccountStatus != 1)
             {
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.InactiveUser });
             }
 
-            if (!await DoesRoleExist(roleName))
+            if (!await _roleManager.RoleExistsAsync(roleName))
             {
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.InvalidRole });
             }
@@ -192,16 +207,6 @@ namespace IdentityServiceApi.Services.Authorization
             }
 
             return _serviceResultFactory.GeneralOperationSuccess();
-        }
-
-        private async Task<bool> DoesRoleExist(string roleName)
-        {
-            return await _roleManager.RoleExistsAsync(roleName);
-        }
-
-        private static bool IsUserActive(User user)
-        {
-            return user.AccountStatus == 1;
         }
     }
 }

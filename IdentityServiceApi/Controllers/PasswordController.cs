@@ -56,6 +56,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of errors 
         ///         returned by the password service that occurred while setting the password.       
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs. 
         /// </returns>
         [AllowAnonymous]
@@ -63,6 +65,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.PasswordApi.SetPassword)]
         public async Task<IActionResult> SetPasswordAsync([FromRoute][Required] string id, [FromBody] SetPasswordRequest request)
@@ -101,6 +104,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts 
         ///         to update another user's password or a admin attempts to update another admins password.      
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs. 
         /// </returns>
         [Authorize(Roles = RoleGroups.AllStandardRoles)]
@@ -109,6 +114,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.PasswordApi.UpdatePassword)]
         public async Task<IActionResult> UpdatePasswordAsync([FromRoute][Required] string id, [FromBody] UpdatePasswordRequest request)

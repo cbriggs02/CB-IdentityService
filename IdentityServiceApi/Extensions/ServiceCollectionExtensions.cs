@@ -16,6 +16,10 @@ using IdentityServiceApi.Services.Utilities.ResultFactories.Logging;
 using IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement;
 using IdentityServiceApi.Services.Utilities;
 using IdentityServiceApi.Services.Utilities.ResultFactories.Authorization;
+using IdentityServiceApi.Services.Cache;
+using IdentityServiceApi.Interfaces.Cache;
+using IdentityServiceApi.Interfaces.CacheKeys;
+using IdentityServiceApi.Services.CacheKeys;
 
 namespace IdentityServiceApi.Extensions
 {
@@ -29,7 +33,8 @@ namespace IdentityServiceApi.Extensions
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        ///     Registers all application-layer services including authentication, authorization, logging, user management, and utilities.
+        ///     Registers all application-layer services including authentication, authorization, logging, 
+        ///     user management, and utilities.
         /// </summary>
         /// <param name="services">
         ///     The service collection to add services to.
@@ -46,6 +51,7 @@ namespace IdentityServiceApi.Extensions
             services.AddUserManagementServices();
             services.AddUtilityServices();
             services.AddServiceResultFactories();
+            services.AddCacheServices();
             services.AddMiscellaneousServices();
             return services;
         }
@@ -101,6 +107,15 @@ namespace IdentityServiceApi.Extensions
             services.AddScoped<ILoginServiceResultFactory, LoginServiceResultFactory>();
             services.AddScoped<IAuditLoggerServiceResultFactory, AuditLoggerServiceResultFactory>();
             services.AddScoped<IRoleServiceResultFactory, RoleServiceResultFactory>();
+            return services;
+        }
+
+        private static IServiceCollection AddCacheServices(this IServiceCollection services)
+        {
+            services.AddScoped<IUserCacheService, UserCacheService>();
+            services.AddScoped<IAuditLogCacheService, AuditLogCacheService>();
+            services.AddSingleton<IUserCacheKeyService, UserCacheKeyService>();
+            services.AddSingleton<IAuditLogCacheKeyService, AuditLogCacheKeyService>();
             return services;
         }
 

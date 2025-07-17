@@ -187,5 +187,37 @@
                 public const string InvalidResponseTime = "Invalid response time. Please ensure the response time is greater than zero.";
             }
         }
+
+        /// <summary>
+        ///     Error messages related to user cache and audit log cache operations.
+        /// </summary>
+        public static class UserCache
+        {
+            /// <summary>
+            ///     Message logged when clearing the creation statistics cache fails.
+            /// </summary>
+            public const string FailedToClearCreationStatsCache = "Failed to clear CreationStats cache.";
+
+            /// <summary>
+            ///     Message logged when clearing the state metrics cache fails.
+            /// </summary>
+            public const string FailedToClearStateMetricsCache = "Failed to clear StateMetrics cache.";
+
+            /// <summary>
+            ///     Message logged when clearing the user list cache fails.
+            /// </summary>
+            public const string FailedToClearUserListCache = "Failed to clear UserList cache.";
+        }
+
+        /// <summary>
+        ///     Error messages related to audit log cache operations.
+        /// </summary>
+        public static class AuditLogCache
+        {
+            /// <summary>
+            ///     Message logged when clearing the audit log list cache fails.
+            /// </summary>
+            public const string FailedToClearLogListCache = "Failed to clear LogList cache.";
+        }
     }
 }

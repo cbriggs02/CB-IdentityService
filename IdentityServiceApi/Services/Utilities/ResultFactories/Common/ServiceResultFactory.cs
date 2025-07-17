@@ -33,11 +33,8 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.Common
         /// <returns>
         ///     A <see cref="ServiceResult"/> indicating success.
         /// </returns>
-        public ServiceResult GeneralOperationSuccess()
-        {
-            return new ServiceResult { Success = true };
-        }
-
+        public ServiceResult GeneralOperationSuccess() => new() { Success = true };
+        
         /// <summary>
         ///     Creates a failed service result with specified errors.
         /// </summary>
@@ -59,9 +56,7 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.Common
         /// <param name="errors">
         ///     An array of error messages to validate.
         /// </param>
-        protected void ValidateErrors(string[] errors)
-        {
-            _parameterValidator.ValidateObjectNotNull(errors, nameof(errors));
-        }
+        protected void ValidateErrors(string[] errors) => 
+            _parameterValidator.ValidateObjectNotNull(errors, nameof(errors));   
     }
 }

@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
 using IdentityServiceApi.Data;
 using IdentityServiceApi.Interfaces.Authentication;
+using IdentityServiceApi.Interfaces.Cache;
+using IdentityServiceApi.Interfaces.CacheKeys;
 using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Services.Logging.Implementations;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using System.Net;
 using System.Security.Claims;
@@ -25,6 +28,9 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
     {
         private readonly Mock<IUserContextService> _userContextServiceMock;
         private readonly Mock<ILoggingValidator> _loggingValidatorMock;
+        private readonly Mock<IMemoryCache> _cacheMock;
+        private readonly Mock<IAuditLogCacheService> _cacheServiceMock;
+        private readonly Mock<IAuditLogCacheKeyService> _cacheKeyServiceMock;
         private readonly Mock<ApplicationDbContext> _dbContextMock;
         private readonly Mock<IParameterValidator> _parameterValidatorMock;
         private readonly Mock<IAuditLoggerServiceResultFactory> _serviceResultFactoryMock;
@@ -39,11 +45,15 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
         {
             _userContextServiceMock = new Mock<IUserContextService>();
             _loggingValidatorMock = new Mock<ILoggingValidator>();
+            _cacheMock = new Mock<IMemoryCache>();
+            _cacheServiceMock = new Mock<IAuditLogCacheService>();
+            _cacheKeyServiceMock = new Mock<IAuditLogCacheKeyService>();
             _dbContextMock = new Mock<ApplicationDbContext>();
             _parameterValidatorMock = new Mock<IParameterValidator>();
             _serviceResultFactoryMock = new Mock<IAuditLoggerServiceResultFactory>();
             _mapperMock = new Mock<IMapper>();
-            _authorizationLoggerService = new AuthorizationLoggerService(_userContextServiceMock.Object, _loggingValidatorMock.Object, _dbContextMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object, _mapperMock.Object);
+
+            _authorizationLoggerService = new AuthorizationLoggerService(_userContextServiceMock.Object, _loggingValidatorMock.Object, _cacheMock.Object, _cacheKeyServiceMock.Object, _cacheServiceMock.Object,_dbContextMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object, _mapperMock.Object);
         }
 
         /// <summary>
@@ -54,7 +64,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Implementations
         public void AuthorizationLoggerService_NullDependencies_ThrowsArgumentNullException()
         {
             //Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new AuthorizationLoggerService(null, null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>(() => new AuthorizationLoggerService(null, null, null, null, null, null, null, null, null));
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Services.UserManagement;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 {
@@ -19,6 +19,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
     public class CountryServiceTests : IDisposable
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _cache;
         private readonly CountryService _countryService;
 
         /// <summary>
@@ -31,8 +32,9 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
+            _cache = new MemoryCache(new MemoryCacheOptions());
             _context = new ApplicationDbContext(options);
-            _countryService = new CountryService(_context);
+            _countryService = new CountryService(_cache, _context);
         }
 
         /// <summary>
@@ -62,14 +64,18 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
             );
             await _context.SaveChangesAsync();
 
-            // Act
-            var result = await _countryService.GetCountriesAsync();
+            // Act – First call populates cache
+            var result1 = await _countryService.GetCountriesAsync();
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(3, result.Countries.Count());
-            Assert.Equal("CountryA", result.Countries.First().Name);
-            Assert.Equal("CountryC", result.Countries.Last().Name);
+            // Act – Second call should return from cache
+            var result2 = await _countryService.GetCountriesAsync();
+
+            // Assert – Confirm both calls return same object reference (i.e., from cache)
+            Assert.Same(result1, result2);
+
+            Assert.Equal(3, result2.Countries.Count());
+            Assert.Equal("CountryA", result2.Countries.First().Name);
+            Assert.Equal("CountryC", result2.Countries.Last().Name);
         }
 
         /// <summary>

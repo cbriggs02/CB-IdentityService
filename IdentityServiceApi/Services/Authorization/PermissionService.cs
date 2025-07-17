@@ -20,6 +20,7 @@ namespace IdentityServiceApi.Services.Authorization
         private readonly ILoggerService _loggerService;
         private readonly IParameterValidator _parameterValidator;
         private readonly IServiceResultFactory _serviceResultFactory;
+        private readonly ILogger<PermissionService> _logger;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="PermissionService"/> class.
@@ -36,15 +37,20 @@ namespace IdentityServiceApi.Services.Authorization
         /// <param name="serviceResultFactory">
         ///     The service used for creating the result objects being returned in operations.
         /// </param>
+        /// <param name="logger">
+        ///     The ASP.NET Core built-in logging service used to capture internal diagnostics and warnings,
+        ///     such as failures occurring during audit logging.
+        /// </param>
         /// <exception cref="ArgumentNullException">
         ///     Thrown when <paramref name="authService"/> is null.
         /// </exception>
-        public PermissionService(IAuthorizationService authService, ILoggerService loggerService, IParameterValidator parameterValidator, IServiceResultFactory serviceResultFactory)
+        public PermissionService(IAuthorizationService authService, ILoggerService loggerService, IParameterValidator parameterValidator, IServiceResultFactory serviceResultFactory, ILogger<PermissionService> logger)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
             _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
             _serviceResultFactory = serviceResultFactory ?? throw new ArgumentNullException(nameof(serviceResultFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -67,7 +73,14 @@ namespace IdentityServiceApi.Services.Authorization
             bool hasPermission = await _authService.ValidatePermissionAsync(id);
             if (!hasPermission)
             {
-                await _loggerService.LogAuthorizationBreachAsync();
+                try
+                {
+                    await _loggerService.LogAuthorizationBreachAsync();
+                }
+                catch (Exception logEx)
+                {
+                    _logger.LogWarning(logEx, "Failed to log authorization breach.");
+                }
                 return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Authorization.Forbidden });
             }
 

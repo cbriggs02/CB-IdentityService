@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using IdentityServiceApi.Data;
+using IdentityServiceApi.Interfaces.Cache;
+using IdentityServiceApi.Interfaces.CacheKeys;
 using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.Utilities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IdentityServiceApi.Services.Logging.AbstractClasses
 {
@@ -21,6 +24,15 @@ namespace IdentityServiceApi.Services.Logging.AbstractClasses
         ///     Initializes a new instance of the <see cref="AuthorizationLoggerServiceBase"/> class.
         ///     This constructor initializes the required dependencies for logging services.
         /// </summary>
+        /// <param name="cache">
+        ///     The in-memory cache used for temporarily storing audit log data to improve performance.
+        /// </param>
+        /// <param name="cacheKeyService">
+        ///     Service responsible for generating consistent and structured cache keys for audit-related data.
+        /// </param>
+        /// <param name="cacheService">
+        ///     The audit log cache service responsible for clearing or managing audit-related cache entries.
+        /// </param>
         /// <param name="context">
         ///     The application database context, used to interact with the database.
         /// </param>
@@ -33,7 +45,7 @@ namespace IdentityServiceApi.Services.Logging.AbstractClasses
         /// <param name="mapper">
         ///     An AutoMapper instance used for object-to-object mapping.
         /// </param>
-        protected AuthorizationLoggerServiceBase(ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLogServiceResultFactory, IMapper mapper) : base(context, parameterValidator, auditLogServiceResultFactory, mapper)
+        protected AuthorizationLoggerServiceBase(IMemoryCache cache, IAuditLogCacheKeyService cacheKeyService, IAuditLogCacheService cacheService, ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLogServiceResultFactory, IMapper mapper) : base(cache, cacheKeyService, cacheService, context, parameterValidator, auditLogServiceResultFactory, mapper)
         {
         }
 

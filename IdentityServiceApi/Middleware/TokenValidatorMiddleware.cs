@@ -88,17 +88,13 @@ namespace IdentityServiceApi.Middleware
                 _logger.LogError(ex, "An error occurred during token validation.");
 
                 // Rethrow the exception to allow global exception middleware to handle it
-                // Global exception middleware should return a 500 Internal Server Error response
-
                 throw;
             }
         }
 
-        private static string? GetUserIdFromClaims(ClaimsPrincipal principal)
-        {
-            return principal?.FindFirstValue(ClaimTypes.NameIdentifier);
-        }
-
+        private static string? GetUserIdFromClaims(ClaimsPrincipal principal) => 
+            principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+        
         private async Task HandleAuthorizationBreachAsync(HttpContext context, string reason, string userId)
         {
             _logger.LogWarning($"Unauthorized access attempt: Reason: {reason}, UserId: {userId}");

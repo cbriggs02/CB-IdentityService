@@ -144,11 +144,9 @@ namespace IdentityServiceApi.Services.Authorization
             return true;
         }
 
-        private static bool IsSelfAccess(string userId, string currentUserId)
-        {
-            return userId.Equals(currentUserId, StringComparison.OrdinalIgnoreCase);
-        }
-
+        private static bool IsSelfAccess(string userId, string currentUserId) =>
+            userId.Equals(currentUserId, StringComparison.OrdinalIgnoreCase);
+        
         private async Task<bool> IsTargetAdmin(User user)
         {
             var targetUserRoles = await _userManager.GetRolesAsync(user);

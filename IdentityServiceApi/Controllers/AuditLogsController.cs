@@ -58,6 +58,8 @@ namespace IdentityServiceApi.Controllers
         ///         not authenticated.  
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
         /// </returns>
         [HttpGet]
@@ -65,6 +67,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLogs)]
         public async Task<ActionResult<AuditLogListResponse>> GetLogsAsync([FromQuery] AuditLogListRequest request)
@@ -98,6 +101,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (NotFound) if no audit log is found with the given ID.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.    
         /// </returns>
         [HttpGet("{id}")]
@@ -105,6 +110,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.GetLog)]
         public async Task<ActionResult<AuditLogResponse>> GetLogAsync([FromRoute][Required] string id)
@@ -134,6 +140,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified audit log is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.        
         /// </returns>
         [HttpDelete("{id}")]
@@ -142,6 +150,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.AuditLogsApi.DeleteLog)]
         public async Task<IActionResult> DeleteLogAsync([FromRoute][Required] string id)

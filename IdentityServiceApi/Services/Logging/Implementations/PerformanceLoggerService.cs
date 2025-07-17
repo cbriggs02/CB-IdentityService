@@ -2,10 +2,13 @@
 using IdentityServiceApi.Constants;
 using IdentityServiceApi.Data;
 using IdentityServiceApi.Interfaces.Authentication;
+using IdentityServiceApi.Interfaces.Cache;
+using IdentityServiceApi.Interfaces.CacheKeys;
 using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Services.Logging.AbstractClasses;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IdentityServiceApi.Services.Logging.Implementations
 {
@@ -32,6 +35,15 @@ namespace IdentityServiceApi.Services.Logging.Implementations
         /// <param name="loggingValidator">
         ///     The service used for validating context data used in logs.
         /// </param>
+        /// <param name="cache">
+        ///     The in-memory cache used for temporarily storing audit log data to improve performance.
+        /// </param>
+        /// <param name="cacheKeyService">
+        ///     Service responsible for generating consistent and structured cache keys for audit-related data.
+        /// </param>
+        /// <param name="cacheService">
+        ///     The audit log cache service responsible for clearing or managing audit-related cache entries.
+        /// </param>
         /// <param name="context">
         ///     The application database context used for logging purposes.
         /// </param>
@@ -47,7 +59,7 @@ namespace IdentityServiceApi.Services.Logging.Implementations
         /// <exception cref="ArgumentNullException">
         ///     Thrown if <paramref name="userContextService"/> is null.
         /// </exception>
-        public PerformanceLoggerService(IUserContextService userContextService, ILoggingValidator loggingValidator, ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLogServiceResultFactory, IMapper mapper) : base(context, parameterValidator, auditLogServiceResultFactory, mapper)
+        public PerformanceLoggerService(IUserContextService userContextService, ILoggingValidator loggingValidator, IMemoryCache cache, IAuditLogCacheKeyService cacheKeyService, IAuditLogCacheService cacheService, ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLogServiceResultFactory, IMapper mapper) : base(cache, cacheKeyService, cacheService, context, parameterValidator, auditLogServiceResultFactory, mapper)
         {
             _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
             _loggingValidator = loggingValidator ?? throw new ArgumentNullException(nameof(loggingValidator));

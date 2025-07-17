@@ -51,6 +51,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status401Unauthorized"/> (Unauthorized) if the user is not authenticated. 
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.   
         /// </returns>
         [HttpGet]
@@ -58,6 +60,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.GetRoles)]
         public async Task<ActionResult<RolesListResponse>> GetRolesAsync()
@@ -85,6 +88,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the role does not exist in the system.  
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs during processing.  
         /// </returns>
         [HttpGet("{id}")]
@@ -92,6 +97,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.GetRoleById)]
         public async Task<ActionResult<RoleResponse>> GetRoleAsync([FromRoute][Required] string id)

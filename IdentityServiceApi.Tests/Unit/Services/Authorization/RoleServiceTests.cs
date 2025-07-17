@@ -1,16 +1,17 @@
 ﻿using IdentityServiceApi.Constants;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
+using IdentityServiceApi.Models.DTO;
 using IdentityServiceApi.Models.Entities;
-using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
+using IdentityServiceApi.Models.ServiceResultModels.Authorization;
 using IdentityServiceApi.Models.ServiceResultModels.Shared;
+using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
 using IdentityServiceApi.Services.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using IdentityServiceApi.Models.DTO;
-using IdentityServiceApi.Models.ServiceResultModels.Authorization;
 
 namespace IdentityServiceApi.Tests.Unit.Services.Authorization
 {
@@ -26,6 +27,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
     [Trait("TestCategory", "UnitTest")]
     public class RoleServiceTests 
     {
+        private readonly Mock<IMemoryCache> _cacheMock;
         private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
         private readonly Mock<UserManager<User>> _userManagerMock;
         private readonly Mock<IParameterValidator> _parameterValidatorMock;
@@ -78,6 +80,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             _roleValidatorsMock = new List<IRoleValidator<IdentityRole>> { new RoleValidator<IdentityRole>() };
             _roleManagerLoggerMock = new Mock<ILogger<RoleManager<IdentityRole>>>();
 
+            _cacheMock = new Mock<IMemoryCache>();
             _roleManagerMock = new Mock<RoleManager<IdentityRole>>(
                 _roleStoreMock.Object,
                 _roleValidatorsMock,
@@ -90,7 +93,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             _serviceResultFactoryMock = new Mock<IRoleServiceResultFactory>();
             _userLookupServiceMock = new Mock<IUserLookupService>();
 
-            _roleService = new RoleService(_roleManagerMock.Object, _userManagerMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object, _userLookupServiceMock.Object);
+            _roleService = new RoleService(_cacheMock.Object, _roleManagerMock.Object, _userManagerMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object, _userLookupServiceMock.Object);
         }
 
         /// <summary>
@@ -101,7 +104,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         public void RoleService_NullDependencies_ThrowsArgumentNullException()
         {
             //Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new RoleService(null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>(() => new RoleService(null, null, null, null, null, null));
         }
 
         /// <summary>

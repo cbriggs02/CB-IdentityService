@@ -4,6 +4,7 @@ using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.ServiceResultModels.Shared;
 using IdentityServiceApi.Services.Authorization;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace IdentityServiceApi.Tests.Unit.Services.Authorization
@@ -24,6 +25,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         private readonly Mock<ILoggerService> _loggerServiceMock;
         private readonly Mock<IParameterValidator> _parameterValidatorMock;
         private readonly Mock<IServiceResultFactory> _serviceResultFactoryMock;
+        private readonly Mock<ILogger<PermissionService>> _loggerMock;
         private readonly PermissionService _permissionService;
         private const string UserId = "test-id";
 
@@ -37,8 +39,9 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
             _loggerServiceMock = new Mock<ILoggerService>();
             _parameterValidatorMock = new Mock<IParameterValidator>();
             _serviceResultFactoryMock = new Mock<IServiceResultFactory>();
+            _loggerMock = new Mock<ILogger<PermissionService>>();
 
-            _permissionService = new PermissionService(_authServiceMock.Object, _loggerServiceMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object);
+            _permissionService = new PermissionService(_authServiceMock.Object, _loggerServiceMock.Object, _parameterValidatorMock.Object, _serviceResultFactoryMock.Object, _loggerMock.Object);
         }
 
         /// <summary>
@@ -49,7 +52,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
         public void PermissionService_NullDependencies_ThrowsArgumentNullException()
         {
             //Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new PermissionService(null, null, null, null));
+            Assert.Throws<ArgumentNullException>(() => new PermissionService(null, null, null, null, null));
         }
 
         /// <summary>

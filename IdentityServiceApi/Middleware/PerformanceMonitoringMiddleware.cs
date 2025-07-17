@@ -47,48 +47,60 @@ namespace IdentityServiceApi.Middleware
 			_env = env ?? throw new ArgumentNullException(nameof(env));
 		}
 
-		/// <summary>
-		///     Asynchronously invokes the performance monitoring middleware.
-		///     Starts a timer, passes the request down the pipeline, and logs 
-		///     the request duration and CPU usage after completion.
-		/// </summary>
-		/// <param name="context">
-		///     The <see cref="HttpContext"/> representing the current HTTP request.
-		/// </param>
-		/// <returns>
-		/// <returns>
-		///     A task representing the asynchronous operation of processing the request.
-		/// </returns>
-		public async Task InvokeAsync(HttpContext context)
-		{
-			var requestId = Guid.NewGuid().ToString();
-			var stopwatch = StartRequestTimer();
+        /// <summary>
+        ///     Asynchronously invokes the performance monitoring middleware.
+        ///     Starts a timer, passes the request down the pipeline, and logs 
+        ///     the request duration and CPU usage after completion.
+        /// </summary>
+        /// <param name="context">
+        ///     The <see cref="HttpContext"/> representing the current HTTP request.
+        /// </param>
+        /// <returns>
+        /// <returns>
+        ///     A task representing the asynchronous operation of processing the request.
+        /// </returns>
+        public async Task InvokeAsync(HttpContext context)
+        {
+            var requestId = Guid.NewGuid().ToString();
+            var stopwatch = StartRequestTimer();
 
-			await _next(context);
+            try
+            {
+                await _next(context);
+            }
+            catch (Exception)
+            {
+                // Rethrow the exception to allow global exception middleware to handle it
+                throw;
+            }
+            finally
+            {
+                try
+                {
+                    var requestDuration = StopRequestTimer(stopwatch);
+                    var cpuUsage = GetCpuUsage();
 
-			var requestDuration = StopRequestTimer(stopwatch);
-			var cpuUsage = GetCpuUsage();
+                    await CheckPerformanceAsync(requestDuration);
+                    LogPerformanceMetrics(context, requestId, requestDuration, cpuUsage);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while monitoring performance metrics.");
+                }
+            }
+        }
 
-			await CheckPerformanceAsync(requestDuration);
-			LogPerformanceMetrics(context, requestId, requestDuration, cpuUsage);
-		}
-
-		private static Stopwatch StartRequestTimer()
-		{
-			return Stopwatch.StartNew();
-		}
-
+        private static Stopwatch StartRequestTimer() => Stopwatch.StartNew();
+		
 		private static long StopRequestTimer(Stopwatch stopwatch)
 		{
 			stopwatch.Stop();
 			return stopwatch.ElapsedMilliseconds;
 		}
 
-		private static double GetCpuUsage()
-		{
-			return Process.GetCurrentProcess().TotalProcessorTime.TotalMilliseconds;
-		}
-
+		private static double GetCpuUsage() => 
+			Process.GetCurrentProcess().TotalProcessorTime.TotalMilliseconds;
+		
 		private async Task CheckPerformanceAsync(long requestDuration)
 		{
 			using var scope = _scopeFactory.CreateScope();

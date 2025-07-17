@@ -1,15 +1,18 @@
-﻿using IdentityServiceApi.Constants;
+﻿using AutoMapper;
+using IdentityServiceApi.Constants;
 using IdentityServiceApi.Data;
+using IdentityServiceApi.Interfaces.Cache;
+using IdentityServiceApi.Interfaces.CacheKeys;
 using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.DTO;
 using IdentityServiceApi.Models.Entities;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using IdentityServiceApi.Models.Shared;
+using IdentityServiceApi.Models.RequestModels.Logging;
 using IdentityServiceApi.Models.ServiceResultModels.Logging;
 using IdentityServiceApi.Models.ServiceResultModels.Shared;
-using IdentityServiceApi.Models.RequestModels.Logging;
+using IdentityServiceApi.Models.Shared;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IdentityServiceApi.Services.Logging
 {
@@ -22,6 +25,9 @@ namespace IdentityServiceApi.Services.Logging
     /// </remarks>
     public class AuditLoggerService : IAuditLoggerService
     {
+        private readonly IMemoryCache _cache;
+        private readonly IAuditLogCacheKeyService _cacheKeyService;
+        private readonly IAuditLogCacheService _cacheService;
         private readonly ApplicationDbContext _context;
         private readonly IAuditLoggerServiceResultFactory _auditLoggerServiceResultFactory;
         private readonly IParameterValidator _parameterValidator;
@@ -31,6 +37,15 @@ namespace IdentityServiceApi.Services.Logging
         ///     Initializes a new instance of the <see cref="AuditLoggerService"/> class with the provided
         ///     application database context.
         /// </summary>
+        /// <param name="cache">
+        ///     The in-memory cache used for temporarily storing audit log data to improve performance.
+        /// </param>
+        /// <param name="cacheKeyService">
+        ///     Service responsible for generating consistent and structured cache keys for audit-related data.
+        /// </param>
+        /// <param name="cacheService">
+        ///     The audit log cache service responsible for clearing or managing audit-related cache entries.
+        /// </param>
         /// <param name="context">
         ///     The database context used for accessing audit logs.
         /// </param>
@@ -46,8 +61,11 @@ namespace IdentityServiceApi.Services.Logging
         /// <exception cref="ArgumentNullException">
         ///     Thrown if the context is null.
         /// </exception>
-        public AuditLoggerService(ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLoggerServiceResultFactory, IMapper mapper)
+        public AuditLoggerService(IMemoryCache cache, IAuditLogCacheKeyService cacheKeyService, IAuditLogCacheService cacheService, ApplicationDbContext context, IParameterValidator parameterValidator, IAuditLoggerServiceResultFactory auditLoggerServiceResultFactory, IMapper mapper)
         {
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _cacheKeyService = cacheKeyService ?? throw new ArgumentNullException(nameof(cacheKeyService));
+            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
             _auditLoggerServiceResultFactory = auditLoggerServiceResultFactory ?? throw new ArgumentNullException(nameof(auditLoggerServiceResultFactory));
@@ -68,31 +86,43 @@ namespace IdentityServiceApi.Services.Logging
         {
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
 
-            var query = _context.AuditLogs.AsQueryable();
-            if (request.Action.HasValue)
+            var auditLogCacheKey = _cacheKeyService.GetAuditLogListKey(request.Page, request.PageSize, request.Action);
+            if (!_cache.TryGetValue(auditLogCacheKey, out AuditLogServiceListResult cachedAuditLogs))
             {
-                query = query.Where(x => x.Action == request.Action.Value);
+                var query = _context.AuditLogs.AsQueryable();
+                if (request.Action.HasValue)
+                {
+                    query = query.Where(x => x.Action == request.Action.Value);
+                }
+
+                var totalCount = await query.CountAsync();
+                var auditLogs = await query
+                    .Select(x => new SimplifiedAuditLogDTO { Id = x.Id, Action = x.Action, TimeStamp = x.TimeStamp })
+                    .OrderBy(x => x.TimeStamp)
+                    .Skip((request.Page - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
+                PaginationModel paginationMetadata = new()
+                {
+                    TotalCount = totalCount,
+                    PageSize = request.PageSize,
+                    CurrentPage = request.Page,
+                    TotalPages = totalPages
+                };
+
+                cachedAuditLogs = new AuditLogServiceListResult { Logs = auditLogs, PaginationMetadata = paginationMetadata };
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(1))
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(30))
+                    .SetPriority(CacheItemPriority.Normal);
+
+                _cache.Set(auditLogCacheKey, cachedAuditLogs, cacheOptions);
             }
 
-            var totalCount = await query.CountAsync();
-            var auditLogs = await query
-                .Select(x => new SimplifiedAuditLogDTO { Id = x.Id, Action = x.Action, TimeStamp = x.TimeStamp })
-                .OrderBy(x => x.TimeStamp)
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .AsNoTracking()
-                .ToListAsync();
-
-            var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
-            PaginationModel paginationMetadata = new()
-            {
-                TotalCount = totalCount,
-                PageSize = request.PageSize,
-                CurrentPage = request.Page,
-                TotalPages = totalPages
-            };
-
-            return new AuditLogServiceListResult { Logs = auditLogs, PaginationMetadata = paginationMetadata };
+            return cachedAuditLogs;
         }
 
         /// <summary>
@@ -148,6 +178,7 @@ namespace IdentityServiceApi.Services.Logging
                 return _auditLoggerServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.AuditLog.DeletionFailed });
             }
 
+            _cacheService.ClearLogListCache();
             return _auditLoggerServiceResultFactory.GeneralOperationSuccess();
         }
 
@@ -171,11 +202,14 @@ namespace IdentityServiceApi.Services.Logging
 
             await _context.AuditLogs.AddAsync(log);
             await _context.SaveChangesAsync();
+
+            _cacheService.ClearLogListCache();
         }
 
         private static void ValidateTimestamp(DateTime timeStamp)
         {
-            if (Math.Abs((DateTime.UtcNow - timeStamp).TotalSeconds) > 30)  // Allow up to 30 seconds tolerance
+            // Allow up to 30 seconds tolerance
+            if (Math.Abs((DateTime.UtcNow - timeStamp).TotalSeconds) > 30)
             {
                 throw new ArgumentException(ErrorMessages.AuditLog.InvalidDate);
             }

@@ -60,6 +60,8 @@ namespace IdentityServiceApi.Controllers
         ///         who is not authenticated.
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AdminOnly)]
@@ -68,6 +70,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUsers)]
         public async Task<ActionResult<UserListResponse>> GetUsersAsync([FromQuery] UserListRequest request)
@@ -102,6 +105,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user tries to retrieve
         ///         another user's account or admin tries to retrieve another admins account.   
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AllStandardRoles)]
@@ -110,6 +115,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserById)]
         public async Task<ActionResult<UserResponse>> GetUserAsync([FromRoute][Required] string id)
@@ -141,6 +147,8 @@ namespace IdentityServiceApi.Controllers
         ///         authenticated.
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AdminOnly)]
@@ -149,6 +157,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserCreationStats)]
         public async Task<ActionResult<UserCreationStatsResponse>> GetUserCreationStatsAsync()
@@ -172,31 +181,34 @@ namespace IdentityServiceApi.Controllers
         ///			authenticated.
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AdminOnly)]
-		[HttpGet("state-metrics")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserStateMetricsResponse))]
-		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpGet("state-metrics")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserStateMetricsResponse))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		[SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserStateMetrics)]
-		public async Task<ActionResult<UserStateMetricsResponse>> GetUserStateMetricsAsync()
-		{
-			var result = await _userService.GetUserStateMetricsAsync();
-			if (result == null)
-			{
-				return NoContent();
-			}
+        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.GetUserStateMetrics)]
+        public async Task<ActionResult<UserStateMetricsResponse>> GetUserStateMetricsAsync()
+        {
+            var result = await _userService.GetUserStateMetricsAsync();
+            if (result == null)
+            {
+                return NoContent();
+            }
 
-			return Ok(new UserStateMetricsResponse
-			{
-				TotalCount = result.TotalCount,
-				ActivatedUsers = result.ActivatedUsers,
-				DeactivatedUsers = result.DeactivatedUsers
-			});
-		}
+            return Ok(new UserStateMetricsResponse
+            {
+                TotalCount = result.TotalCount,
+                ActivatedUsers = result.ActivatedUsers,
+                DeactivatedUsers = result.DeactivatedUsers
+            });
+        }
 
         /// <summary>
         ///     Asynchronously processes requests for creating a new user in the system, delegating the operation 
@@ -209,14 +221,17 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status201Created"/> (Created) with a User DTO of the newly created user.    
         ///     - <see cref="StatusCodes.Status400BadRequest"/> (Bad Request) with a list of validation or creation 
         ///			errors encountered during user creation.
+        ///	    - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [AllowAnonymous]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.CreateUser)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = ApiDocumentation.UsersApi.CreateUser)]
         public async Task<ActionResult<UserResponse>> CreateUserAsync([FromBody] UserDTO user)
         {
             var result = await _userService.CreateUserAsync(user);
@@ -248,6 +263,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts to update another 
         ///         user's account or a admin attempts to update another admins account.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AllStandardRoles)]
@@ -257,6 +274,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.UpdateUser)]
         public async Task<IActionResult> UpdateUserAsync([FromRoute][Required] string id, [FromBody] UserDTO user)
@@ -296,6 +314,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts to delete another 
         ///         user's account or a admin tries to delete another admin account.     
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AllStandardRoles)]
@@ -305,6 +325,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.DeleteUser)]
         public async Task<IActionResult> DeleteUserAsync([FromRoute][Required] string id)
@@ -344,6 +365,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts to activate another 
         ///         user's account or a admin tries to activate another admin account.         
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AdminOnly)]
@@ -353,6 +376,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.ActivateUser)]
         public async Task<IActionResult> ActivateUserAsync([FromRoute][Required] string id)
@@ -392,6 +416,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403Forbidden"/> (Forbidden) if an authorized user attempts to deactivate another 
         ///         user's account or a admin tries to deactivate another admin account.    
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the specified user account is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = RoleGroups.AdminOnly)]
@@ -401,6 +427,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.DeactivateUser)]
         public async Task<IActionResult> DeactivateUserAsync([FromRoute][Required] string id)
@@ -443,6 +470,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = Roles.SuperAdmin)]
@@ -452,6 +481,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.AssignRole)]
         public async Task<IActionResult> AssignRoleAsync([FromRoute][Required] string id, [FromBody][Required(ErrorMessage = "Role Name is required.")] string roleName)
@@ -489,6 +519,8 @@ namespace IdentityServiceApi.Controllers
         ///     - <see cref="StatusCodes.Status403"/> (Forbidden) if the request is made by a user 
         ///         who has insufficient privileges.
         ///     - <see cref="StatusCodes.Status404NotFound"/> (Not Found) if the user is not found.
+        ///     - <see cref="StatusCodes.Status429TooManyRequests"/> (Too Many Requests) if number of requests
+        ///         made by client are greater then rate limitation threshold. 
         ///     - <see cref="StatusCodes.Status500InternalServerError"/> (Internal Server Error) if an unexpected error occurs.       
         /// </returns>
         [Authorize(Roles = Roles.SuperAdmin)]
@@ -498,6 +530,7 @@ namespace IdentityServiceApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = ApiDocumentation.UsersApi.RemoveRole)]
         public async Task<IActionResult> RemoveAssignedRoleAsync([FromRoute][Required] string id)

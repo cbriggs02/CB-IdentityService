@@ -1,16 +1,19 @@
-﻿using IdentityServiceApi.Constants;
+﻿using AutoMapper;
+using IdentityServiceApi.Constants;
 using IdentityServiceApi.Interfaces.Authorization;
+using IdentityServiceApi.Interfaces.Cache;
+using IdentityServiceApi.Interfaces.CacheKeys;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.DTO;
 using IdentityServiceApi.Models.Entities;
-using AutoMapper;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using IdentityServiceApi.Models.Shared;
+using IdentityServiceApi.Models.RequestModels.UserManagement;
 using IdentityServiceApi.Models.ServiceResultModels.Shared;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
-using IdentityServiceApi.Models.RequestModels.UserManagement;
+using IdentityServiceApi.Models.Shared;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IdentityServiceApi.Services.UserManagement
 {
@@ -23,6 +26,9 @@ namespace IdentityServiceApi.Services.UserManagement
     /// </remarks>
     public class UserService : IUserService
     {
+        private readonly IMemoryCache _cache;
+        private readonly IUserCacheKeyService _cacheKeyService;
+        private readonly IUserCacheService _cacheService;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserServiceResultFactory _userServiceResultFactory;
@@ -37,6 +43,15 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <summary>
         ///     Initializes a new instance of the <see cref="UserService"/> class.
         /// </summary>
+        /// <param name="cache">
+        ///     The in-memory cache used for storing frequently accessed user-related data to improve performance.
+        /// </param>
+        /// <param name="cacheKeyService">
+        ///     Service responsible for generating consistent and structured cache keys for user-related data.
+        /// </param>
+        /// <param name="cacheService">
+        ///     The custom user cache service responsible for managing and interacting with user-specific cached data.
+        /// </param>
         /// <param name="userManager">
         ///     The user manager responsible for handling user management operations.
         /// </param>
@@ -70,8 +85,11 @@ namespace IdentityServiceApi.Services.UserManagement
         /// <exception cref="ArgumentNullException">
         ///     Thrown when any of the provided service parameters are null.
         /// </exception>
-        public UserService(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IRoleService roleService, IMapper mapper)
+        public UserService(IMemoryCache cache, IUserCacheKeyService cacheKeyService, IUserCacheService cacheService, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IRoleService roleService, IMapper mapper)
         {
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _cacheKeyService = cacheKeyService ?? throw new ArgumentNullException(nameof(cacheKeyService));
+            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _userServiceResultFactory = userServiceResultFactory ?? throw new ArgumentNullException(nameof(userServiceResultFactory));
@@ -99,37 +117,49 @@ namespace IdentityServiceApi.Services.UserManagement
         {
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
 
-            var query = _userManager.Users.AsQueryable();
-            if (request.AccountStatus.HasValue)
+            var userListCacheKey = _cacheKeyService.GetUserListKey(request.Page, request.PageSize, request.AccountStatus);
+            if (!_cache.TryGetValue(userListCacheKey, out UserServiceListResult cachedUsers))
             {
-                query = query.Where(user => user.AccountStatus == request.AccountStatus.Value);
+                var query = _userManager.Users.AsQueryable();
+                if (request.AccountStatus.HasValue)
+                {
+                    query = query.Where(user => user.AccountStatus == request.AccountStatus.Value);
+                }
+
+                var totalCount = await query.CountAsync();
+                var users = await query
+                    .Select(x => new SimplifiedUserDTO
+                    {
+                        Id = x.Id,
+                        UserName = x.UserName,
+                        Name = $"{x.FirstName} {x.LastName}",
+                        AccountStatus = x.AccountStatus
+                    })
+                    .OrderBy(user => user.UserName)
+                    .Skip((request.Page - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
+                PaginationModel paginationMetadata = new()
+                {
+                    TotalCount = totalCount,
+                    PageSize = request.PageSize,
+                    CurrentPage = request.Page,
+                    TotalPages = totalPages
+                };
+
+                cachedUsers = new UserServiceListResult { Users = users, PaginationMetadata = paginationMetadata };
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(3))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(1))
+                    .SetPriority(CacheItemPriority.Normal);
+
+                _cache.Set(userListCacheKey, cachedUsers, cacheOptions);
             }
 
-            var totalCount = await query.CountAsync();
-            var users = await query
-                .Select(x => new SimplifiedUserDTO 
-                { 
-                    Id = x.Id, 
-                    UserName = x.UserName, 
-                    Name = $"{x.FirstName} {x.LastName}", 
-                    AccountStatus = x.AccountStatus 
-                })
-                .OrderBy(user => user.UserName)
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .AsNoTracking()
-                .ToListAsync();
-
-            var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
-            PaginationModel paginationMetadata = new()
-            {
-                TotalCount = totalCount,
-                PageSize = request.PageSize,
-                CurrentPage = request.Page,
-                TotalPages = totalPages
-            };
-
-            return new UserServiceListResult { Users = users, PaginationMetadata = paginationMetadata };
+            return cachedUsers;
         }
 
         /// <summary>
@@ -170,46 +200,69 @@ namespace IdentityServiceApi.Services.UserManagement
         ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
         /// </summary>
         /// <returns>
-        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceCreationStatsResult"/>
-        ///     with the user creation date metrics.
+        ///     A task that represents the asynchronous operation. The task result contains 
+        ///     a <see cref="UserServiceCreationStatsResult"/> with the user creation date metrics.
         /// </returns>
         public async Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync()
         {
-            var stats = await _userManager.Users
-                .AsNoTracking()
-                .GroupBy(u => u.CreatedAt.Date)
-                .Select(g => new UserCreationStatDTO { Date = g.Key, Count = g.Count() })
-                .OrderBy(x => x.Date)
-                .ToListAsync();
+            if (!_cache.TryGetValue(_cacheKeyService.CreationStatsKey, out UserServiceCreationStatsResult cachedCreationStats))
+            {
+                var stats = await _userManager.Users
+                    .AsNoTracking()
+                    .GroupBy(u => u.CreatedAt.Date)
+                    .Select(g => new UserCreationStatDTO { Date = g.Key, Count = g.Count() })
+                    .OrderBy(x => x.Date)
+                    .ToListAsync();
 
-            return new UserServiceCreationStatsResult { UserCreationStats = stats };
+                cachedCreationStats = new UserServiceCreationStatsResult { UserCreationStats = stats };
+                var cacheOptions = new MemoryCacheEntryOptions()
+                      .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                      .SetSlidingExpiration(TimeSpan.FromMinutes(2))
+                      .SetPriority(CacheItemPriority.Normal);
+
+                _cache.Set(_cacheKeyService.CreationStatsKey, cachedCreationStats, cacheOptions);
+            }
+
+            return cachedCreationStats;
         }
 
         /// <summary>
-        ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
+        ///     Asynchronously retrieves aggregated metrics for user states, including total, 
+        ///     activated, and deactivated users.
         /// </summary>
         /// <returns>
-        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceStateMetricsResult"/>
-        ///     with the user state metrics.
+        ///     A task that represents the asynchronous operation. The task result 
+        ///     contains a <see cref="UserServiceStateMetricsResult"/> with the user state metrics.
         /// </returns>
         public async Task<UserServiceStateMetricsResult> GetUserStateMetricsAsync()
         {
-            var metrics = await _userManager.Users
-                .AsNoTracking()
-                .GroupBy(u => u.AccountStatus)
-                .Select(g => new { AccountStatus = g.Key, Count = g.Count() })
-                .ToListAsync();
-
-            var activatedUsers = metrics.FirstOrDefault(m => m.AccountStatus == 1)?.Count ?? 0;
-            var totalCount = metrics.Sum(m => m.Count);
-            var deactivatedUsers = totalCount - activatedUsers;
-
-            return new UserServiceStateMetricsResult
+            if (!_cache.TryGetValue(_cacheKeyService.StateMetricsKey, out UserServiceStateMetricsResult cachedStateMetrics))
             {
-                TotalCount = totalCount,
-                ActivatedUsers = activatedUsers,
-                DeactivatedUsers = deactivatedUsers
-            };
+                var metrics = await _userManager.Users
+                    .AsNoTracking()
+                    .GroupBy(u => u.AccountStatus)
+                    .Select(g => new { AccountStatus = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                var activatedUsers = metrics.FirstOrDefault(m => m.AccountStatus == 1)?.Count ?? 0;
+                var totalCount = metrics.Sum(m => m.Count);
+                var deactivatedUsers = totalCount - activatedUsers;
+
+                cachedStateMetrics = new UserServiceStateMetricsResult
+                {
+                    TotalCount = totalCount,
+                    ActivatedUsers = activatedUsers,
+                    DeactivatedUsers = deactivatedUsers
+                };
+                var cacheOptions = new MemoryCacheEntryOptions()
+                      .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                      .SetSlidingExpiration(TimeSpan.FromMinutes(2))
+                      .SetPriority(CacheItemPriority.Normal);
+
+                _cache.Set(_cacheKeyService.StateMetricsKey, cachedStateMetrics, cacheOptions);
+            }
+
+            return cachedStateMetrics;
         }
 
         /// <summary>
@@ -251,6 +304,10 @@ namespace IdentityServiceApi.Services.UserManagement
             {
                 return _userServiceResultFactory.UserOperationFailure(result.Errors.Select(e => e.Description).ToArray());
             }
+
+            _cacheService.ClearStateMetricsCache();
+            _cacheService.ClearCreationStatsCache();
+            _cacheService.ClearUserListCache();
 
             var returnUser = new UserDTO
             {
@@ -318,6 +375,7 @@ namespace IdentityServiceApi.Services.UserManagement
                 return _userServiceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
             }
 
+            _cacheService.ClearUserListCache();
             return _userServiceResultFactory.GeneralOperationSuccess();
         }
 
@@ -356,6 +414,10 @@ namespace IdentityServiceApi.Services.UserManagement
             {
                 return _userServiceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
             }
+
+            _cacheService.ClearStateMetricsCache();
+            _cacheService.ClearCreationStatsCache();
+            _cacheService.ClearUserListCache();
 
             // delete all stored passwords for user once user is deleted for data clean up.
             await _cleanupService.DeletePasswordHistoryAsync(id);
@@ -403,6 +465,9 @@ namespace IdentityServiceApi.Services.UserManagement
                 return _userServiceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
             }
 
+            _cacheService.ClearStateMetricsCache();
+            _cacheService.ClearUserListCache();
+
             return _userServiceResultFactory.GeneralOperationSuccess();
         }
 
@@ -447,6 +512,9 @@ namespace IdentityServiceApi.Services.UserManagement
                 return _userServiceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
             }
 
+            _cacheService.ClearStateMetricsCache();
+            _cacheService.ClearUserListCache();
+
             return _userServiceResultFactory.GeneralOperationSuccess();
         }
 
@@ -471,7 +539,6 @@ namespace IdentityServiceApi.Services.UserManagement
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
             _parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
-
             return await _roleService.AssignRoleAsync(id, roleName);
         }
 
@@ -491,7 +558,6 @@ namespace IdentityServiceApi.Services.UserManagement
         public async Task<ServiceResult> RemoveAssignedRoleAsync(string id)
         {
             _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
-
             return await _roleService.RemoveAssignedRoleAsync(id);
         }
 
@@ -504,7 +570,7 @@ namespace IdentityServiceApi.Services.UserManagement
             {
                 return null;
             }
-                
+
             var roleName = roleNames.First();
             var role = await _roleManager.FindByNameAsync(roleName);
             return role?.Id;

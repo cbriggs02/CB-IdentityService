@@ -1,10 +1,12 @@
-﻿using IdentityServiceApi.Data;
+﻿using Castle.Core.Logging;
+using IdentityServiceApi.Data;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Services.UserManagement;
 using IdentityServiceApi.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
@@ -23,6 +25,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
     {
         private readonly Mock<ApplicationDbContext> _contextMock;
         private readonly Mock<IParameterValidator> _parameterValidatorMock;
+        private readonly Mock<ILogger<PasswordHistoryCleanupService>> _loggerMock;
         private readonly PasswordHistoryCleanupService _cleanupService;
 
         /// <summary>
@@ -34,7 +37,8 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         {
             _contextMock = new Mock<ApplicationDbContext>();
             _parameterValidatorMock = new Mock<IParameterValidator>();
-            _cleanupService = new PasswordHistoryCleanupService(_contextMock.Object, _parameterValidatorMock.Object);
+            _loggerMock = new Mock<ILogger<PasswordHistoryCleanupService>>();
+            _cleanupService = new PasswordHistoryCleanupService(_contextMock.Object, _parameterValidatorMock.Object, _loggerMock.Object);
         }
 
         /// <summary>
@@ -45,7 +49,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
         public void PasswordService_NullDependencies_ThrowsArgumentNullException()
         {
             //Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new PasswordHistoryCleanupService(null, null));
+            Assert.Throws<ArgumentNullException>(() => new PasswordHistoryCleanupService(null, null, null));
         }
 
         /// <summary>

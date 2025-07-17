@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using IdentityServiceApi.Constants;
 using IdentityServiceApi.Interfaces.Authorization;
+using IdentityServiceApi.Interfaces.Cache;
+using IdentityServiceApi.Interfaces.CacheKeys;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.DTO;
@@ -9,6 +11,7 @@ using IdentityServiceApi.Models.ServiceResultModels.Shared;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
 using IdentityServiceApi.Services.UserManagement;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -27,7 +30,10 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 	[Trait("TestCategory", "UnitTest")]
 	public class UserServiceTests
 	{
-		private readonly Mock<UserManager<User>> _userManagerMock;
+        private readonly Mock<IMemoryCache> _cacheMock;
+		private readonly Mock<IUserCacheService> _userCacheServiceMock;
+		private readonly Mock<IUserCacheKeyService> _userCacheKeyServiceMock;
+        private readonly Mock<UserManager<User>> _userManagerMock;
         private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
         private readonly Mock<ILogger<UserManager<User>>> _userManagerLoggerMock;
 		private readonly Mock<IUserStore<User>> _userStoreMock;
@@ -92,6 +98,9 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
                 _roleManagerLoggerMock.Object
             );
 
+            _cacheMock = new Mock<IMemoryCache>();
+			_userCacheServiceMock = new Mock<IUserCacheService>();
+			_userCacheKeyServiceMock = new Mock<IUserCacheKeyService>();
             _userServiceResultFactoryMock = new Mock<IUserServiceResultFactory>();
 			_userHistoryCleanupServiceMock = new Mock<IPasswordHistoryCleanupService>();
 			_permissionServiceMock = new Mock<IPermissionService>();
@@ -101,7 +110,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 			_roleServiceMock = new Mock<IRoleService>();
 			_mapperMock = new Mock<IMapper>();
 
-			_userService = new UserService(_userManagerMock.Object, _roleManagerMock.Object, _userServiceResultFactoryMock.Object, _userHistoryCleanupServiceMock.Object, _permissionServiceMock.Object, _parameterValidatorMock.Object, _userLookupServiceMock.Object, _countryServiceMock.Object, _roleServiceMock.Object, _mapperMock.Object);
+			_userService = new UserService(_cacheMock.Object, _userCacheKeyServiceMock.Object, _userCacheServiceMock.Object,_userManagerMock.Object, _roleManagerMock.Object, _userServiceResultFactoryMock.Object, _userHistoryCleanupServiceMock.Object, _permissionServiceMock.Object, _parameterValidatorMock.Object, _userLookupServiceMock.Object, _countryServiceMock.Object, _roleServiceMock.Object, _mapperMock.Object);
 		}
 
 		/// <summary>
@@ -112,7 +121,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
 		public void UserService_NullDependencies_ThrowsArgumentNullException()
 		{
 			//Act & Assert
-			Assert.Throws<ArgumentNullException>(() => new UserService(null, null, null, null, null, null, null, null, null, null));
+			Assert.Throws<ArgumentNullException>(() => new UserService(null, null, null, null, null, null, null, null, null, null, null, null, null));
 		}
 
 		/// <summary>
