@@ -1,3 +1,5 @@
+# Making major updates and adding many new services - updates should be ready in 2026
+
 # IdentityServiceApi
 
 A secure and modular RESTful API built with ASP.NET Core Web API for identity management, user authentication, and role-based access control. Designed for scalability, maintainability, and modern DevOps practices.
