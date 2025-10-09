@@ -1,4 +1,4 @@
-# Making major updates and adding many new services - updates should be ready in 2026
+# We’re working on major updates and expanding our range of services. Everything is scheduled to be ready by 2026, bringing you a bigger and better experience
 
 # IdentityServiceApi
 
