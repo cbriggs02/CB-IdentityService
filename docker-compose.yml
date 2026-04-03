@@ -4,9 +4,3 @@ services:
     build:
       context: IdentityServiceApi
       dockerfile: Dockerfile
-    healthcheck:
-        test: ["CMD", "curl", "--fail", "http://localhost/health"]
-        interval: 30s
-        timeout: 5s
-        retries: 3
-        start_period: 10s

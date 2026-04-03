@@ -3,7 +3,6 @@ using IdentityServiceApi.Data;
 using IdentityServiceApi.Extensions;
 using IdentityServiceApi.Mapping;
 using IdentityServiceApi.Middleware;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace IdentityServiceApi
 {
@@ -33,7 +32,7 @@ namespace IdentityServiceApi
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Host.AddSerilogLogging();
-            builder.Services.AddDatabaseAndHealthChecks(builder.Configuration, builder.Environment);
+            builder.Services.AddApplicationDbContext(builder.Configuration, builder.Environment);
             builder.Services.AddIdentityServices();
             builder.Services.AddMemoryCache();
             builder.Services.AddApiConfiguration();
@@ -51,7 +50,15 @@ namespace IdentityServiceApi
                 await dbInitializer.InitializeDatabaseAsync(app);
             }
 
-            app.UseDevelopmentAndStagingSetup();
+            if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "IdentityServiceApi V1");
+                    c.RoutePrefix = string.Empty;
+                });
+            }
 
             app.UseMiddleware<GlobalExceptionMiddleware>();
             app.UseMiddleware<PerformanceMonitoringMiddleware>();
@@ -72,7 +79,6 @@ namespace IdentityServiceApi
             app.UseMiddleware<TokenValidatorMiddleware>();
 
             app.MapControllers();
-            app.MapHealthChecks("/health");
             app.Run();
         }
     }

@@ -4,18 +4,18 @@ using Microsoft.EntityFrameworkCore;
 namespace IdentityServiceApi.Extensions
 {
     /// <summary>
-    ///     Provides extension methods for configuring database services and health checks for the application.
-    ///     This class contains methods to configure the application's database context and health check monitoring.
+    ///     Provides extension methods for configuring database services for the application.
+    ///     This class contains methods to configure the application's database context.
     /// </summary>
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    public static class DatabaseAndHealthCheckServiceExtensions
+    public static class DatabaseServiceExtensions
     {
         /// <summary>
-        ///     Configures the database context and health checks for the application.
-        ///     It sets up the application's main database connection and the health check monitoring for the database.
+        ///     Configures the database context for the application.
+        ///     It sets up the application's main database connection.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>
         ///     used to register services for dependency injection.
@@ -27,13 +27,13 @@ namespace IdentityServiceApi.Extensions
         ///     The <see cref="IWebHostEnvironment"/> that indicates the hosting environment (e.g., Development, Staging, Production).
         /// </param>
         /// <returns>
-        ///     The updated <see cref="IServiceCollection"/> with the database and health check services configured.
+        ///     The updated <see cref="IServiceCollection"/> with the database services configured.
         /// </returns>
         /// <exception cref="InvalidOperationException">
-        ///     Thrown if a required connection string (either "ApplicationDatabase" or "HealthChecksDatabase") is missing
+        ///     Thrown if a required connection string "ApplicationDatabase" is missing
         ///     from the configuration.
         /// </exception>
-        public static IServiceCollection AddDatabaseAndHealthChecks(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+        public static IServiceCollection AddApplicationDbContext(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
         {
             var applicationDatabaseConnectionString = configuration.GetConnectionString("ApplicationDatabase")
                 ?? throw new InvalidOperationException("ApplicationDatabase connection string is missing in the configuration.");
@@ -43,9 +43,6 @@ namespace IdentityServiceApi.Extensions
                 options.UseLazyLoadingProxies()
                     .UseSqlServer(applicationDatabaseConnectionString);
             });
-
-            services.AddHealthChecks()
-                .AddDbContextCheck<ApplicationDbContext>();
 
             return services;
         }
