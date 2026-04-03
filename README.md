@@ -50,16 +50,6 @@ For detailed instructions on setting up and running the tests, refer to the [Ide
 - Includes a Dockerfile to define build steps and runtime environment.
 - Easily deployable to cloud platforms or local environments.
 
-## Automation Scripts
-
-A set of batch scripts is available for automating common tasks, such as:
-
-- Running the Docker container for the API.
-- Applying database migrations.
-- Running custom scripts for setup or maintenance.
-
-For detailed instructions on using the scripts, refer to the [Scripts README](./scripts/README.md).
-
 ---
 
 ##  Author
