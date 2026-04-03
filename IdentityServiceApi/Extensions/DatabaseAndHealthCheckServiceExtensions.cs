@@ -16,7 +16,6 @@ namespace IdentityServiceApi.Extensions
         /// <summary>
         ///     Configures the database context and health checks for the application.
         ///     It sets up the application's main database connection and the health check monitoring for the database.
-        ///     If in a development or staging environment, it also configures health checks UI and database storage.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>
         ///     used to register services for dependency injection.
@@ -45,22 +44,8 @@ namespace IdentityServiceApi.Extensions
                     .UseSqlServer(applicationDatabaseConnectionString);
             });
 
-            if (environment.IsDevelopment() || environment.IsStaging())
-            {
-                var healthChecksDatabaseConnectionString = configuration.GetConnectionString("HealthChecksDatabase")
-                    ?? throw new InvalidOperationException("HealthChecksDatabase connection string is missing in the configuration.");
-
-                services.AddHealthChecks()
-                    .AddDbContextCheck<ApplicationDbContext>("EntityFrameworkCore");
-
-                services.AddHealthChecksUI()
-                    .AddSqlServerStorage(healthChecksDatabaseConnectionString);
-
-                services.AddDbContext<HealthChecksDbContext>(options =>
-                {
-                    options.UseSqlServer(healthChecksDatabaseConnectionString);
-                });
-            }
+            services.AddHealthChecks()
+                .AddDbContextCheck<ApplicationDbContext>();
 
             return services;
         }

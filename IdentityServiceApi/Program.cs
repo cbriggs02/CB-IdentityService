@@ -3,6 +3,7 @@ using IdentityServiceApi.Data;
 using IdentityServiceApi.Extensions;
 using IdentityServiceApi.Mapping;
 using IdentityServiceApi.Middleware;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace IdentityServiceApi
 {
@@ -71,6 +72,7 @@ namespace IdentityServiceApi
             app.UseMiddleware<TokenValidatorMiddleware>();
 
             app.MapControllers();
+            app.MapHealthChecks("/health");
             app.Run();
         }
     }
