@@ -69,11 +69,6 @@ For more details, see:
 * Fully containerized for consistent environments
 * Includes a Dockerfile for build and runtime configuration
 * Supports local development and cloud deployment
-* Health check endpoint available at:
-
-  ```
-  /health
-  ```
 
 ---
 
@@ -130,11 +125,6 @@ Copy and modify the following template:
 
 * Use `host.docker.internal` to access your local database (Windows/macOS)
 * Ensure SQL Server is accessible from the container
-* Health checks are exposed at:
-
-  ```
-  http://localhost/health
-  ```
 
 ---
 
@@ -160,7 +150,6 @@ Then access:
 
 * API: `https://localhost:52870`
 * Swagger: `https://localhost:52870/index.html`
-* Health Check: `https://localhost:52870/health`
 
 ---
 
