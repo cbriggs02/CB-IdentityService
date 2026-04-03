@@ -27,7 +27,7 @@ Integration tests require authentication tokens to test protected endpoints. To 
 
 ### JWT Token Generation Helper
 
-A helper class named `JwtTokenTestHelper` is used to generate valid JWT tokens for test authentication. **This file is not currently included in the repository** for security reasons, as it contains a hardcoded secret key.
+A helper class named `JwtTokenTestHelper` is used to generate valid JWT tokens for test authentication. **This file is not currently included in the repository** for security reasons.
 
 > **You must manually create this file before running integration tests.**
 
