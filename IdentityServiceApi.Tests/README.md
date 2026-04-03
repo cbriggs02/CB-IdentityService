@@ -102,15 +102,6 @@ namespace IdentityServiceApi.Tests.Integration.Helpers
 }
 ```
 
----
-
-## Notes
-
-- Never commit hardcoded secrets to version control. This file is ignored by `.gitignore` and must be manually created on each environment.
-- You may use environment variables or secret management tools (like [dotnet user-secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets/)) for more secure test configurations.
-
----
-
 ##  Author
 
 Christian Briglio – 2025
