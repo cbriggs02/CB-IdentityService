@@ -4,6 +4,17 @@ A secure, modular RESTful API built with ASP.NET Core Web API for identity manag
 
 ---
 
+## Technology Stack
+
+- **Framework:** ASP.NET Core Web API (.NET 6 LTS)
+- **ORM:** Entity Framework Core 6.x (SQL Server)
+- **Authentication:** ASP.NET Identity with JWT
+- **API Documentation:** Swagger UI
+- **Testing:** xUnit for unit and integration tests
+- **Containerization:** Docker support included
+
+---
+
 ## Overview
 
 This API enables secure communication between clients and the server over HTTPS using standard web protocols. It follows a clean, modular architecture that separates responsibilities across well-defined layers:
