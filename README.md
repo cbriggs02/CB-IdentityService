@@ -126,7 +126,7 @@ Copy and modify the following template:
 
 ---
 
-### 🐳 Docker Notes
+### Docker Notes
 
 * Use `host.docker.internal` to access your local database (Windows/macOS)
 * Ensure SQL Server is accessible from the container
@@ -138,7 +138,7 @@ Copy and modify the following template:
 
 ---
 
-## ▶️ Running the Application
+## Running the Application
 
 ### Local (without Docker)
 
