@@ -1,6 +1,10 @@
-# IdentityServiceApi.Tests
+# IdentityServiceApi.UnitTests
 
-This project contains unit and integration tests for the **IdentityServiceApi**. It validates authentication, authorization, user management, and role-based access control functionality.
+This project contains unit tests for the **IdentityServiceApi**.
+
+# IdentityServiceApi.IntegrationTests
+
+This project contains integration tests for the **IdentityServiceApi**.
 
 ---
 
@@ -102,6 +106,6 @@ namespace IdentityServiceApi.IntegrationTests.Helpers
 }
 ```
 
-##  Author
+## Author
 
 Christian Briglio – 2025
