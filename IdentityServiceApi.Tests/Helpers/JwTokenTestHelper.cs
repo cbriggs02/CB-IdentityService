@@ -1,46 +1,4 @@
-# IdentityServiceApi.Tests
-
-This project contains unit and integration tests for the **IdentityServiceApi**. It validates authentication, authorization, user management, and role-based access control functionality.
-
----
-
-## Folder Structure
-
-```
-Tests/
-├── IdentityServiceApi.IntegrationTests/
-│   ├── Helpers/
-│   │   └── JwtTokenTestHelper.cs
-│   └── Controllers/
-|   └── Middleware/
-├──IdentityServiceApi.UnitTests/
-|   └── Helpers/
-│   └── Services/
-└── README.md
-```
-
----
-
-## Integration Testing Setup
-
-Integration tests require authentication tokens to test protected endpoints. To support this, a custom helper generates mock JWT tokens used during test runs.
-
-### JWT Token Generation Helper
-
-A helper class named `JwtTokenTestHelper` is used to generate valid JWT tokens for test authentication. **This file is not currently included in the repository** for security reasons.
-
-> **You must manually create this file before running integration tests.**
-
----
-
-## Creating the `JwtTokenTestHelper.cs`
-
-**Path:** `IdentityServiceApi.IntegrationTests/Helpers/JwtTokenTestHelper.cs`
-
-Paste the following code into the new file:
-
-```csharp
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -63,10 +21,26 @@ namespace IdentityServiceApi.IntegrationTests.Helpers
             {
                 {"JwtSettings:ValidIssuer", "https://localhost:52870"},
                 {"JwtSettings:ValidAudience", "https://localhost:4200"},
-                {"JwtSettings:SecretKey", "{replace with your secret key}"}
+                {"JwtSettings:SecretKey", "ED9591338BCE30B0738C2AF30CF40CD4F29399958ABD1501726609F3B1D4066B"}
             })
             .Build();
 
+
+        /// <summary>
+        ///     Generates a JWT token with a specified list of roles for testing.
+        /// </summary>
+        /// <param name="roles">
+        ///     A list of roles to include in the generated JWT token. Can be null or empty.
+        /// </param>
+        /// <param name="userName">
+        ///     The username of the user who the token is being issued for.
+        /// </param>
+        /// <param name="userId">
+        ///     The id of the user who the token is being issued for.
+        /// </param>
+        /// <returns>
+        ///     A JWT token string that can be used for authentication in integration tests.
+        /// </returns>
         public static string GenerateJwtToken(IList<string> roles, string userName, string userId)
         {
             var validIssuer = Configuration["JwtSettings:ValidIssuer"];
@@ -96,12 +70,8 @@ namespace IdentityServiceApi.IntegrationTests.Helpers
                 signingCredentials: signingCredentials
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+            return tokenString;
         }
     }
 }
-```
-
-##  Author
-
-Christian Briglio – 2025
