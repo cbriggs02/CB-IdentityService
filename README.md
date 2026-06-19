@@ -1,10 +1,8 @@
 # IdentityServiceApi
 
-A secure, modular RESTful API built with ASP.NET Core Web API for identity management, authentication, and role-based access control. The project is designed with scalability, maintainability, and modern DevOps practices in mind, making it suitable for both development and production environments.
-
 [![Board Status](https://dev.azure.com/chrisbriglio/921b1b04-8655-415f-8bcf-4b5b235431d1/c1ed23dd-9fde-4a79-880d-0555945b5d49/_apis/work/boardbadge/694f5a15-99d9-486b-a2b0-b56bd56925c1)](https://dev.azure.com/chrisbriglio/921b1b04-8655-415f-8bcf-4b5b235431d1/_boards/board/t/c1ed23dd-9fde-4a79-880d-0555945b5d49/Backlog%20items/)
 
-Task tracking managed via Azure DevOps Boards, CI/CD via GitHub Actions
+A secure, modular RESTful API built with ASP.NET Core Web API for identity management, authentication, and role-based access control. The project is designed with scalability, maintainability, and modern DevOps practices in mind, making it suitable for both development and production environments.
 
 ---
 
@@ -16,6 +14,31 @@ Task tracking managed via Azure DevOps Boards, CI/CD via GitHub Actions
 - **API Documentation:** Swagger UI
 - **Testing:** xUnit for unit and integration tests
 - **Containerization:** Docker support included
+
+---
+
+## CI/CD & DevOps
+
+This project incorporates modern CI/CD and DevOps practices to ensure code quality, security, and deployment readiness:
+
+- GitHub Actions – Continuous Integration
+
+  - Automatically restores, builds, and runs unit tests on every push and pull request
+  - Ensures code changes are validated before being merged
+
+- Docker – Continuous Delivery
+
+  - Builds a Docker image automatically on merges to the main branch
+  - Enables consistent, environment-independent deployment
+
+- CodeQL – Security Analysis
+
+  - Performs automated static code analysis to identify potential vulnerabilities and code quality issues
+  - Runs on pull requests, pushes, and scheduled scans
+
+- Azure DevOps Boards – Project Management
+
+  - Used for task tracking, backlog management, and agile workflow organization
 
 ---
 
@@ -64,7 +87,7 @@ This API is consumed by the following frontend application(s):
   * *Integration Tests*: Verify full request pipeline (controllers, middleware, etc.)
 
 For more details, see:
-`/IdentityServiceApi.Tests/README.md`
+`/tests/README.md`
 
 ---
 
