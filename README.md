@@ -2,6 +2,8 @@
 
 A secure, modular RESTful API built with ASP.NET Core Web API for identity management, authentication, and role-based access control. The project is designed with scalability, maintainability, and modern DevOps practices in mind, making it suitable for both development and production environments.
 
+[![Board Status](https://dev.azure.com/chrisbriglio/921b1b04-8655-415f-8bcf-4b5b235431d1/c1ed23dd-9fde-4a79-880d-0555945b5d49/_apis/work/boardbadge/694f5a15-99d9-486b-a2b0-b56bd56925c1)](https://dev.azure.com/chrisbriglio/921b1b04-8655-415f-8bcf-4b5b235431d1/_boards/board/t/c1ed23dd-9fde-4a79-880d-0555945b5d49/Backlog%20items/)
+
 ---
 
 ## Technology Stack
