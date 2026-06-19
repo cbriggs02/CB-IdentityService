@@ -25,7 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\IdentityServiceApi\IdentityServiceApi.csproj" />
+		<ProjectReference Include="..\..\src\IdentityServiceApi\IdentityServiceApi.csproj" />
 	</ItemGroup>
 
 </Project>
