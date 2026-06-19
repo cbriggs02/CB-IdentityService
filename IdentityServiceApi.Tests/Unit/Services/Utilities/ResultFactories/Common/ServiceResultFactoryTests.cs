@@ -14,7 +14,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Commo
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "UnitTest")]
+    [Trait("TestCategory", "Unit")]
     public class ServiceResultFactoryTests
     {
         private readonly Mock<IParameterValidator> _parameterValidatorMock;

@@ -22,7 +22,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
-    [Trait("TestCategory", "UnitTest")]
+    [Trait("TestCategory", "Unit")]
     public class AuditLoggerServiceTests
     {
         private readonly Mock<IMemoryCache> _cacheMock;

@@ -27,7 +27,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 	///     @Author: Christian Briglio
 	///     @Created: 2025
 	/// </remarks>
-	[Trait("TestCategory", "IntegrationTest")]
+	[Trait("TestCategory", "Integration")]
 	public class UsersControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		private readonly WebApplicationFactory<Program> _factory;
@@ -216,11 +216,14 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 			await CleanUpTestUserAsync(user.Email);
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <returns></returns>
-		[Fact]
+        /// <summary>
+        ///     Verifies that the <see cref="UsersController.GetUserAsync"/> method returns a 
+        ///     NotFound 404 response when the requested user does not exist.
+        /// </summary>
+        /// <returns>
+        ///     A task that represents the asynchronous unit test operation.
+        /// </returns>
+        [Fact]
 		public async Task GetUserAsync_ReturnsNotFound_WhenUserDoesNotExist()
 		{
 			// Arrange

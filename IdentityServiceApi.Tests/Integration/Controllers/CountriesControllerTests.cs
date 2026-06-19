@@ -16,7 +16,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "IntegrationTest")]
+    [Trait("TestCategory", "Integration")]
     public class CountriesControllerTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> _factory;

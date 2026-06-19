@@ -98,23 +98,6 @@ namespace IdentityServiceApi.Services.Authorization
             return IsSelfAccess(id, currentUserId);
         }
 
-        /// <summary>
-        ///     Asynchronously validates whether an admin user has permission to perform actions on another user.
-        ///     Admin users can access any user except other admins.
-        /// </summary>
-        /// <param name="id">
-        ///     The ID of the target user.
-        /// </param>
-        /// <param name="currentUserId">
-        ///     The ID of the current admin user.
-        /// </param>
-        /// <returns>
-        ///     True if the current user has permission;
-        ///     False if if the target user's is is null;
-        ///     False if no user found matching target id;
-        ///     False is target user is a super admin;
-        ///     False is target user is admin or super;
-        /// </returns>
         private async Task<bool> ValidateAdminPermission(string id, string currentUserId)
         {
             if (string.IsNullOrEmpty(id))

@@ -15,7 +15,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Authe
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "UnitTest")]
+    [Trait("TestCategory", "Unit")]
     public class LoginServiceResultFactoryTests
     {
         private readonly Mock<IParameterValidator> _parameterValidatorMock;

@@ -17,11 +17,11 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "UnitTest")]
+    [Trait("TestCategory", "Unit")]
     public class AuditLoggerServiceResultFactoryTests
     {
         private readonly Mock<IParameterValidator> _parameterValidatorMock;
-        private readonly AuditLoggerServiceResultFactory _audutLoggerServiceResultFactory;
+        private readonly AuditLoggerServiceResultFactory _auditLoggerServiceResultFactory;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="LoginServiceResultFactoryTests"/> class.
@@ -29,7 +29,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
         public AuditLoggerServiceResultFactoryTests()
         {
             _parameterValidatorMock = new Mock<IParameterValidator>();
-            _audutLoggerServiceResultFactory = new AuditLoggerServiceResultFactory(_parameterValidatorMock.Object);
+            _auditLoggerServiceResultFactory = new AuditLoggerServiceResultFactory(_parameterValidatorMock.Object);
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
         public void AuditLoggerOperationFailure_ErrorsArrayIsNull_ThrowsArgumentNullException()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _audutLoggerServiceResultFactory.AuditLoggerOperationFailure(null));
+            Assert.Throws<ArgumentNullException>(() => _auditLoggerServiceResultFactory.AuditLoggerOperationFailure(null));
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
             string[] errors = new[] { ExpectedErrorMessage };
 
             // Act
-            var result = _audutLoggerServiceResultFactory.AuditLoggerOperationFailure(errors);
+            var result = _auditLoggerServiceResultFactory.AuditLoggerOperationFailure(errors);
 
             // Assert
             Assert.NotNull(result);
@@ -87,7 +87,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
                 .Throws<ArgumentNullException>();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _audutLoggerServiceResultFactory.AuditLoggerOperationSuccess(null));
+            Assert.Throws<ArgumentNullException>(() => _auditLoggerServiceResultFactory.AuditLoggerOperationSuccess(null));
 
             VerifyCallsToParameterValidator();
         }
@@ -111,7 +111,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
             };
 
             // Act
-            var result = _audutLoggerServiceResultFactory.AuditLoggerOperationSuccess(log);
+            var result = _auditLoggerServiceResultFactory.AuditLoggerOperationSuccess(log);
 
             // Assert
             Assert.NotNull(result);
@@ -134,7 +134,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
         public void GeneralOperationSuccess_CreatesNewServiceResult_ReturnsNewServiceResult()
         {
             // Act
-            var result = _audutLoggerServiceResultFactory.GeneralOperationSuccess();
+            var result = _auditLoggerServiceResultFactory.GeneralOperationSuccess();
 
             // Assert
             Assert.NotNull(result);
@@ -152,7 +152,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
         public void GeneralOperationFailure_ErrorsArrayIsNull_ThrowsArgumentNullException()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _audutLoggerServiceResultFactory.GeneralOperationFailure(null));
+            Assert.Throws<ArgumentNullException>(() => _auditLoggerServiceResultFactory.GeneralOperationFailure(null));
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities.ResultFactories.Loggi
             string[] errors = new[] { ExpectedErrorMessage };
 
             // Act
-            var result = _audutLoggerServiceResultFactory.GeneralOperationFailure(errors);
+            var result = _auditLoggerServiceResultFactory.GeneralOperationFailure(errors);
 
             // Assert
             Assert.NotNull(result);

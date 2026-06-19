@@ -144,7 +144,7 @@ namespace IdentityServiceApi.Services.Authentication
                 issuer: validIssuer,
                 audience: validAudience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(10),
                 signingCredentials: signingCredentials
             );
 

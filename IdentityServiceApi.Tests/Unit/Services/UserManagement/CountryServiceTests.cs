@@ -15,7 +15,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
-    [Trait("TestCategory", "UnitTest")]
+    [Trait("TestCategory", "Unit")]
     public class CountryServiceTests : IDisposable
     {
         private readonly ApplicationDbContext _context;
