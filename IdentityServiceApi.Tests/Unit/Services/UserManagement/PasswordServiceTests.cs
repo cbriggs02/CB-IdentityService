@@ -23,7 +23,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.UserManagement
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "Unit")]
+    [Trait("Category", "Unit")]
     public class PasswordServiceTests
     {
         private readonly Mock<UserManager<User>> _userManagerMock;

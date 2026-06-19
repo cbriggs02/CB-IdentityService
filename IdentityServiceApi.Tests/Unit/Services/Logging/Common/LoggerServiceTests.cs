@@ -14,7 +14,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging.Common
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
-    [Trait("TestCategory", "Unit")]
+    [Trait("Category", "Unit")]
     public class LoggerServiceTests
     {
         private readonly Mock<IAuthorizationLoggerService> _authorizationLoggerServiceMock;

@@ -27,7 +27,7 @@ namespace IdentityServiceApi.Tests.Integration.Controllers
 	///     @Author: Christian Briglio
 	///     @Created: 2025
 	/// </remarks>
-	[Trait("TestCategory", "Integration")]
+	[Trait("Category", "Integration")]
 	public class UsersControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		private readonly WebApplicationFactory<Program> _factory;

@@ -16,7 +16,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Cache
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "Unit")]
+    [Trait("Category", "Unit")]
     public class AuditLogCacheServiceTests
     {
         private readonly Mock<IMemoryCache> _cacheMock;

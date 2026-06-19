@@ -11,7 +11,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Logging
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
-    [Trait("TestCategory", "Unit")]
+    [Trait("Category", "Unit")]
     public class LoggingValidatorTests
     {
         private readonly LoggingValidator _validator;

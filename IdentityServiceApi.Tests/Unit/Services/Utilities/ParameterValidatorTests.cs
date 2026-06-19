@@ -11,7 +11,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Utilities
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "Unit")]
+    [Trait("Category", "Unit")]
     public class ParameterValidatorTests
     {
         private readonly ParameterValidator _validator;

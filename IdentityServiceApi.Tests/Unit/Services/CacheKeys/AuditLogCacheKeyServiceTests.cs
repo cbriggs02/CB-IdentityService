@@ -12,7 +12,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.CacheKeys
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "Unit")]
+    [Trait("Category", "Unit")]
     public class AuditLogCacheKeyServiceTests
     {
         private readonly AuditLogCacheKeyService _service = new();

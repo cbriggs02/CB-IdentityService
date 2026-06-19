@@ -13,7 +13,7 @@ namespace IdentityServiceApi.Tests.Integration.Middleware
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    [Trait("TestCategory", "Integration")]
+    [Trait("Category", "Integration")]
     public class PerformanceMonitoringMiddlewareTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> _factory;

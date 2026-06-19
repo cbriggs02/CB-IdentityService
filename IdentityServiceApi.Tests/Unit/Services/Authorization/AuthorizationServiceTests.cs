@@ -21,7 +21,7 @@ namespace IdentityServiceApi.Tests.Unit.Services.Authorization
     ///     @Author: Christian Briglio
     ///     @Created: 2024
     /// </remarks>
-    [Trait("TestCategory", "Unit")]
+    [Trait("Category", "Unit")]
     public class AuthorizationServiceTests
     {
         private readonly Mock<UserManager<User>> _userManagerMock;
