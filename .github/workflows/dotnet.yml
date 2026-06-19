@@ -23,6 +23,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore IdentityServiceApi.sln
     - name: Build
-      run: dotnet build IdentityServiceApi.sln/IdentityServiceApi.csproj --no-restore
+      run: dotnet build IdentityServiceApi/IdentityServiceApi.csproj --no-restore
     - name: Test
-      run: dotnet test IdentityServiceApi.sln/IdentityServiceApi.Tests.csproj  --filter "Category!=Integration" --no-build --verbosity normal
+      run: dotnet test IdentityServiceApi/IdentityServiceApi.Tests.csproj  --filter "Category!=Integration" --no-build --verbosity normal
