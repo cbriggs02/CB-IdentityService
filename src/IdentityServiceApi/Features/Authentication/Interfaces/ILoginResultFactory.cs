@@ -1,0 +1,40 @@
+﻿using IdentityServiceApi.Features.Authentication.Models;
+using IdentityServiceApi.Shared.ResultFactories;
+
+namespace IdentityServiceApi.Features.Authentication.Interfaces
+{
+    /// <summary>
+    ///     Interface for creating service results related to login operations.
+    ///     This interface defines methods for creating both success and failure results
+    ///     for login operations, including handling the authentication token for successful logins.
+    /// </summary>
+    /// <remarks>
+    ///     @Author: Christian Briglio
+    ///     @Created: 2024
+    ///     @Updated: 2026
+    /// </remarks>
+    public interface ILoginResultFactory : IResultFactory
+    {
+        /// <summary>
+        ///     Creates a failed login service result with specified errors.
+        /// </summary>
+        /// <param name="errors">
+        ///     An array of error messages describing the failure.
+        /// </param>
+        /// <returns>
+        ///     A <see cref="LoginResult"/> indicating failure along with the provided errors.
+        /// </returns>
+        LoginResult LoginOperationFailure(string[] errors);
+
+        /// <summary>
+        ///     Creates a successful login service result with a token.
+        /// </summary>
+        /// <param name="token">
+        ///     The authentication token generated upon successful login.
+        /// </param>
+        /// <returns>
+        ///     A <see cref="LoginResult"/> containing the success status and the token.
+        /// </returns>
+        LoginResult LoginOperationSuccess(string token);
+    }
+}

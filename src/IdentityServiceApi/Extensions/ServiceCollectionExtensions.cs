@@ -1,20 +1,14 @@
 ﻿using IdentityServiceApi.Data;
-using IdentityServiceApi.Interfaces.Authentication;
-using IdentityServiceApi.Interfaces.Authorization;
-using IdentityServiceApi.Interfaces.UserManagement;
-using IdentityServiceApi.Interfaces.Utilities;
-using IdentityServiceApi.Services.Authentication;
-using IdentityServiceApi.Services.Authorization;
-using IdentityServiceApi.Services.UserManagement;
-using IdentityServiceApi.Services.Utilities.ResultFactories.Authentication;
-using IdentityServiceApi.Services.Utilities.ResultFactories.Common;
-using IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement;
-using IdentityServiceApi.Services.Utilities;
-using IdentityServiceApi.Services.Utilities.ResultFactories.Authorization;
-using IdentityServiceApi.Services.Cache;
-using IdentityServiceApi.Interfaces.Cache;
-using IdentityServiceApi.Interfaces.CacheKeys;
-using IdentityServiceApi.Services.CacheKeys;
+using IdentityServiceApi.Features.Authentication.Interfaces;
+using IdentityServiceApi.Features.Authorization.Interfaces;
+using IdentityServiceApi.Features.UserManagement.Interfaces;
+using IdentityServiceApi.Features.Authentication.Services;
+using IdentityServiceApi.Features.Authorization.Services;
+using IdentityServiceApi.Features.UserManagement.Services;
+using IdentityServiceApi.Shared.Utilities;
+using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Logging;
+using IdentityServiceApi.Features.UserManagement.Caching;
 
 namespace IdentityServiceApi.Extensions
 {
@@ -86,11 +80,11 @@ namespace IdentityServiceApi.Extensions
 
         private static IServiceCollection AddServiceResultFactories(this IServiceCollection services)
         {
-            services.AddScoped<IServiceResultFactory, ServiceResultFactory>();
-            services.AddScoped<IUserServiceResultFactory, UserServiceResultFactory>();
-            services.AddScoped<IUserLookupServiceResultFactory, UserLookupServiceResultFactory>();
-            services.AddScoped<ILoginServiceResultFactory, LoginServiceResultFactory>();
-            services.AddScoped<IRoleServiceResultFactory, RoleServiceResultFactory>();
+            services.AddScoped<IResultFactory, ResultFactory>();
+            services.AddScoped<IUserResultFactory, UserResultFactory>();
+            services.AddScoped<IUserLookupResultFactory, UserLookupResultFactory>();
+            services.AddScoped<ILoginResultFactory, LoginResultFactory>();
+            services.AddScoped<IRoleResultFactory, RoleResultFactory>();
             return services;
         }
 

@@ -1,6 +1,6 @@
 ﻿using Bogus;
-using IdentityServiceApi.Constants;
-using IdentityServiceApi.Models.Entities;
+using IdentityServiceApi.Features.UserManagement.Models.Entities;
+using IdentityServiceApi.Shared.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

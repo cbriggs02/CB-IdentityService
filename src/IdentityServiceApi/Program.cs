@@ -1,8 +1,8 @@
 using AspNetCoreRateLimit;
 using IdentityServiceApi.Data;
 using IdentityServiceApi.Extensions;
-using IdentityServiceApi.Mapping;
 using IdentityServiceApi.Middleware;
+using IdentityServiceApi.Shared.Mapping;
 
 namespace IdentityServiceApi
 {
@@ -29,7 +29,7 @@ namespace IdentityServiceApi
             builder.Services.AddApplicationServices();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerServices();
-            builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+            builder.Services.AddAutoMapper(x => x.AddMaps(typeof(AutoMapperProfile)));
             builder.Services.AddAuthenticationServices(builder.Configuration);
             builder.Services.AddRateLimiting();
 

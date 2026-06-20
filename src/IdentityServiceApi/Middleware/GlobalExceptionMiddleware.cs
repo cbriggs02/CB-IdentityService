@@ -1,7 +1,6 @@
-﻿using IdentityServiceApi.Constants;
-using IdentityServiceApi.Enums;
-using IdentityServiceApi.Interfaces.Utilities;
-using IdentityServiceApi.Models.ApiResponseModels.Shared;
+﻿using IdentityServiceApi.Shared.Constants;
+using IdentityServiceApi.Shared.Logging;
+using IdentityServiceApi.Shared.Models;
 using Newtonsoft.Json;
 
 namespace IdentityServiceApi.Middleware
@@ -43,9 +42,22 @@ namespace IdentityServiceApi.Middleware
             }
             catch (Exception ex)
             {
-                loggerService.LogData(LogLevel.Error, LogSource.GlobalExceptionMiddleware, "An unhandled exception occurred", ex);
+                LogExceptionDetails(loggerService, ex);
                 await WriteServerErrorResponseAsync(context);
             }
+        }
+
+        private static void LogExceptionDetails(ILoggerService loggerService, Exception ex)
+        {
+            var logEntry = new LogEntry
+            {
+                LogLevel = LogLevel.Error,
+                LogSource = LogSource.GlobalExceptionMiddleware,
+                Message = "An unhandled exception occurred",
+                Exception = ex
+            };
+
+            loggerService.LogData(logEntry);
         }
 
         private static async Task WriteServerErrorResponseAsync(HttpContext context)

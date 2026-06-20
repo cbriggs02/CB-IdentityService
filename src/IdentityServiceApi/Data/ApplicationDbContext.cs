@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using IdentityServiceApi.Models.Entities;
+using IdentityServiceApi.Features.UserManagement.Models.Entities;
 
 namespace IdentityServiceApi.Data
 {

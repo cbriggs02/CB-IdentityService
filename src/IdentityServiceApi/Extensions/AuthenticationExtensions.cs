@@ -1,4 +1,4 @@
-﻿using IdentityServiceApi.Models.Configurations;
+﻿using IdentityServiceApi.Features.Authentication.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
