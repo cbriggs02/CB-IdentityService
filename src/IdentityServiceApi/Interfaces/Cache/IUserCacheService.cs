@@ -8,22 +8,10 @@
     /// <remarks>
     ///     @Author: Christian Briglio  
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public interface IUserCacheService
     {
-        /// <summary>
-        ///     Clears the cached user creation statistics.
-        ///     This should be called when user creation events occur that affect reporting or analytics.
-        /// </summary>
-        void ClearCreationStatsCache();
-
-        /// <summary>
-        ///     Clears the cached state metrics for users.
-        ///     This includes data like the count of active or inactive users, and should be refreshed 
-        ///     after user updates.
-        /// </summary>
-        void ClearStateMetricsCache();
-
         /// <summary>
         ///     Clears all tracked cache entries for paginated user lists.
         ///     This is important after user data modifications to ensure the UI reflects updated information.

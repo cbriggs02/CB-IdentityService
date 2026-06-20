@@ -1,8 +1,5 @@
-﻿using Swashbuckle.AspNetCore.Annotations;
-
-namespace IdentityServiceApi.Models.DTO
+﻿namespace IdentityServiceApi.Models.DTO
 {
-
     /// <summary>
     ///     Represents a simplified data transfer object (DTO) for user entries,
     ///     containing essential details such as the unique identifier, username, name and account status.
@@ -10,13 +7,13 @@ namespace IdentityServiceApi.Models.DTO
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public class SimplifiedUserDTO
     {
         /// <summary>
         ///     Gets or sets the unique identifier for the user (from ASP.NET Identity).
         /// </summary>
-        [SwaggerSchema(ReadOnly = true)]
         public string? Id { get; set; }
 
         /// <summary>

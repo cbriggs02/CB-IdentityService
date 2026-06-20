@@ -8,6 +8,7 @@ namespace IdentityServiceApi.Extensions
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public static class SwaggerServiceExtensions
     {
@@ -22,25 +23,24 @@ namespace IdentityServiceApi.Extensions
         /// </returns>
         public static IServiceCollection AddSwaggerServices(this IServiceCollection services)
         {
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "IdentityServiceApi", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
                     Type = SecuritySchemeType.Http,
                     Scheme = "bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Enter your JWT token here"
+                    Description = "Enter: Bearer {your JWT token}"
                 });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {   
                     {
                         new OpenApiSecurityScheme
                         {
                             Reference = new OpenApiReference
-                            {
+                            {   
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
                             }
@@ -48,9 +48,7 @@ namespace IdentityServiceApi.Extensions
                         Array.Empty<string>()
                     }
                 });
-                c.EnableAnnotations();
             });
-
             return services;
         }
     }

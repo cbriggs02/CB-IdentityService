@@ -10,6 +10,7 @@ namespace IdentityServiceApi.Services.Utilities
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class ParameterValidator : IParameterValidator
     {

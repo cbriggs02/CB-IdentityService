@@ -13,35 +13,13 @@ namespace IdentityServiceApi.Services.Authorization
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class AuthorizationService : IAuthorizationService
+    public class AuthorizationService(UserManager<User> userManager, IUserContextService userContextService, IUserLookupService userLookupService) : IAuthorizationService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly IUserContextService _userContextService;
-        private readonly IUserLookupService _userLookupService;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="AuthorizationService"/> class.
-        /// </summary>
-        /// <param name="userManager">
-        ///     The user manager responsible for handling user management operations.
-        ///     In this case used for locating users during permission validation.
-        /// </param>
-        /// <param name="userContextService">
-        ///     The service used for accessing current HTTP context.
-        /// </param>
-        /// <param name="userLookupService">'
-        ///     The service used for looking up users in the system.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown if any of the parameters are null.
-        /// </exception>
-        public AuthorizationService(UserManager<User> userManager, IUserContextService userContextService, IUserLookupService userLookupService)
-        {
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
-            _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
-        }
+        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        private readonly IUserContextService _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
+        private readonly IUserLookupService _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
 
         /// <summary>
         ///     Asynchronously validates permissions based on the current user's role and the target user's data:
@@ -80,7 +58,7 @@ namespace IdentityServiceApi.Services.Authorization
             }
 
             var roles = _userContextService.GetRoles(principal);
-            if (roles == null || !roles.Any())
+            if (roles == null || roles.Count == 0)
             {
                 return false; // No roles assigned, deny access
             }

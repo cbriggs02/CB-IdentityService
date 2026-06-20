@@ -11,6 +11,7 @@ namespace IdentityServiceApi.Models.ServiceResultModels.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class UserServiceListResult
     {
@@ -18,7 +19,7 @@ namespace IdentityServiceApi.Models.ServiceResultModels.UserManagement
         ///     Contains users retrieved from the operation.
         ///     This list may be empty if no users match the request criteria.
         /// </summary>  
-        public IEnumerable<SimplifiedUserDTO> Users { get; set; } = new List<SimplifiedUserDTO>();
+        public IEnumerable<SimplifiedUserDTO> Users { get; set; } = [];
 
         /// <summary>
         ///     Gets or sets the pagination metadata associated with the user retrieval operation.

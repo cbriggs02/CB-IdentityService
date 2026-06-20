@@ -7,6 +7,7 @@
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public static class ErrorMessages
     {
@@ -152,43 +153,6 @@
         }
 
         /// <summary>
-        ///     Error messages related to audit log operations.
-        /// </summary>
-        public static class AuditLog
-        {
-            /// <summary>
-            ///     Message displayed when the specified audit log cannot be found.
-            /// </summary>
-            public const string NotFound = "Audit log not found.";
-
-            /// <summary>
-            ///     Message displayed when the specified audit log cannot be found.
-            /// </summary>
-            public const string DeletionFailed = "Failed to delete the audit log.";
-
-            /// <summary>
-            ///     Message displayed when the timestamp in an audit log is invalid.
-            /// </summary>
-            public const string InvalidDate = "The timestamp in the audit log must match the current UTC time.";
-
-            /// <summary>
-            ///     Message displayed when an invalid audit action is provided.
-            /// </summary>
-            public const string InvalidAction = "The provided audit action is invalid. Please ensure it is a valid value from the AuditAction enum.";
-
-            /// <summary>
-            ///     Error messages specific to performance log operations.
-            /// </summary>
-            public static class PerformanceLog
-            {
-                /// <summary>
-                ///     Message displayed when an invalid response time is provided.
-                /// </summary>
-                public const string InvalidResponseTime = "Invalid response time. Please ensure the response time is greater than zero.";
-            }
-        }
-
-        /// <summary>
         ///     Error messages related to user cache and audit log cache operations.
         /// </summary>
         public static class UserCache
@@ -207,17 +171,6 @@
             ///     Message logged when clearing the user list cache fails.
             /// </summary>
             public const string FailedToClearUserListCache = "Failed to clear UserList cache.";
-        }
-
-        /// <summary>
-        ///     Error messages related to audit log cache operations.
-        /// </summary>
-        public static class AuditLogCache
-        {
-            /// <summary>
-            ///     Message logged when clearing the audit log list cache fails.
-            /// </summary>
-            public const string FailedToClearLogListCache = "Failed to clear LogList cache.";
         }
     }
 }

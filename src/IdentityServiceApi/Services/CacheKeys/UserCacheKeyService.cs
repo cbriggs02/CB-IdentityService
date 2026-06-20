@@ -9,21 +9,12 @@ namespace IdentityServiceApi.Services.CacheKeys
     /// <remarks>
     ///     @Author: Christian Briglio  
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public class UserCacheKeyService : IUserCacheKeyService
     {
         private const string DomainName = "user";
-        private readonly HashSet<string> _trackedUserListKeys = new();
-
-        /// <summary>
-        ///     Gets the cache key used for storing user creation statistics.
-        /// </summary>
-        public string CreationStatsKey => $"{DomainName}:creation-stats";
-
-        /// <summary>
-        ///     Gets the cache key used for storing user account state metrics.
-        /// </summary>
-        public string StateMetricsKey => $"{DomainName}:state-metrics";
+        private readonly HashSet<string> _trackedUserListKeys = [];
 
         /// <summary>
         ///     Generates a unique cache key for a paginated user list based on page number, page size, and account status.

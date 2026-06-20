@@ -10,6 +10,7 @@ namespace IdentityServiceApi.Interfaces.Utilities
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public interface ILoginServiceResultFactory : IServiceResultFactory
     {

@@ -9,6 +9,7 @@ namespace IdentityServiceApi.Interfaces.Authentication
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public interface ILoginService
     {

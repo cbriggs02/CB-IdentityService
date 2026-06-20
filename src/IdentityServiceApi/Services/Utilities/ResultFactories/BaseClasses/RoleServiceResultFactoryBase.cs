@@ -12,17 +12,14 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.BaseClasses
     ///     @Author: Christian Briglio
     ///     @Created: 2025
     /// </remarks>
-    public abstract class RoleServiceResultFactoryBase : ServiceResultFactory, IRoleServiceResultFactory
+    /// <remarks>
+    ///     Initializes a new instance of the <see cref="RoleServiceResultFactoryBase"/> class.
+    /// </remarks>
+    /// <param name="parameterValidator">
+    ///     The parameter validator used to validate input parameters.
+    /// </param>
+    public abstract class RoleServiceResultFactoryBase(IParameterValidator parameterValidator) : ServiceResultFactory(parameterValidator), IRoleServiceResultFactory
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="RoleServiceResultFactoryBase"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator used to validate input parameters.
-        /// </param>
-        protected RoleServiceResultFactoryBase(IParameterValidator parameterValidator) : base(parameterValidator)
-        {
-        }
 
         /// <summary>
         ///     Creates a failed role operation service result with specified errors.

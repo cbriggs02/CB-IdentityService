@@ -14,39 +14,14 @@ namespace IdentityServiceApi.Services.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class PasswordHistoryService : IPasswordHistoryService
+    public class PasswordHistoryService(ApplicationDbContext context, IPasswordHistoryCleanupService cleanupService, IPasswordHasher<User> passwordHasher, IParameterValidator parameterValidator) : IPasswordHistoryService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IPasswordHistoryCleanupService _cleanupService;
-        private readonly IPasswordHasher<User> _passwordHasher;
-        private readonly IParameterValidator _parameterValidator;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="PasswordHistoryService"/> class.
-        /// </summary>
-        /// <param name="context">
-        ///     The application database context used for accessing password history data.
-        /// </param>
-        /// <param name="cleanupService">
-        ///     This is used to clean password history records like removing old password records for a user.
-        /// </param>
-        /// <param name="passwordHasher">
-        ///     This is used for comparing hashed passwords and ensuring password security.
-        /// </param>
-        /// <param name="parameterValidator">
-        ///     The parameter validator service used for defense checking service parameters.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown if any parameters are null.
-        /// </exception>
-        public PasswordHistoryService(ApplicationDbContext context, IPasswordHistoryCleanupService cleanupService, IPasswordHasher<User> passwordHasher, IParameterValidator parameterValidator)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
-            _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
-            _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-        }
+        private readonly ApplicationDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly IPasswordHistoryCleanupService _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
+        private readonly IPasswordHasher<User> _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
+        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
 
         /// <summary>
         ///     Asynchronously records the current password hash of the specified user in the password history.

@@ -1,5 +1,6 @@
 ﻿using IdentityServiceApi.Constants;
-using IdentityServiceApi.Interfaces.Logging;
+using IdentityServiceApi.Enums;
+using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.ApiResponseModels.Shared;
 using Newtonsoft.Json;
 
@@ -12,40 +13,12 @@ namespace IdentityServiceApi.Middleware
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class GlobalExceptionMiddleware
+    public class GlobalExceptionMiddleware(RequestDelegate next, IServiceScopeFactory scopeFactory)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<GlobalExceptionMiddleware> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
-        private readonly IWebHostEnvironment _env;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GlobalExceptionMiddleware"/> class.
-        /// </summary>
-        /// <param name="next">
-        ///     The delegate representing the next middleware in the pipeline.
-        /// </param>
-        /// <param name="logger">
-        ///     The logger instance for logging exceptions.
-        /// </param>
-        /// <param name="scopeFactory">
-        ///     The factory for creating service scopes to resolve scoped services.
-        /// </param>
-        /// <param name="env">
-        ///     The environment in which the application is running. This parameter is an instance of 
-        ///     <see cref="IWebHostEnvironment"/> and provides information about the
-        ///     application's environment (e.g., Development, Staging, Production). It is used 
-        ///     to configure environment-specific behaviors, such as logging or error handling, 
-        ///     based on the current environment.
-        /// </param>
-        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger, IServiceScopeFactory scopeFactory, IWebHostEnvironment env)
-        {
-            _next = next;
-            _logger = logger;
-            _scopeFactory = scopeFactory;
-            _env = env;
-        }
+        private readonly RequestDelegate _next = next;
+        private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
         /// <summary>
         ///     Asynchronously invokes the exception handling middleware. If an exception occurs during 
@@ -70,34 +43,8 @@ namespace IdentityServiceApi.Middleware
             }
             catch (Exception ex)
             {
-                try
-                {
-                    await loggerService.LogExceptionAsync(ex);
-                }
-                catch (Exception logEx)
-                {
-                    _logger.LogWarning(logEx, "Failed to log exception during global exception handling.");
-                }
-
-                LogExceptionDetails(context, ex);
+                loggerService.LogData(LogLevel.Error, LogSource.GlobalExceptionMiddleware, "An unhandled exception occurred", ex);
                 await WriteServerErrorResponseAsync(context);
-            }
-        }
-
-        private void LogExceptionDetails(HttpContext context, Exception ex)
-        {
-            var requestPath = context.Request.Path.ToString() ?? "No request path";
-            var timestamp = DateTime.UtcNow;
-
-            if (_env.IsProduction())
-            {
-                _logger.LogError("Unhandled exception at {Timestamp}. Path: {Path}", timestamp, requestPath);
-            }
-            else
-            {
-                _logger.LogError(ex,
-                    "Unhandled exception at {Timestamp}. Path: {Path}. Message: {Message}. Exception Type: {ExceptionType}. Stack Trace: {StackTrace}. Inner Exception: {InnerException}",
-                    timestamp, requestPath, ex.Message, ex.GetType().ToString(), ex.StackTrace, ex.InnerException?.ToString() ?? "No inner exception");
             }
         }
 
@@ -108,7 +55,7 @@ namespace IdentityServiceApi.Middleware
 
             var response = new ErrorResponse
             {
-                Errors = new List<string> { ErrorMessages.General.GlobalExceptionMessage }
+                Errors = [ErrorMessages.General.GlobalExceptionMessage]
             };
 
             var jsonResponse = JsonConvert.SerializeObject(response);

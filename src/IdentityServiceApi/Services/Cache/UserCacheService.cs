@@ -14,66 +14,13 @@ namespace IdentityServiceApi.Services.Cache
     /// <remarks>
     ///     @Author: Christian Briglio  
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
-    public class UserCacheService : IUserCacheService
+    public class UserCacheService(IMemoryCache cache, IUserCacheKeyService cacheKeyService, ILogger<UserCacheService> logger) : IUserCacheService
     {
-        private readonly IMemoryCache _cache;
-        private readonly IUserCacheKeyService _cacheKeyService;
-        private readonly ILogger<UserCacheService> _logger;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="UserCacheService"/> class.
-        /// </summary>
-        /// <param name="cache">
-        ///     The memory cache used for storing and removing user-related cache entries.
-        /// </param>
-        /// <param name="cacheKeyService">
-        ///     The service responsible for generating and managing user-related cache keys.
-        /// </param>
-        /// <param name="logger">
-        ///     The logger used for logging warning messages when cache clearing operations fail.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown if either <paramref name="cache"/> or <paramref name="logger"/> is null.
-        /// </exception>
-        public UserCacheService(IMemoryCache cache, IUserCacheKeyService cacheKeyService, ILogger<UserCacheService> logger)
-        {
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            _cacheKeyService = cacheKeyService ?? throw new ArgumentNullException(nameof(cacheKeyService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        /// <summary>
-        ///     Clears the cache entry related to user creation statistics.
-        ///     This should be invoked whenever a new user is created or related metrics need to be refreshed.
-        /// </summary>
-        public void ClearCreationStatsCache()
-        {
-            try
-            {
-                _cache.Remove(_cacheKeyService.CreationStatsKey);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, ErrorMessages.UserCache.FailedToClearCreationStatsCache);
-            }
-        }
-
-        /// <summary>
-        ///     Clears the cache entry for user state metrics.
-        ///     This is typically used after updates to user account statuses.
-        /// </summary>
-        public void ClearStateMetricsCache()
-        {
-            try
-            {
-                _cache.Remove(_cacheKeyService.StateMetricsKey);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, ErrorMessages.UserCache.FailedToClearStateMetricsCache);
-            }
-        }
+        private readonly IMemoryCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        private readonly IUserCacheKeyService _cacheKeyService = cacheKeyService ?? throw new ArgumentNullException(nameof(cacheKeyService));
+        private readonly ILogger<UserCacheService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
         ///     Clears all tracked user list cache entries, including paginated and filtered user list data.

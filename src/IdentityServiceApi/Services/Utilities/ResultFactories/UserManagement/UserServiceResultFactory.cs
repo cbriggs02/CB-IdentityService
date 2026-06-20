@@ -1,7 +1,7 @@
 ﻿using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.DTO;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
-using IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses;
+using IdentityServiceApi.Services.Utilities.ResultFactories.BaseClasses;
 
 namespace IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement
 {
@@ -11,18 +11,10 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class UserServiceResultFactory : UserServiceResultFactoryBase, IUserServiceResultFactory
+    public class UserServiceResultFactory(IParameterValidator parameterValidator) : UserServiceResultFactoryBase(parameterValidator), IUserServiceResultFactory
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="UserServiceResultFactory"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator used to validate input parameters.
-        /// </param>
-        public UserServiceResultFactory(IParameterValidator parameterValidator) : base(parameterValidator)
-        {
-        }
 
         /// <summary>
         ///     Creates a failed user service result with specified errors.
@@ -36,7 +28,7 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement
         public override UserServiceResult UserOperationFailure(string[] errors)
         {
             ValidateErrors(errors);
-            return new UserServiceResult { Success = false, Errors = errors.ToList() };
+            return new UserServiceResult { Success = false, Errors = [.. errors] };
         }
 
         /// <summary>

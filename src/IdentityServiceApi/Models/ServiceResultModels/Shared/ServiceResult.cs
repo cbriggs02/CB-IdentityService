@@ -6,6 +6,7 @@
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class ServiceResult
     {
@@ -17,6 +18,6 @@
         /// <summary>
         ///     Contains errors encountered during the service operation, if any.
         /// </summary>
-        public List<string> Errors { get; set; } = new List<string>();
+        public List<string> Errors { get; set; } = [];
     }
 }

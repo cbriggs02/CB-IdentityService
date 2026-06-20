@@ -5,6 +5,7 @@ using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System.Reflection.Metadata.Ecma335;
 
 namespace IdentityServiceApi.Services.UserManagement
 {
@@ -14,32 +15,13 @@ namespace IdentityServiceApi.Services.UserManagement
     /// </summary>
     /// <remarks>
     ///     @Author: Christian Briglio  
-    ///     @Created: 2025  
+    ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
-    public class CountryService : ICountryService
+    public class CountryService(IMemoryCache cache, ApplicationDbContext context) : ICountryService
     {
-        private readonly IMemoryCache _cache;
-        private readonly ApplicationDbContext _context;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="CountryService"/> class.
-        ///     The constructor accepts an instance of <see cref="ApplicationDbContext"/> 
-        ///     to interact with the database.
-        /// </summary>
-        /// <param name="cache">
-        ///     The in-memory cache used to store and retrieve cached country data.
-        /// </param>
-        /// <param name="context">
-        ///     The database context to be used for retrieving country data.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown if the <paramref name="context"/> is <c>null</c>.
-        /// </exception>
-        public CountryService(IMemoryCache cache, ApplicationDbContext context)
-        {
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-        }
+        private readonly IMemoryCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        private readonly ApplicationDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
         /// <summary>
         ///     Asynchronously retrieves a list of all available countries in the system, 
@@ -51,21 +33,21 @@ namespace IdentityServiceApi.Services.UserManagement
         /// </returns>
         public async Task<CountryServiceListResult> GetCountriesAsync()
         {
-            if (!_cache.TryGetValue(CountriesCacheKeys.CountryList, out CountryServiceListResult cachedCountries))
+            if (_cache.TryGetValue(CountriesCacheKeys.CountryList, out CountryServiceListResult? cachedCountries) && cachedCountries != null)
             {
-                var countries = await _context.Countries
-                    .OrderBy(x => x.Name)
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                cachedCountries = new CountryServiceListResult { Countries = countries };
-                var cacheOptions = new MemoryCacheEntryOptions()
-                    .SetPriority(CacheItemPriority.NeverRemove);
-
-                _cache.Set(CountriesCacheKeys.CountryList, cachedCountries, cacheOptions);
+                return cachedCountries;
             }
+            var countries = await _context.Countries
+                .OrderBy(x => x.Name)
+                .AsNoTracking()
+                .ToListAsync();
 
-            return cachedCountries;
+            var result = new CountryServiceListResult { Countries = countries };
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetPriority(CacheItemPriority.NeverRemove);
+
+            _cache.Set(CountriesCacheKeys.CountryList, cachedCountries, cacheOptions);
+            return result;
         }
 
         /// <summary>

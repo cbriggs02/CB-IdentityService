@@ -1,6 +1,6 @@
 ﻿using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.ServiceResultModels.Authentication;
-using IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses;
+using IdentityServiceApi.Services.Utilities.ResultFactories.BaseClasses;
 
 namespace IdentityServiceApi.Services.Utilities.ResultFactories.Authentication
 {
@@ -11,18 +11,10 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.Authentication
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class LoginServiceResultFactory : LoginServiceResultFactoryBase, ILoginServiceResultFactory
+    public class LoginServiceResultFactory(IParameterValidator parameterValidator) : LoginServiceResultFactoryBase(parameterValidator), ILoginServiceResultFactory
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="LoginServiceResultFactory"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator used to validate input parameters.
-        /// </param>
-        public LoginServiceResultFactory(IParameterValidator parameterValidator) : base(parameterValidator)
-        {
-        }
 
         /// <summary>
         ///     Creates a failed login service result with specified errors.
@@ -36,7 +28,7 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.Authentication
         public override LoginServiceResult LoginOperationFailure(string[] errors)
         {
             ValidateErrors(errors);
-            return new LoginServiceResult { Success = false, Errors = errors.ToList() };
+            return new LoginServiceResult { Success = false, Errors = [.. errors] };
         }
 
         /// <summary>

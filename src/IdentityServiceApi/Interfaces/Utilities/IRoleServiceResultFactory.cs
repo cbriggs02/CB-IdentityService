@@ -11,6 +11,7 @@ namespace IdentityServiceApi.Interfaces.Utilities
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public interface IRoleServiceResultFactory : IServiceResultFactory
     {

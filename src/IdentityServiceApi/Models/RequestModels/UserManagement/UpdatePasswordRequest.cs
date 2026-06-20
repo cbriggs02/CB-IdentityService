@@ -9,6 +9,7 @@ namespace IdentityServiceApi.Models.RequestModels.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class UpdatePasswordRequest
     {

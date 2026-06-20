@@ -3,7 +3,7 @@ using IdentityServiceApi.Models.DTO;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
 using IdentityServiceApi.Services.Utilities.ResultFactories.Common;
 
-namespace IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses
+namespace IdentityServiceApi.Services.Utilities.ResultFactories.BaseClasses
 {
     /// <summary>
     ///     Base class for creating user service results, used for both successful and failed user operations.
@@ -11,19 +11,10 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public abstract class UserServiceResultFactoryBase : ServiceResultFactory, IUserServiceResultFactory
+    public abstract class UserServiceResultFactoryBase(IParameterValidator parameterValidator) : ServiceResultFactory(parameterValidator), IUserServiceResultFactory
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="UserServiceResultFactoryBase"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator used to validate input parameters.
-        /// </param>
-        protected UserServiceResultFactoryBase(IParameterValidator parameterValidator) : base(parameterValidator)
-        {
-        }
-
         /// <summary>
         ///     Validates the properties of the given <see cref="UserDTO"/> to ensure all required fields are populated.
         /// </summary>

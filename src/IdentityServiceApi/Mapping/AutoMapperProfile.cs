@@ -11,6 +11,7 @@ namespace IdentityServiceApi.Mapping
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class AutoMapperProfile : Profile
     {
@@ -21,7 +22,6 @@ namespace IdentityServiceApi.Mapping
         public AutoMapperProfile()
         {
             CreateMap<User, UserDTO>();
-            CreateMap<AuditLog, AuditLogDTO>();
         }
     }
 }

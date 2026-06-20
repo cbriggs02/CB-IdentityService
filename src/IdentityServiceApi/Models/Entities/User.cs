@@ -10,6 +10,7 @@ namespace IdentityServiceApi.Models.Entities
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class User : IdentityUser
     {
@@ -61,6 +62,6 @@ namespace IdentityServiceApi.Models.Entities
         ///     Gets or sets a collection of previous passwords used by this user.
         ///     This collection helps track password history to prevent password reuse.
         /// </summary>
-        public virtual ICollection<PasswordHistory> Passwords { get; set; } = new List<PasswordHistory>();
+        public virtual ICollection<PasswordHistory> Passwords { get; set; } = [];
     }
 }

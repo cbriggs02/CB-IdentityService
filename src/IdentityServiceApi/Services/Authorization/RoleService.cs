@@ -1,4 +1,5 @@
 ﻿using IdentityServiceApi.Constants;
+using IdentityServiceApi.Enums;
 using IdentityServiceApi.Helpers.CacheKeys;
 using IdentityServiceApi.Interfaces.Authorization;
 using IdentityServiceApi.Interfaces.UserManagement;
@@ -19,49 +20,17 @@ namespace IdentityServiceApi.Services.Authorization
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class RoleService : IRoleService
+    public class RoleService(IMemoryCache cache, RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IParameterValidator parameterValidator, IRoleServiceResultFactory serviceResultFactory, IUserLookupService userLookupService, ILoggerService loggerService) : IRoleService
     {
-        private readonly IMemoryCache _cache;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly UserManager<User> _userManager;
-        private readonly IParameterValidator _parameterValidator;
-        private readonly IRoleServiceResultFactory _serviceResultFactory;
-        private readonly IUserLookupService _userLookupService;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="RoleService"/> class.
-        /// </summary>
-        /// <param name="cache">
-        ///     The in-memory cache used for storing and retrieving cached role data.
-        /// </param>
-        /// <param name="roleManager">
-        ///     The role manager for handling role operations within the system.
-        /// </param>
-        /// <param name="userManager">
-        ///     The user manager for handling user operations within the system.
-        /// </param>
-        /// <param name="parameterValidator">
-        ///     The parameter validator service used for defense checking service parameters.
-        /// </param>
-        /// <param name="serviceResultFactory">
-        ///     The service used for creating the result objects being returned in operations specific to roles.
-        /// </param>
-        /// <param name="userLookupService">'
-        ///     The service used for looking up users in the system.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown when any of the parameters are null.
-        /// </exception>
-        public RoleService(IMemoryCache cache, RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IParameterValidator parameterValidator, IRoleServiceResultFactory serviceResultFactory, IUserLookupService userLookupService)
-        {
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-            _serviceResultFactory = serviceResultFactory ?? throw new ArgumentNullException(nameof(serviceResultFactory));
-            _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
-        }
+        private readonly IMemoryCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        private readonly RoleManager<IdentityRole> _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
+        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
+        private readonly IRoleServiceResultFactory _serviceResultFactory = serviceResultFactory ?? throw new ArgumentNullException(nameof(serviceResultFactory));
+        private readonly IUserLookupService _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
+        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
 
         /// <summary>
         ///     Asynchronously retrieves all roles from the database, ordered by name.
@@ -72,22 +41,22 @@ namespace IdentityServiceApi.Services.Authorization
         /// </returns>
         public async Task<RoleServiceListResult> GetRolesAsync()
         {
-            if (!_cache.TryGetValue(RolesCacheKeys.RoleList, out RoleServiceListResult cachedRoles))
+            if (_cache.TryGetValue(RolesCacheKeys.RoleList, out RoleServiceListResult? cachedRoles) && cachedRoles != null)
             {
-                var roles = await _roleManager.Roles
-                    .OrderBy(x => x.Name)
-                    .Select(x => new RoleDTO { Id = x.Id, Name = x.Name })
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                cachedRoles = new RoleServiceListResult { Roles = roles };
-                var cacheOptions = new MemoryCacheEntryOptions()
-                    .SetPriority(CacheItemPriority.NeverRemove);
-
-                _cache.Set(RolesCacheKeys.RoleList, cachedRoles, cacheOptions);
+                return cachedRoles;
             }
+            var roles = await _roleManager.Roles
+                .AsNoTracking()
+                .OrderBy(x => x.Name)
+                .Select(x => new RoleDTO { Id = x.Id, Name = x.Name ?? string.Empty })
+                .ToListAsync();
 
-            return cachedRoles;
+            var result = new RoleServiceListResult { Roles = roles };
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetPriority(CacheItemPriority.NeverRemove);
+
+            _cache.Set(RolesCacheKeys.RoleList, cachedRoles, cacheOptions);
+            return result;
         }
 
         /// <summary>
@@ -107,10 +76,16 @@ namespace IdentityServiceApi.Services.Authorization
             var role = await _roleManager.FindByIdAsync(roleId);
             if (role == null)
             {
-                return _serviceResultFactory.RoleOperationFailure(new[] { ErrorMessages.Role.NotFound });
+                return _serviceResultFactory.RoleOperationFailure([ErrorMessages.Role.NotFound]);
             }
 
-            return _serviceResultFactory.RoleOperationSuccess(new RoleDTO { Id = role.Id, Name = role.Name });
+            var roleDto = new RoleDTO
+            {
+                Id = role.Id,
+                Name = role.Name?.Trim() ?? string.Empty
+            };
+
+            return _serviceResultFactory.RoleOperationSuccess(roleDto);
         }
 
         /// <summary>
@@ -138,32 +113,33 @@ namespace IdentityServiceApi.Services.Authorization
             var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _serviceResultFactory.GeneralOperationFailure(userLookupResult.Errors.ToArray());
+                return _serviceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors]);
             }
 
             var user = userLookupResult.UserFound;
             if (user.AccountStatus != 1)
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.InactiveUser });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.InactiveUser]);
             }
 
             if (!await _roleManager.RoleExistsAsync(roleName))
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.InvalidRole });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.InvalidRole]);
             }
 
             var existingRoles = await _userManager.GetRolesAsync(user);
             if (existingRoles.Any())
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.UserAlreadyHasRole });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.UserAlreadyHasRole]);
             }
 
             var result = await _userManager.AddToRoleAsync(user, roleName);
             if (!result.Succeeded)
             {
-                return _serviceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                return _serviceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
 
+            _loggerService.LogData(LogLevel.Information, LogSource.RoleService, $"Assigned role '{roleName}' to user with ID {id}.");
             return _serviceResultFactory.GeneralOperationSuccess();
         }
 
@@ -187,7 +163,7 @@ namespace IdentityServiceApi.Services.Authorization
             var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _serviceResultFactory.GeneralOperationFailure(userLookupResult.Errors.ToArray());
+                return _serviceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors]);
             }
 
             var user = userLookupResult.UserFound;
@@ -195,7 +171,7 @@ namespace IdentityServiceApi.Services.Authorization
             var roles = await _userManager.GetRolesAsync(user);
             if (!roles.Any())
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Role.MissingRole });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.MissingRole]);
             }
 
             var roleName = roles.First();
@@ -203,9 +179,10 @@ namespace IdentityServiceApi.Services.Authorization
             var result = await _userManager.RemoveFromRoleAsync(user, roleName);
             if (!result.Succeeded)
             {
-                return _serviceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                return _serviceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
 
+            _loggerService.LogData(LogLevel.Information, LogSource.RoleService, $"Removed role '{roleName}' to user with ID {id}.");
             return _serviceResultFactory.GeneralOperationSuccess();
         }
     }

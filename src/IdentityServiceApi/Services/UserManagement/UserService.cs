@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IdentityServiceApi.Constants;
+using IdentityServiceApi.Enums;
 using IdentityServiceApi.Interfaces.Authorization;
 using IdentityServiceApi.Interfaces.Cache;
 using IdentityServiceApi.Interfaces.CacheKeys;
@@ -23,84 +24,24 @@ namespace IdentityServiceApi.Services.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class UserService : IUserService
+    public class UserService(IMemoryCache cache, IUserCacheKeyService cacheKeyService, IUserCacheService cacheService, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IRoleService roleService, IMapper mapper, ILoggerService loggerService) : IUserService
     {
-        private readonly IMemoryCache _cache;
-        private readonly IUserCacheKeyService _cacheKeyService;
-        private readonly IUserCacheService _cacheService;
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IUserServiceResultFactory _userServiceResultFactory;
-        private readonly IPasswordHistoryCleanupService _cleanupService;
-        private readonly IPermissionService _permissionService;
-        private readonly IParameterValidator _parameterValidator;
-        private readonly IUserLookupService _userLookupService;
-        private readonly ICountryService _countryService;
-        private readonly IRoleService _roleService;
-        private readonly IMapper _mapper;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="UserService"/> class.
-        /// </summary>
-        /// <param name="cache">
-        ///     The in-memory cache used for storing frequently accessed user-related data to improve performance.
-        /// </param>
-        /// <param name="cacheKeyService">
-        ///     Service responsible for generating consistent and structured cache keys for user-related data.
-        /// </param>
-        /// <param name="cacheService">
-        ///     The custom user cache service responsible for managing and interacting with user-specific cached data.
-        /// </param>
-        /// <param name="userManager">
-        ///     The user manager responsible for handling user management operations.
-        /// </param>
-        /// <param name="roleManager">
-        ///     The role manager for handling user-role operations within the system.
-        /// </param>
-        /// <param name="userServiceResultFactory">
-        ///     The service used for creating the result objects being returned in operations.
-        /// </param>
-        /// <param name="cleanupService">
-        ///     Service for cleaning up password history, such as removing old passwords after a user is deleted.
-        /// </param>
-        /// <param name="permissionService">
-        ///     Service for validating and checking user permissions within the system.
-        /// </param>
-        /// <param name="parameterValidator">
-        ///     The parameter validator service used for defense checking service parameters.
-        /// </param>
-        /// <param name="userLookupService">
-        ///     The service used for looking up users in the system.
-        /// </param>
-        /// <param name="countryService">
-        ///     The service used for managing country-specific data, such as country-related.
-        /// </param>
-        /// <param name="roleService">
-        ///     The service responsible for managing user roles, including assigning, removing, and retrieving roles.
-        /// </param>
-        /// <param name="mapper">
-        ///     Object mapper for converting between entities and data transfer objects (DTOs).
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown when any of the provided service parameters are null.
-        /// </exception>
-        public UserService(IMemoryCache cache, IUserCacheKeyService cacheKeyService, IUserCacheService cacheService, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserServiceResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IRoleService roleService, IMapper mapper)
-        {
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            _cacheKeyService = cacheKeyService ?? throw new ArgumentNullException(nameof(cacheKeyService));
-            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
-            _userServiceResultFactory = userServiceResultFactory ?? throw new ArgumentNullException(nameof(userServiceResultFactory));
-            _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
-            _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
-            _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-            _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
-            _countryService = countryService ?? throw new ArgumentNullException(nameof(countryService));
-            _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        }
+        private readonly IMemoryCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        private readonly IUserCacheKeyService _cacheKeyService = cacheKeyService ?? throw new ArgumentNullException(nameof(cacheKeyService));
+        private readonly IUserCacheService _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        private readonly RoleManager<IdentityRole> _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
+        private readonly IUserServiceResultFactory _userServiceResultFactory = userServiceResultFactory ?? throw new ArgumentNullException(nameof(userServiceResultFactory));
+        private readonly IPasswordHistoryCleanupService _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
+        private readonly IPermissionService _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
+        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
+        private readonly IUserLookupService _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
+        private readonly ICountryService _countryService = countryService ?? throw new ArgumentNullException(nameof(countryService));
+        private readonly IRoleService _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
+        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
 
         /// <summary>
         ///     Asynchronously retrieves a paginated list of users from the database based on the request parameters.
@@ -117,49 +58,50 @@ namespace IdentityServiceApi.Services.UserManagement
         {
             _parameterValidator.ValidateObjectNotNull(request, nameof(request));
 
-            var userListCacheKey = _cacheKeyService.GetUserListKey(request.Page, request.PageSize, request.AccountStatus);
-            if (!_cache.TryGetValue(userListCacheKey, out UserServiceListResult cachedUsers))
+            var cacheKey = _cacheKeyService.GetUserListKey(request.Page, request.PageSize, request.AccountStatus);
+            if (_cache.TryGetValue(cacheKey, out UserServiceListResult? cachedUsers) && cachedUsers != null)
             {
-                var query = _userManager.Users.AsQueryable();
-                if (request.AccountStatus.HasValue)
-                {
-                    query = query.Where(user => user.AccountStatus == request.AccountStatus.Value);
-                }
-
-                var totalCount = await query.CountAsync();
-                var users = await query
-                    .Select(x => new SimplifiedUserDTO
-                    {
-                        Id = x.Id,
-                        UserName = x.UserName,
-                        Name = $"{x.FirstName} {x.LastName}",
-                        AccountStatus = x.AccountStatus
-                    })
-                    .OrderBy(user => user.UserName)
-                    .Skip((request.Page - 1) * request.PageSize)
-                    .Take(request.PageSize)
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
-                PaginationModel paginationMetadata = new()
-                {
-                    TotalCount = totalCount,
-                    PageSize = request.PageSize,
-                    CurrentPage = request.Page,
-                    TotalPages = totalPages
-                };
-
-                cachedUsers = new UserServiceListResult { Users = users, PaginationMetadata = paginationMetadata };
-                var cacheOptions = new MemoryCacheEntryOptions()
-                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(3))
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(1))
-                    .SetPriority(CacheItemPriority.Normal);
-
-                _cache.Set(userListCacheKey, cachedUsers, cacheOptions);
+                return cachedUsers;
             }
 
-            return cachedUsers;
+            var query = _userManager.Users.AsQueryable();
+            if (request.AccountStatus.HasValue)
+            {
+                query = query.Where(user => user.AccountStatus == request.AccountStatus.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+            var users = await query
+                .Select(x => new SimplifiedUserDTO
+                {
+                    Id = x.Id,
+                    UserName = x.UserName ?? string.Empty,
+                    Name = $"{x.FirstName} {x.LastName}",
+                    AccountStatus = x.AccountStatus
+                })
+                .OrderBy(user => user.UserName)
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
+            PaginationModel paginationMetadata = new()
+            {
+                TotalCount = totalCount,
+                PageSize = request.PageSize,
+                CurrentPage = request.Page,
+                TotalPages = totalPages
+            };
+
+            var result = new UserServiceListResult { Users = users, PaginationMetadata = paginationMetadata };
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(3))
+                .SetSlidingExpiration(TimeSpan.FromMinutes(1))
+                .SetPriority(CacheItemPriority.Normal);
+
+            _cache.Set(cacheKey, result, cacheOptions);
+            return result;
         }
 
         /// <summary>
@@ -179,13 +121,13 @@ namespace IdentityServiceApi.Services.UserManagement
             var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure(permissionResult.Errors.ToArray());
+                return _userServiceResultFactory.UserOperationFailure([.. permissionResult.Errors]);
             }
 
             var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure(userLookupResult.Errors.ToArray());
+                return _userServiceResultFactory.UserOperationFailure([.. userLookupResult.Errors]);
             }
 
             var user = userLookupResult.UserFound;
@@ -194,75 +136,6 @@ namespace IdentityServiceApi.Services.UserManagement
             userDTO.RoleId = roleId;
 
             return _userServiceResultFactory.UserOperationSuccess(userDTO);
-        }
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
-        /// </summary>
-        /// <returns>
-        ///     A task that represents the asynchronous operation. The task result contains 
-        ///     a <see cref="UserServiceCreationStatsResult"/> with the user creation date metrics.
-        /// </returns>
-        public async Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync()
-        {
-            if (!_cache.TryGetValue(_cacheKeyService.CreationStatsKey, out UserServiceCreationStatsResult cachedCreationStats))
-            {
-                var stats = await _userManager.Users
-                    .AsNoTracking()
-                    .GroupBy(u => u.CreatedAt.Date)
-                    .Select(g => new UserCreationStatDTO { Date = g.Key, Count = g.Count() })
-                    .OrderBy(x => x.Date)
-                    .ToListAsync();
-
-                cachedCreationStats = new UserServiceCreationStatsResult { UserCreationStats = stats };
-                var cacheOptions = new MemoryCacheEntryOptions()
-                      .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
-                      .SetSlidingExpiration(TimeSpan.FromMinutes(2))
-                      .SetPriority(CacheItemPriority.Normal);
-
-                _cache.Set(_cacheKeyService.CreationStatsKey, cachedCreationStats, cacheOptions);
-            }
-
-            return cachedCreationStats;
-        }
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics for user states, including total, 
-        ///     activated, and deactivated users.
-        /// </summary>
-        /// <returns>
-        ///     A task that represents the asynchronous operation. The task result 
-        ///     contains a <see cref="UserServiceStateMetricsResult"/> with the user state metrics.
-        /// </returns>
-        public async Task<UserServiceStateMetricsResult> GetUserStateMetricsAsync()
-        {
-            if (!_cache.TryGetValue(_cacheKeyService.StateMetricsKey, out UserServiceStateMetricsResult cachedStateMetrics))
-            {
-                var metrics = await _userManager.Users
-                    .AsNoTracking()
-                    .GroupBy(u => u.AccountStatus)
-                    .Select(g => new { AccountStatus = g.Key, Count = g.Count() })
-                    .ToListAsync();
-
-                var activatedUsers = metrics.FirstOrDefault(m => m.AccountStatus == 1)?.Count ?? 0;
-                var totalCount = metrics.Sum(m => m.Count);
-                var deactivatedUsers = totalCount - activatedUsers;
-
-                cachedStateMetrics = new UserServiceStateMetricsResult
-                {
-                    TotalCount = totalCount,
-                    ActivatedUsers = activatedUsers,
-                    DeactivatedUsers = deactivatedUsers
-                };
-                var cacheOptions = new MemoryCacheEntryOptions()
-                      .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
-                      .SetSlidingExpiration(TimeSpan.FromMinutes(2))
-                      .SetPriority(CacheItemPriority.Normal);
-
-                _cache.Set(_cacheKeyService.StateMetricsKey, cachedStateMetrics, cacheOptions);
-            }
-
-            return cachedStateMetrics;
         }
 
         /// <summary>
@@ -284,7 +157,7 @@ namespace IdentityServiceApi.Services.UserManagement
             var country = await _countryService.FindCountryByIdAsync(user.CountryId);
             if (country == null)
             {
-                return _userServiceResultFactory.UserOperationFailure(new[] { ErrorMessages.User.CountryNotFound });
+                return _userServiceResultFactory.UserOperationFailure([ErrorMessages.User.CountryNotFound]);
             }
 
             var newUser = new User
@@ -302,11 +175,9 @@ namespace IdentityServiceApi.Services.UserManagement
             var result = await _userManager.CreateAsync(newUser);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.UserOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                return _userServiceResultFactory.UserOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
 
-            _cacheService.ClearStateMetricsCache();
-            _cacheService.ClearCreationStatsCache();
             _cacheService.ClearUserListCache();
 
             var returnUser = new UserDTO
@@ -345,19 +216,19 @@ namespace IdentityServiceApi.Services.UserManagement
             var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
             }
 
             var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(userLookupResult.Errors.ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors]);
             }
 
             var country = await _countryService.FindCountryByIdAsync(user.CountryId);
             if (country == null)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.User.CountryNotFound });
+                return _userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.CountryNotFound]);
             }
 
             var existingUser = userLookupResult.UserFound;
@@ -372,7 +243,7 @@ namespace IdentityServiceApi.Services.UserManagement
             var result = await _userManager.UpdateAsync(existingUser);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
 
             _cacheService.ClearUserListCache();
@@ -398,13 +269,13 @@ namespace IdentityServiceApi.Services.UserManagement
             var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
             }
 
             var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure(userLookupServiceResult.Errors.ToArray());
+                return _userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors]);
             }
 
             var user = userLookupServiceResult.UserFound;
@@ -412,11 +283,10 @@ namespace IdentityServiceApi.Services.UserManagement
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
 
-            _cacheService.ClearStateMetricsCache();
-            _cacheService.ClearCreationStatsCache();
+            _loggerService.LogData(LogLevel.Information, LogSource.UserService, $"User with ID {id} has been deleted.");
             _cacheService.ClearUserListCache();
 
             // delete all stored passwords for user once user is deleted for data clean up.
@@ -441,20 +311,20 @@ namespace IdentityServiceApi.Services.UserManagement
             var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
             }
 
             var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure(userLookupServiceResult.Errors.ToArray());
+                return _userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors]);
             }
 
             var user = userLookupServiceResult.UserFound;
 
             if (user.AccountStatus != 0)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.User.AlreadyActivated });
+                return _userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.AlreadyActivated]);
             }
 
             user.AccountStatus = 1;
@@ -462,12 +332,10 @@ namespace IdentityServiceApi.Services.UserManagement
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
-
-            _cacheService.ClearStateMetricsCache();
+            _loggerService.LogData(LogLevel.Information, LogSource.UserService, $"User with ID {id} has been activated.");
             _cacheService.ClearUserListCache();
-
             return _userServiceResultFactory.GeneralOperationSuccess();
         }
 
@@ -488,20 +356,20 @@ namespace IdentityServiceApi.Services.UserManagement
             var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
             }
 
             var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure(userLookupServiceResult.Errors.ToArray());
+                return _userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors]);
             }
 
             var user = userLookupServiceResult.UserFound;
 
             if (user.AccountStatus != 1)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.User.NotActivated });
+                return _userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.NotActivated]);
             }
 
             user.AccountStatus = 0;
@@ -509,12 +377,11 @@ namespace IdentityServiceApi.Services.UserManagement
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                return _userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
 
-            _cacheService.ClearStateMetricsCache();
+            _loggerService.LogData(LogLevel.Information, LogSource.UserService, $"User with ID {id} has been deactivated.");
             _cacheService.ClearUserListCache();
-
             return _userServiceResultFactory.GeneralOperationSuccess();
         }
 

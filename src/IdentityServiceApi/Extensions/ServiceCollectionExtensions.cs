@@ -1,18 +1,13 @@
 ﻿using IdentityServiceApi.Data;
 using IdentityServiceApi.Interfaces.Authentication;
 using IdentityServiceApi.Interfaces.Authorization;
-using IdentityServiceApi.Interfaces.Logging;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Services.Authentication;
 using IdentityServiceApi.Services.Authorization;
-using IdentityServiceApi.Services.Logging.Common;
-using IdentityServiceApi.Services.Logging.Implementations;
-using IdentityServiceApi.Services.Logging;
 using IdentityServiceApi.Services.UserManagement;
 using IdentityServiceApi.Services.Utilities.ResultFactories.Authentication;
 using IdentityServiceApi.Services.Utilities.ResultFactories.Common;
-using IdentityServiceApi.Services.Utilities.ResultFactories.Logging;
 using IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement;
 using IdentityServiceApi.Services.Utilities;
 using IdentityServiceApi.Services.Utilities.ResultFactories.Authorization;
@@ -29,6 +24,7 @@ namespace IdentityServiceApi.Extensions
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public static class ServiceCollectionExtensions
     {
@@ -47,7 +43,6 @@ namespace IdentityServiceApi.Extensions
             services.AddHttpContextAccessor();
             services.AddAuthenticationServices();
             services.AddAuthorizationServices();
-            services.AddLoggingServices();
             services.AddUserManagementServices();
             services.AddUtilityServices();
             services.AddServiceResultFactories();
@@ -71,17 +66,6 @@ namespace IdentityServiceApi.Extensions
             return services;
         }
 
-        private static IServiceCollection AddLoggingServices(this IServiceCollection services)
-        {
-            services.AddScoped<IAuditLoggerService, AuditLoggerService>();
-            services.AddScoped<ILoggerService, LoggerService>();
-            services.AddScoped<IAuthorizationLoggerService, AuthorizationLoggerService>();
-            services.AddScoped<IExceptionLoggerService, ExceptionLoggerService>();
-            services.AddScoped<IPerformanceLoggerService, PerformanceLoggerService>();
-            services.AddScoped<ILoggingValidator, LoggingValidator>();
-            return services;
-        }
-
         private static IServiceCollection AddUserManagementServices(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
@@ -96,6 +80,7 @@ namespace IdentityServiceApi.Extensions
         private static IServiceCollection AddUtilityServices(this IServiceCollection services)
         {
             services.AddScoped<IParameterValidator, ParameterValidator>();
+            services.AddScoped<ILoggerService, LoggerService>();
             return services;
         }
 
@@ -105,7 +90,6 @@ namespace IdentityServiceApi.Extensions
             services.AddScoped<IUserServiceResultFactory, UserServiceResultFactory>();
             services.AddScoped<IUserLookupServiceResultFactory, UserLookupServiceResultFactory>();
             services.AddScoped<ILoginServiceResultFactory, LoginServiceResultFactory>();
-            services.AddScoped<IAuditLoggerServiceResultFactory, AuditLoggerServiceResultFactory>();
             services.AddScoped<IRoleServiceResultFactory, RoleServiceResultFactory>();
             return services;
         }
@@ -113,9 +97,7 @@ namespace IdentityServiceApi.Extensions
         private static IServiceCollection AddCacheServices(this IServiceCollection services)
         {
             services.AddScoped<IUserCacheService, UserCacheService>();
-            services.AddScoped<IAuditLogCacheService, AuditLogCacheService>();
             services.AddSingleton<IUserCacheKeyService, UserCacheKeyService>();
-            services.AddSingleton<IAuditLogCacheKeyService, AuditLogCacheKeyService>();
             return services;
         }
 

@@ -9,12 +9,13 @@ namespace IdentityServiceApi.Models.ServiceResultModels.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public class CountryServiceListResult
     {
         /// <summary>
         ///     The list of countries retrieved from the service.
         /// </summary>
-        public IEnumerable<Country> Countries { get; set; } = new List<Country>();
+        public IEnumerable<Country> Countries { get; set; } = [];
     }
 }

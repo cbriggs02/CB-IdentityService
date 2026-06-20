@@ -1,7 +1,7 @@
 ﻿using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
-using IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses;
+using IdentityServiceApi.Services.Utilities.ResultFactories.BaseClasses;
 
 namespace IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement
 {
@@ -12,19 +12,16 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class UserLookupServiceResultFactory : UserLookupServiceResultFactoryBase, IUserLookupServiceResultFactory
+    /// <remarks>
+    ///     Initializes a new instance of the <see cref="UserLookupServiceResultFactory"/> class.
+    /// </remarks>
+    /// <param name="parameterValidator">
+    ///     The parameter validator used to validate input parameters.
+    /// </param>
+    public class UserLookupServiceResultFactory(IParameterValidator parameterValidator) : UserLookupServiceResultFactoryBase(parameterValidator), IUserLookupServiceResultFactory
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="UserLookupServiceResultFactory"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator used to validate input parameters.
-        /// </param>
-        public UserLookupServiceResultFactory(IParameterValidator parameterValidator) : base(parameterValidator)
-        {
-        }
-
         /// <summary>
         ///     Creates a user lookup service result indicating a failure 
         ///     in the user lookup operation, along with any associated error messages.
@@ -38,7 +35,7 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.UserManagement
         public override UserLookupServiceResult UserLookupOperationFailure(string[] errors)
         {
             ValidateErrors(errors);
-            return new UserLookupServiceResult { Success = false, Errors = errors.ToList() };
+            return new UserLookupServiceResult { Success = false, Errors = [.. errors] };
         }
 
         /// <summary>

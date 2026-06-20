@@ -1,4 +1,5 @@
 ﻿using IdentityServiceApi.Constants;
+using IdentityServiceApi.Enums;
 using IdentityServiceApi.Interfaces.Authorization;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
@@ -15,49 +16,17 @@ namespace IdentityServiceApi.Services.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class PasswordService : IPasswordService
+    public class PasswordService(UserManager<User> userManager, IPasswordHistoryService historyService, IPermissionService permissionService, IParameterValidator parameterValidator, IServiceResultFactory serviceResultFactory, IUserLookupService userLookupService, ILoggerService loggerService) : IPasswordService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly IPasswordHistoryService _historyService;
-        private readonly IPermissionService _permissionService;
-        private readonly IParameterValidator _parameterValidator;
-        private readonly IServiceResultFactory _serviceResultFactory;
-        private readonly IUserLookupService _userLookupService;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="PasswordService"/> class.
-        /// </summary>
-        /// <param name="userManager">
-        ///     The user manager used for managing user-related operations.
-        /// </param>
-        /// <param name="historyService">
-        ///     The service responsible for managing password history.
-        /// </param>
-        /// <param name="permissionService">
-        ///     The service used for validating user permissions.
-        /// </param>
-        /// <param name="parameterValidator">
-        ///     The parameter validator service used for defense checking service parameters.
-        /// </param>
-        /// <param name="serviceResultFactory">
-        ///     The service used for creating the result objects being returned in operations.
-        /// </param>
-        /// <param name="userLookupService">'
-        ///     The service used for looking up users in the system.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown when any of the parameters are null.
-        /// </exception>
-        public PasswordService(UserManager<User> userManager, IPasswordHistoryService historyService, IPermissionService permissionService, IParameterValidator parameterValidator, IServiceResultFactory serviceResultFactory, IUserLookupService userLookupService)
-        {
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _historyService = historyService ?? throw new ArgumentNullException(nameof(historyService));
-            _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
-            _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-            _serviceResultFactory = serviceResultFactory ?? throw new ArgumentNullException(nameof(serviceResultFactory));
-            _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
-        }
+        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        private readonly IPasswordHistoryService _historyService = historyService ?? throw new ArgumentNullException(nameof(historyService));
+        private readonly IPermissionService _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
+        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
+        private readonly IServiceResultFactory _serviceResultFactory = serviceResultFactory ?? throw new ArgumentNullException(nameof(serviceResultFactory));
+        private readonly IUserLookupService _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
+        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
 
         /// <summary>
         ///     Asynchronously sets a password for a user in the database based on the provided ID.
@@ -83,28 +52,28 @@ namespace IdentityServiceApi.Services.UserManagement
 
             if (!request.PasswordConfirmed.Equals(request.Password))
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.Mismatch });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Password.Mismatch]);
             }
 
             var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _serviceResultFactory.GeneralOperationFailure(userLookupResult.Errors.ToArray());
+                return _serviceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors]);
             }
 
             var user = userLookupResult.UserFound;
-
             if (!string.IsNullOrEmpty(user.PasswordHash))
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.AlreadySet });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Password.AlreadySet]);
             }
 
             var result = await _userManager.AddPasswordAsync(user, request.Password);
             if (!result.Succeeded)
             {
-                return _serviceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                return _serviceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
 
+            _loggerService.LogData(LogLevel.Information, LogSource.PasswordService, $"Password set for user with ID {id}");
             await CreatePasswordHistoryAsync(user);
             return _serviceResultFactory.GeneralOperationSuccess();
         }
@@ -134,47 +103,55 @@ namespace IdentityServiceApi.Services.UserManagement
             var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _serviceResultFactory.GeneralOperationFailure(permissionResult.Errors.ToArray());
+                return _serviceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
             }
 
             var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.InvalidCredentials });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Password.InvalidCredentials]);
             }
 
             var user = userLookupResult.UserFound;
 
             if (string.IsNullOrEmpty(user.PasswordHash))
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.InvalidCredentials });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Password.InvalidCredentials]);
             }
 
             var passwordIsValid = await _userManager.CheckPasswordAsync(user, request.CurrentPassword);
             if (!passwordIsValid)
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.InvalidCredentials });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Password.InvalidCredentials]);
             }
 
             // Send password to be checked against users history for re-use errors
             var isPasswordReused = await IsPasswordReusedAsync(user.Id, request.NewPassword);
             if (isPasswordReused)
             {
-                return _serviceResultFactory.GeneralOperationFailure(new[] { ErrorMessages.Password.CannotReuse });
+                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Password.CannotReuse]);
             }
 
             var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
             if (!result.Succeeded)
             {
-                return _serviceResultFactory.GeneralOperationFailure(result.Errors.Select(e => e.Description).ToArray());
+                _loggerService.LogData(LogLevel.Warning, LogSource.PasswordService, $"Password changed failed for user with ID {id}");
+                return _serviceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
             }
 
+            _loggerService.LogData(LogLevel.Information, LogSource.PasswordService, $"Password changed for user with ID {id}");
             await CreatePasswordHistoryAsync(user);
             return _serviceResultFactory.GeneralOperationSuccess();
         }
 
         private async Task CreatePasswordHistoryAsync(User user)
         {
+            if (string.IsNullOrEmpty(user.PasswordHash))
+            {
+                _loggerService.LogData(LogLevel.Warning, LogSource.PasswordService, $"Attempted to create password history for user with ID {user.Id} but no password hash was found.");
+                return;
+            }
+
             var passwordHistoryRequest = new StorePasswordHistoryRequest
             {
                 UserId = user.Id,

@@ -8,6 +8,7 @@
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class ErrorResponse
     {
@@ -15,6 +16,6 @@
         ///     Contains a list of errors encountered during the service operation, if any.
         ///     Used as API responses for bad requests or other error scenarios.
         /// </summary>
-        public List<string> Errors { get; set; } = new List<string>();
+        public List<string> Errors { get; set; } = [];
     }
 }

@@ -13,24 +13,11 @@ namespace IdentityServiceApi.Services.Authentication
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class UserContextService : IUserContextService
+    public class UserContextService(IHttpContextAccessor httpContextAccessor) : IUserContextService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="UserContextService"/> class.
-        /// </summary>
-        /// <param name="httpContextAccessor">
-        ///     The HTTP context accessor used to retrieve the current HTTP context.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown if the <paramref name="httpContextAccessor"/> is null.
-        /// </exception>
-        public UserContextService(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-        }
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
 
         /// <summary>
         ///     Retrieves the claims principal of the currently authenticated user.
@@ -77,9 +64,9 @@ namespace IdentityServiceApi.Services.Authentication
         {
             if (principal == null)
             {
-                return new List<string>();
+                return [];
             }
-            return principal.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            return [.. principal.FindAll(ClaimTypes.Role).Select(c => c.Value)];
         }
 
         /// <summary>

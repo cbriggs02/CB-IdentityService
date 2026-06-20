@@ -1,4 +1,5 @@
 ﻿using IdentityServiceApi.Data;
+using IdentityServiceApi.Enums;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
 using IdentityServiceApi.Models.Entities;
@@ -12,35 +13,13 @@ namespace IdentityServiceApi.Services.UserManagement
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
-    public class PasswordHistoryCleanupService : IPasswordHistoryCleanupService
+    public class PasswordHistoryCleanupService(ApplicationDbContext context, IParameterValidator parameterValidator, ILoggerService loggerService) : IPasswordHistoryCleanupService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IParameterValidator _parameterValidator;
-        private readonly ILogger<PasswordHistoryCleanupService> _logger;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="PasswordHistoryService"/> class.
-        /// </summary>
-        /// <param name="context">
-        ///     The application database context used for accessing password history data.
-        /// </param>
-        /// <param name="parameterValidator">
-        ///     The parameter validator service used for defense checking service parameters.
-        /// </param>
-        /// <param name="logger">
-        ///     The logger instance used to log informational messages, warnings, 
-        ///     and errors related to password history cleanup operations.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown if the <paramref name="context"/> parameter is null.
-        /// </exception>
-        public PasswordHistoryCleanupService(ApplicationDbContext context, IParameterValidator parameterValidator, ILogger<PasswordHistoryCleanupService> logger)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly ApplicationDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
+        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
 
         /// <summary>
         ///     Asynchronously deletes all password history entries for the user matching the provided user ID.
@@ -58,15 +37,15 @@ namespace IdentityServiceApi.Services.UserManagement
             try
             {
                 var passwordHistories = await GetPasswordHistory(userId);
-                if (passwordHistories.Any())
+                if (passwordHistories.Count != 0)
                 {
                     _context.PasswordHistories.RemoveRange(passwordHistories);
                     await _context.SaveChangesAsync();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogWarning(ex, "Failed to delete password history for user {UserId}", userId);
+                _loggerService.LogData(LogLevel.Error, LogSource.PasswordHistoryCleanupService, $"Failed to delete password history records for user {userId}");
             }
         }
 
@@ -88,15 +67,15 @@ namespace IdentityServiceApi.Services.UserManagement
                 var passwordHistories = await GetPasswordHistory(id);
                 var historiesToDelete = passwordHistories.Skip(5).ToList();
 
-                if (historiesToDelete.Any())
+                if (historiesToDelete.Count != 0)
                 {
                     _context.PasswordHistories.RemoveRange(historiesToDelete);
                     await _context.SaveChangesAsync();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogWarning(ex, "Failed to remove old password history records for user {UserId}", id);
+                _loggerService.LogData(LogLevel.Error, LogSource.PasswordHistoryCleanupService, $"Failed to remove old password history records for user {id}");
             }
         }
 

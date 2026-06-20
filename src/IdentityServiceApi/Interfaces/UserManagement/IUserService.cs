@@ -5,14 +5,15 @@ using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
 
 namespace IdentityServiceApi.Interfaces.UserManagement
 {
-	/// <summary>
-	///     Interface defining the contract for a service responsible for user-related operations.
-	/// </summary>
-	/// <remarks>
-	///     @Author: Christian Briglio
-	///     @Created: 2024
-	/// </remarks>
-	public interface IUserService
+    /// <summary>
+    ///     Interface defining the contract for a service responsible for user-related operations.
+    /// </summary>
+    /// <remarks>
+    ///     @Author: Christian Briglio
+    ///     @Created: 2024
+    ///     @Updated: 2026
+    /// </remarks>
+    public interface IUserService
 	{
 		/// <summary>
 		///     Asynchronously retrieves a list of users in the system.
@@ -35,24 +36,6 @@ namespace IdentityServiceApi.Interfaces.UserManagement
         ///     A task representing the asynchronous operation that returns a <see cref="UserServiceResult"/> object.
         /// </returns>
         Task<UserServiceResult> GetUserAsync(string id);
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics representing the number of users created on each date.
-        /// </summary>
-        /// <returns>
-        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceCreationStatsResult"/>
-        ///     with the user creation date metrics.
-        /// </returns>
-        Task<UserServiceCreationStatsResult> GetUserCreationStatsAsync();
-
-        /// <summary>
-        ///     Asynchronously retrieves aggregated metrics for user states, including total, activated, and deactivated users.
-        /// </summary>
-        /// <returns>
-        ///     A task that represents the asynchronous operation. The task result contains a <see cref="UserServiceStateMetricsResult"/>
-        ///     with the user state metrics.
-        /// </returns>
-        Task<UserServiceStateMetricsResult> GetUserStateMetricsAsync();
 
         /// <summary>
         ///     Asynchronously creates a new user in the system using the specified user data transfer object.

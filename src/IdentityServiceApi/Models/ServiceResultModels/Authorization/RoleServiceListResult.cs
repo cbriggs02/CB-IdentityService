@@ -8,12 +8,13 @@ namespace IdentityServiceApi.Models.ServiceResultModels.Authorization
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class RoleServiceListResult
     {
         /// <summary>
         ///     Gets or sets the collection of roles returned from the service operation.
         /// </summary>
-        public IEnumerable<RoleDTO> Roles { get; set; } = new List<RoleDTO>();
+        public IEnumerable<RoleDTO> Roles { get; set; } = [];
     }
 }

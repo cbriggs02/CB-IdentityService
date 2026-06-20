@@ -11,6 +11,7 @@ namespace IdentityServiceApi.Models.ServiceResultModels.Authorization
     /// <remarks>
     ///     @Author: Christian Briglio  
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public class RoleServiceResult : ServiceResult
     {

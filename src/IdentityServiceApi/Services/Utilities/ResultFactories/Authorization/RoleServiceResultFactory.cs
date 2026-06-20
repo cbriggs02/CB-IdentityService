@@ -11,19 +11,10 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.Authorization
     /// <remarks>
     ///     @Author: Christian Briglio  
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
-    public class RoleServiceResultFactory : RoleServiceResultFactoryBase, IRoleServiceResultFactory
+    public class RoleServiceResultFactory(IParameterValidator parameterValidator) : RoleServiceResultFactoryBase(parameterValidator), IRoleServiceResultFactory
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="RoleServiceResultFactory"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator used to validate input parameters.
-        /// </param>
-        public RoleServiceResultFactory(IParameterValidator parameterValidator) : base(parameterValidator)
-        {
-        }
-
         /// <summary>
         ///     Creates a failed role service result with specified errors.
         /// </summary>
@@ -36,7 +27,7 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.Authorization
         public override RoleServiceResult RoleOperationFailure(string[] errors)
         {
             ValidateErrors(errors);
-            return new RoleServiceResult { Success = false, Errors = errors.ToList() };
+            return new RoleServiceResult { Success = false, Errors = [.. errors] };
         }
 
         /// <summary>

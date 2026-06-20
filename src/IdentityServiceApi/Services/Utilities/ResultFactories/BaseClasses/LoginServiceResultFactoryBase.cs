@@ -2,7 +2,7 @@
 using IdentityServiceApi.Models.ServiceResultModels.Authentication;
 using IdentityServiceApi.Services.Utilities.ResultFactories.Common;
 
-namespace IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses
+namespace IdentityServiceApi.Services.Utilities.ResultFactories.BaseClasses
 {
     /// <summary>
     ///     Base class for creating login service results, used for both successful and failed login operations.
@@ -10,19 +10,10 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public abstract class LoginServiceResultFactoryBase : ServiceResultFactory, ILoginServiceResultFactory
+    public abstract class LoginServiceResultFactoryBase(IParameterValidator parameterValidator) : ServiceResultFactory(parameterValidator), ILoginServiceResultFactory
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="LoginServiceResultFactoryBase"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator used to validate input parameters.
-        /// </param>
-        protected LoginServiceResultFactoryBase(IParameterValidator parameterValidator) : base(parameterValidator)
-        {
-        }
-
         /// <summary>
         ///     Creates a failed login service result with specified errors.
         /// </summary>

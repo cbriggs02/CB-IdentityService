@@ -8,6 +8,7 @@
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public static class ApiDocumentation
     {
@@ -62,17 +63,6 @@
             ///     Summary for removing a role from a user.
             /// </summary>
             public const string RemoveRole = "Removes a role from a user.";
-
-            /// <summary>
-            ///     Summary for retrieving user state metrics.
-            /// </summary>
-            public const string GetUserStateMetrics = "Retrieves aggregated metrics for user states, including total, activated, and deactivated users.";
-
-            /// <summary>
-            ///     Retrieves the number of users grouped by their creation date.
-            /// </summary>
-            public const string GetUserCreationStats = "Returns aggregated user counts based on account creation dates.";
-
         }
 
         /// <summary>
@@ -122,29 +112,6 @@
             ///     Summary for retrieving role details by its ID.
             /// </summary>
             public const string GetRoleById = "Retrieves details of a role by its ID.";
-        }
-
-        /// <summary>
-        ///     Contains constants for documenting audit-log-related API endpoints.
-        ///     These constants define summaries, descriptions, and other documentation details
-        ///     specific to operations related to audit log management, such as retrieving list of audit logs.
-        /// </summary>
-        public static class AuditLogsApi
-        {
-            /// <summary>
-            ///     Summary for retrieving all audit logs.
-            /// </summary>
-            public const string GetLogs = "Retrieves all audit logs.";
-
-            /// <summary>
-            ///     Summary for retrieving audit log details by ID.
-            /// </summary>
-            public const string GetLog = "Retrieves details of a audit log by ID.";
-
-            /// <summary>
-            ///     Summary for deleting an audit log by its ID.
-            /// </summary>
-            public const string DeleteLog = "Deletes an audit log by its ID.";
         }
 
         /// <summary>

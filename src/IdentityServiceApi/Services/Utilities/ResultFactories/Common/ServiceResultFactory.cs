@@ -11,21 +11,11 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.Common
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class ServiceResultFactory : IServiceResultFactory
+    public class ServiceResultFactory(IParameterValidator parameterValidator) : IServiceResultFactory
     {
-        protected readonly IParameterValidator _parameterValidator;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="ServiceResultFactory"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator instance to enforce consistency.
-        /// </param>
-        public ServiceResultFactory(IParameterValidator parameterValidator)
-        {
-            _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-        }
+        protected readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
 
         /// <summary>
         ///     Creates a successful service result for general operations.
@@ -47,7 +37,7 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.Common
         public ServiceResult GeneralOperationFailure(string[] errors)
         {
             ValidateErrors(errors);
-            return new ServiceResult { Success = false, Errors = errors.ToList() };
+            return new ServiceResult { Success = false, Errors = [.. errors] };
         }
 
         /// <summary>

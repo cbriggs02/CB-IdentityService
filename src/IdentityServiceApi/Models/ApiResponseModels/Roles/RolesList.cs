@@ -8,6 +8,7 @@ namespace IdentityServiceApi.Models.ApiResponseModels.Roles
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class RolesListResponse
     {
@@ -15,6 +16,6 @@ namespace IdentityServiceApi.Models.ApiResponseModels.Roles
         ///     The list of roles retrieved from the service that is returned by the API.
         ///     This collection may be empty if no roles are available.
         /// </summary>
-        public IEnumerable<RoleDTO> Roles { get; set; } = new List<RoleDTO>();
+        public IEnumerable<RoleDTO> Roles { get; set; } = [];
     }
 }

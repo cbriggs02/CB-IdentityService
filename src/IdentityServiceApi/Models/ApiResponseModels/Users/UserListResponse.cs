@@ -9,13 +9,14 @@ namespace IdentityServiceApi.Models.ApiResponseModels.Users
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class UserListResponse
     {
         /// <summary>
         ///     The list of users retrieved from the service.
         /// </summary>
-        public IEnumerable<SimplifiedUserDTO> Users { get; set; } = new List<SimplifiedUserDTO>();
+        public IEnumerable<SimplifiedUserDTO> Users { get; set; } = [];
 
         /// <summary>
         ///     Metadata for pagination, such as total count and page details.

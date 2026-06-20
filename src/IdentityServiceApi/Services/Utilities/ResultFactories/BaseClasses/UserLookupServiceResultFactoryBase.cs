@@ -3,7 +3,7 @@ using IdentityServiceApi.Models.Entities;
 using IdentityServiceApi.Models.ServiceResultModels.UserManagement;
 using IdentityServiceApi.Services.Utilities.ResultFactories.Common;
 
-namespace IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses
+namespace IdentityServiceApi.Services.Utilities.ResultFactories.BaseClasses
 {
     /// <summary>
     ///     Base class for creating user lookup service results, used for 
@@ -12,19 +12,10 @@ namespace IdentityServiceApi.Services.Utilities.ResultFactories.AbstractClasses
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public abstract class UserLookupServiceResultFactoryBase : ServiceResultFactory, IUserLookupServiceResultFactory
+    public abstract class UserLookupServiceResultFactoryBase(IParameterValidator parameterValidator) : ServiceResultFactory(parameterValidator), IUserLookupServiceResultFactory
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="UserLookupServiceResultFactoryBase"/> class.
-        /// </summary>
-        /// <param name="parameterValidator">
-        ///     The parameter validator used to validate input parameters.
-        /// </param>
-        protected UserLookupServiceResultFactoryBase(IParameterValidator parameterValidator) : base(parameterValidator)
-        {
-        }
-
         /// <summary>
         ///     Creates a failed user lookup service result with specified errors.
         /// </summary>

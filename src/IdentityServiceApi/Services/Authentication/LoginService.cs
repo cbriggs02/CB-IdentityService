@@ -1,4 +1,5 @@
 ﻿using IdentityServiceApi.Constants;
+using IdentityServiceApi.Enums;
 using IdentityServiceApi.Interfaces.Authentication;
 using IdentityServiceApi.Interfaces.UserManagement;
 using IdentityServiceApi.Interfaces.Utilities;
@@ -21,49 +22,17 @@ namespace IdentityServiceApi.Services.Authentication
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class LoginService : ILoginService
+    public class LoginService(SignInManager<User> signInManager, UserManager<User> userManager, IOptions<JwtSettings> jwtSettings, ILoginServiceResultFactory loginServiceResultFactory, IParameterValidator parameterValidator, IUserLookupService userLookupService, ILoggerService loggerService) : ILoginService
     {
-        private readonly SignInManager<User> _signInManager;
-        private readonly UserManager<User> _userManager;
-        private readonly JwtSettings _jwtSettings;
-        private readonly ILoginServiceResultFactory _loginServiceResultFactory;
-        private readonly IParameterValidator _parameterValidator;
-        private readonly IUserLookupService _userLookupService;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="LoginService"/> class.
-        /// </summary>
-        /// <param name="signInManager">
-        ///     The sign-in manager used for user authentication.
-        /// </param>
-        /// <param name="userManager">
-        ///     The user manager responsible for handling user management operations.
-        /// </param>
-        /// <param name="jwtSettings"> 
-        ///     The strongly typed JWT settings model.
-        /// </param>
-        /// <param name="loginServiceResultFactory">
-        ///     The service used for creating the result objects being returned in operations.
-        /// </param>
-        /// <param name="parameterValidator">
-        ///     The parameter validator service used for defense checking service parameters.
-        /// </param>
-        /// <param name="userLookupService">'
-        ///     The service used for looking up users in the system.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown if any of the parameters are null.
-        /// </exception>
-        public LoginService(SignInManager<User> signInManager, UserManager<User> userManager, IOptions<JwtSettings> jwtSettings, ILoginServiceResultFactory loginServiceResultFactory, IParameterValidator parameterValidator, IUserLookupService userLookupService)
-        {
-            _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _jwtSettings = jwtSettings?.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
-            _loginServiceResultFactory = loginServiceResultFactory ?? throw new ArgumentNullException(nameof(loginServiceResultFactory));
-            _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-            _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
-        }
+        private readonly SignInManager<User> _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
+        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        private readonly JwtSettings _jwtSettings = jwtSettings?.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
+        private readonly ILoginServiceResultFactory _loginServiceResultFactory = loginServiceResultFactory ?? throw new ArgumentNullException(nameof(loginServiceResultFactory));
+        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
+        private readonly IUserLookupService _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
+        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
 
         /// <summary>
         ///     Asynchronously logs in a user in the system using the sign-in manager based on provided credentials.
@@ -87,20 +56,21 @@ namespace IdentityServiceApi.Services.Authentication
             var userLookupResult = await _userLookupService.FindUserByUsernameAsync(credentials.UserName);
             if (!userLookupResult.Success)
             {
-                return _loginServiceResultFactory.LoginOperationFailure(userLookupResult.Errors.ToArray());
+                return _loginServiceResultFactory.LoginOperationFailure([.. userLookupResult.Errors]);
             }
 
             var user = userLookupResult.UserFound;
 
             if (user.AccountStatus != 1)
             {
-                return _loginServiceResultFactory.LoginOperationFailure(new[] { ErrorMessages.User.NotActivated });
+                return _loginServiceResultFactory.LoginOperationFailure([ErrorMessages.User.NotActivated]);
             }
 
             var result = await _signInManager.PasswordSignInAsync(user, credentials.Password, false, true);
             if (!result.Succeeded)
             {
-                return _loginServiceResultFactory.LoginOperationFailure(new[] { ErrorMessages.Password.InvalidCredentials });
+                _loggerService.LogData(LogLevel.Warning, LogSource.LoginService, $"Failed login attempt for user {credentials.UserName}");
+                return _loginServiceResultFactory.LoginOperationFailure([ErrorMessages.Password.InvalidCredentials]);
             }
 
             var token = await GenerateJwtTokenAsync(user);
@@ -127,11 +97,14 @@ namespace IdentityServiceApi.Services.Authentication
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, user.Id),
-                new(ClaimTypes.Name, user.UserName),
             };
 
-            var roles = await _userManager.GetRolesAsync(user);
+            if (!string.IsNullOrWhiteSpace(user.UserName))
+            {
+                claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+            }
 
+            var roles = await _userManager.GetRolesAsync(user);
             if (roles != null && roles.Any())
             {
                 foreach (var role in roles)
