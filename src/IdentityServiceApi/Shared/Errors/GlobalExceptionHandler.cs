@@ -15,7 +15,7 @@ namespace IdentityServiceApi.Shared.Errors
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    public class GlobalExceptionHandler(ILoggerService loggerService) : IExceptionHandler
+    public class GlobalExceptionHandler(IServiceScopeFactory scopeFactory) : IExceptionHandler
     {
         /// <summary>
         ///     Attempts to handle an unhandled exception and write a standardized response.
@@ -35,6 +35,9 @@ namespace IdentityServiceApi.Shared.Errors
         /// </returns>
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
+            using var scope = scopeFactory.CreateScope();
+            var loggerService = scope.ServiceProvider.GetRequiredService<ILoggerService>();
+
             var logEntry = new LogEntry
             {
                 LogLevel = LogLevel.Error,

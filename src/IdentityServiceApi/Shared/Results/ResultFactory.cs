@@ -1,6 +1,4 @@
-﻿using IdentityServiceApi.Shared.Utilities;
-
-namespace IdentityServiceApi.Shared.Results
+﻿namespace IdentityServiceApi.Shared.Results
 {
     /// <summary>
     ///     Implements the <see cref="IResultFactory"/> interface to create uniform service result 
@@ -12,7 +10,7 @@ namespace IdentityServiceApi.Shared.Results
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    public class ResultFactory(IParameterValidator parameterValidator) : IResultFactory
+    public class ResultFactory : IResultFactory
     {
         /// <summary>
         ///     Creates a successful service result for general operations.
@@ -34,19 +32,7 @@ namespace IdentityServiceApi.Shared.Results
         /// <returns>
         ///     A <see cref="Result"/> indicating failure along with the provided errors.
         /// </returns>
-        public Result GeneralOperationFailure(string[] errors, ErrorType errorType)
-        {
-            ValidateErrors(errors);
-            return new Result { Success = false, Errors = [.. errors], ErrorType = errorType };
-        }
-
-        /// <summary>
-        ///     Validates the provided errors array for null values.
-        /// </summary>
-        /// <param name="errors">
-        ///     An array of error messages to validate.
-        /// </param>
-        protected void ValidateErrors(string[] errors) => 
-            parameterValidator.ValidateObjectNotNull(errors, nameof(errors));   
+        public Result GeneralOperationFailure(string[] errors, ErrorType errorType) =>
+            new() { Success = false, Errors = [.. errors], ErrorType = errorType };
     }
 }

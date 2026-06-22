@@ -1,7 +1,6 @@
 ﻿using IdentityServiceApi.Features.Authentication.Interfaces;
 using IdentityServiceApi.Features.Authentication.Models;
 using IdentityServiceApi.Shared.Results;
-using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.Authentication.Services
 {
@@ -14,9 +13,8 @@ namespace IdentityServiceApi.Features.Authentication.Services
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    public class LoginResultFactory(IParameterValidator parameterValidator) : LoginResultFactoryBase(parameterValidator), ILoginResultFactory
+    public class LoginResultFactory : LoginResultFactoryBase, ILoginResultFactory
     {
-
         /// <summary>
         ///     Creates a failed login service result with specified errors.
         /// </summary>
@@ -29,11 +27,8 @@ namespace IdentityServiceApi.Features.Authentication.Services
         /// <returns>
         ///     A <see cref="LoginResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public override LoginResult LoginOperationFailure(string[] errors, ErrorType errorType)
-        {
-            ValidateErrors(errors);
-            return new LoginResult { Success = false, Errors = [.. errors], ErrorType = errorType };
-        }
+        public override LoginResult LoginOperationFailure(string[] errors, ErrorType errorType) =>
+            new() { Success = false, Errors = [.. errors], ErrorType = errorType };
 
         /// <summary>
         ///     Creates a successful login service result with a token.
@@ -44,10 +39,7 @@ namespace IdentityServiceApi.Features.Authentication.Services
         /// <returns>
         ///     A <see cref="LoginResult"/> containing the success status and the token.
         /// </returns>
-        public override LoginResult LoginOperationSuccess(string token)
-        {
-            parameterValidator.ValidateNotNullOrEmpty(token, nameof(token));
-            return new LoginResult { Success = true, Token = token };
-        }
+        public override LoginResult LoginOperationSuccess(string token) =>
+            new() { Success = true, Token = token };
     }
 }

@@ -2,7 +2,6 @@
 using IdentityServiceApi.Features.UserManagement.Models.DTOs;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
 using IdentityServiceApi.Shared.Results;
-using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
 {
@@ -14,23 +13,8 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    public abstract class UserResultFactoryBase(IParameterValidator parameterValidator) : ResultFactory(parameterValidator), IUserResultFactory
+    public abstract class UserResultFactoryBase : ResultFactory, IUserResultFactory
     {
-        /// <summary>
-        ///     Validates the properties of the given <see cref="UserDTO"/> to ensure all required fields are populated.
-        /// </summary>
-        /// <param name="user">
-        ///     The <see cref="UserDTO"/> to validate.
-        /// </param>
-        protected void ValidateUserProperties(UserDTO user)
-        {
-            parameterValidator.ValidateNotNullOrEmpty(user.UserName, nameof(user.UserName));
-            parameterValidator.ValidateNotNullOrEmpty(user.FirstName, nameof(user.FirstName));
-            parameterValidator.ValidateNotNullOrEmpty(user.LastName, nameof(user.LastName));
-            parameterValidator.ValidateNotNullOrEmpty(user.Email, nameof(user.Email));
-            parameterValidator.ValidateNotNullOrEmpty(user.PhoneNumber, nameof(user.PhoneNumber));
-        }
-
         /// <summary>
         ///     Creates a failed user operation service result with specified errors.
         /// </summary>

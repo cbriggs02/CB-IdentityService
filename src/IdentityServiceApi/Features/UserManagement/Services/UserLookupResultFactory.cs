@@ -2,7 +2,6 @@
 using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
 using IdentityServiceApi.Shared.Results;
-using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
 {
@@ -15,13 +14,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    /// <remarks>
-    ///     Initializes a new instance of the <see cref="UserLookupResultFactory"/> class.
-    /// </remarks>
-    /// <param name="parameterValidator">
-    ///     The parameter validator used to validate input parameters.
-    /// </param>
-    public class UserLookupResultFactory(IParameterValidator parameterValidator) : UserLookupResultFactoryBase(parameterValidator), IUserLookupResultFactory
+    public class UserLookupResultFactory : UserLookupResultFactoryBase, IUserLookupResultFactory
     {
         /// <summary>
         ///     Creates a user lookup service result indicating a failure 
@@ -36,11 +29,8 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         ///     A <see cref="UserLookupResult"/> object indicating failure 
         ///     and containing the list of error messages.
         /// </returns>
-        public override UserLookupResult UserLookupOperationFailure(string[] errors, ErrorType errorType)
-        {
-            ValidateErrors(errors);
-            return new UserLookupResult { Success = false, Errors = [.. errors], ErrorType = errorType };
-        }
+        public override UserLookupResult UserLookupOperationFailure(string[] errors, ErrorType errorType) =>
+            new() { Success = false, Errors = [.. errors], ErrorType = errorType };
 
         /// <summary>
         ///     Creates a user lookup service result indicating a successful 
@@ -53,10 +43,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         ///     A <see cref="UserLookupResult"/> object indicating success 
         ///     and containing the found user.
         /// </returns>
-        public override UserLookupResult UserLookupOperationSuccess(User user)
-        {
-            parameterValidator.ValidateObjectNotNull(user, nameof(user));
-            return new UserLookupResult { Success = true, UserFound = user };
-        }
+        public override UserLookupResult UserLookupOperationSuccess(User user) =>
+            new() { Success = true, UserFound = user };
     }
 }

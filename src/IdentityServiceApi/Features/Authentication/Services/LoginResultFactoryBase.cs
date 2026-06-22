@@ -1,7 +1,6 @@
 ﻿using IdentityServiceApi.Features.Authentication.Interfaces;
 using IdentityServiceApi.Features.Authentication.Models;
 using IdentityServiceApi.Shared.Results;
-using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.Authentication.Services
 {
@@ -13,7 +12,7 @@ namespace IdentityServiceApi.Features.Authentication.Services
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    public abstract class LoginResultFactoryBase(IParameterValidator parameterValidator) : ResultFactory(parameterValidator), ILoginResultFactory
+    public abstract class LoginResultFactoryBase : ResultFactory, ILoginResultFactory
     {
         /// <summary>
         ///     Creates a failed login service result with specified errors.

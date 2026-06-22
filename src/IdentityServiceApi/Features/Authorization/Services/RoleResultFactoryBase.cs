@@ -1,7 +1,6 @@
 ﻿using IdentityServiceApi.Features.Authorization.Interfaces;
 using IdentityServiceApi.Features.Authorization.Models;
 using IdentityServiceApi.Shared.Results;
-using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.Authorization.Services
 {
@@ -11,14 +10,9 @@ namespace IdentityServiceApi.Features.Authorization.Services
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
-    /// </remarks>
-    /// <remarks>
-    ///     Initializes a new instance of the <see cref="RoleResultFactoryBase"/> class.
-    /// </remarks>
-    /// <param name="parameterValidator">
-    ///     The parameter validator used to validate input parameters.
-    /// </param>
-    public abstract class RoleResultFactoryBase(IParameterValidator parameterValidator) : ResultFactory(parameterValidator), IRoleResultFactory
+    ///     @Updated: 2026
+    /// </remarks>>
+    public abstract class RoleResultFactoryBase : ResultFactory, IRoleResultFactory
     {
         /// <summary>
         ///     Creates a failed role operation service result with specified errors.

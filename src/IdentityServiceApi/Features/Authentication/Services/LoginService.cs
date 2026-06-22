@@ -7,6 +7,7 @@ using IdentityServiceApi.Shared.Logging;
 using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -22,8 +23,10 @@ namespace IdentityServiceApi.Features.Authentication.Services
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    public class LoginService(SignInManager<User> signInManager, UserManager<User> userManager, JwtSettings jwtSettings, ILoginResultFactory loginServiceResultFactory, IParameterValidator parameterValidator, IUserLookupService userLookupService, ILoggerService loggerService) : ILoginService
+    public class LoginService(SignInManager<User> signInManager, UserManager<User> userManager, IOptions<JwtSettings> jwtSettings, ILoginResultFactory loginServiceResultFactory, IParameterValidator parameterValidator, IUserLookupService userLookupService, ILoggerService loggerService) : ILoginService
     {
+        private readonly JwtSettings _jwtSettings = jwtSettings?.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
+
         /// <summary>
         ///     Asynchronously logs in a user in the system using the sign-in manager based on provided credentials.
         /// </summary>
@@ -69,10 +72,10 @@ namespace IdentityServiceApi.Features.Authentication.Services
 
         private async Task<string> GenerateJwtTokenAsync(User user)
         {
-            var validIssuer = jwtSettings.ValidIssuer;
-            var validAudience = jwtSettings.ValidAudience;
+            var validIssuer = _jwtSettings.ValidIssuer;
+            var validAudience = _jwtSettings.ValidAudience;
 
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>

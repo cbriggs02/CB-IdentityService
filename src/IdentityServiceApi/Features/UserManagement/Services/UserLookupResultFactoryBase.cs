@@ -2,7 +2,6 @@
 using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
 using IdentityServiceApi.Shared.Results;
-using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
 {
@@ -15,7 +14,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    public abstract class UserLookupResultFactoryBase(IParameterValidator parameterValidator) : ResultFactory(parameterValidator), IUserLookupResultFactory
+    public abstract class UserLookupResultFactoryBase : ResultFactory, IUserLookupResultFactory
     {
         /// <summary>
         ///     Creates a failed user lookup service result with specified errors.

@@ -48,7 +48,7 @@ namespace IdentityServiceApi.Features.Authentication.Controllers
         [HttpPost("tokens")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.LoginApi.Login)]
         public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] LoginRequest credentials)
@@ -62,10 +62,7 @@ namespace IdentityServiceApi.Features.Authentication.Controllers
                     {
                         Errors = result.Errors
                     }),
-                    ErrorType.InvalidState => Unauthorized(new ErrorResponse
-                    {
-                        Errors = result.Errors
-                    }),
+                    ErrorType.InvalidState => Unauthorized(),
                     ErrorType.NotFound => Unauthorized(),
                     _ => Unauthorized()
                 };

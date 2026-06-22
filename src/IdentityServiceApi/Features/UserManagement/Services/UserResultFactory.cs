@@ -2,7 +2,6 @@
 using IdentityServiceApi.Features.UserManagement.Models.DTOs;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
 using IdentityServiceApi.Shared.Results;
-using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
 {
@@ -14,7 +13,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     ///     @Created: 2024
     ///     @Updated: 2026
     /// </remarks>
-    public class UserResultFactory(IParameterValidator parameterValidator) : UserResultFactoryBase(parameterValidator), IUserResultFactory
+    public class UserResultFactory : UserResultFactoryBase, IUserResultFactory
     {
         /// <summary>
         ///     Creates a failed user service result with specified errors.
@@ -28,11 +27,8 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// <returns>
         ///     A <see cref="UserResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public override UserResult UserOperationFailure(string[] errors, ErrorType errorType)
-        {
-            ValidateErrors(errors);
-            return new UserResult { Success = false, Errors = [.. errors], ErrorType = errorType };
-        }
+        public override UserResult UserOperationFailure(string[] errors, ErrorType errorType) =>
+            new() { Success = false, Errors = [.. errors], ErrorType = errorType };
 
         /// <summary>
         ///     Creates a successful user operation result with a user DTO.
@@ -43,11 +39,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// <returns>
         ///     A <see cref="UserResult"/> containing the success status and user data.
         /// </returns>
-        public override UserResult UserOperationSuccess(UserDTO user)
-        {
-            parameterValidator.ValidateObjectNotNull(user, nameof(user));
-            ValidateUserProperties(user);
-            return new UserResult { Success = true, User = user };
-        }
+        public override UserResult UserOperationSuccess(UserDTO user) =>
+            new() { Success = true, User = user };
     }
 }

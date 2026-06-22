@@ -3,6 +3,9 @@ using IdentityServiceApi.Data;
 using IdentityServiceApi.Extensions;
 using IdentityServiceApi.Shared.Errors;
 using IdentityServiceApi.Shared.Mapping;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace IdentityServiceApi
 {
@@ -34,6 +37,7 @@ namespace IdentityServiceApi
             builder.Services.AddRateLimiting();
 
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
 
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
