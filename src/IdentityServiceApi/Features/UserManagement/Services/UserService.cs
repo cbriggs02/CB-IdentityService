@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using IdentityServiceApi.Features.Authorization.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Interfaces;
-using IdentityServiceApi.Features.UserManagement.Models;
 using IdentityServiceApi.Features.UserManagement.Models.DTOs;
 using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Features.UserManagement.Models.Requests;
@@ -9,7 +8,7 @@ using IdentityServiceApi.Features.UserManagement.Models.Results;
 using IdentityServiceApi.Shared.Constants;
 using IdentityServiceApi.Shared.Logging;
 using IdentityServiceApi.Shared.Models;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -27,21 +26,6 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     /// </remarks>
     public class UserService(IMemoryCache cache, IUserCacheKeyService cacheKeyService, IUserCacheService cacheService, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserResultFactory userServiceResultFactory, IPasswordHistoryCleanupService cleanupService, IPermissionService permissionService, IParameterValidator parameterValidator, IUserLookupService userLookupService, ICountryService countryService, IRoleService roleService, IMapper mapper, ILoggerService loggerService) : IUserService
     {
-        private readonly IMemoryCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        private readonly IUserCacheKeyService _cacheKeyService = cacheKeyService ?? throw new ArgumentNullException(nameof(cacheKeyService));
-        private readonly IUserCacheService _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
-        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-        private readonly RoleManager<IdentityRole> _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
-        private readonly IUserResultFactory _userServiceResultFactory = userServiceResultFactory ?? throw new ArgumentNullException(nameof(userServiceResultFactory));
-        private readonly IPasswordHistoryCleanupService _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
-        private readonly IPermissionService _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
-        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-        private readonly IUserLookupService _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
-        private readonly ICountryService _countryService = countryService ?? throw new ArgumentNullException(nameof(countryService));
-        private readonly IRoleService _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
-        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
-
         /// <summary>
         ///     Asynchronously retrieves a paginated list of users from the database based on the request parameters.
         /// </summary>
@@ -55,15 +39,15 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<UserListResult> GetUsersAsync(UserListRequest request)
         {
-            _parameterValidator.ValidateObjectNotNull(request, nameof(request));
+            parameterValidator.ValidateObjectNotNull(request, nameof(request));
 
-            var cacheKey = _cacheKeyService.GetUserListKey(request.Page, request.PageSize, request.AccountStatus);
-            if (_cache.TryGetValue(cacheKey, out UserListResult? cachedUsers) && cachedUsers != null)
+            var cacheKey = cacheKeyService.GetUserListKey(request.Page, request.PageSize, request.AccountStatus);
+            if (cache.TryGetValue(cacheKey, out UserListResult? cachedUsers) && cachedUsers != null)
             {
                 return cachedUsers;
             }
 
-            var query = _userManager.Users.AsQueryable();
+            var query = userManager.Users.AsQueryable();
             if (request.AccountStatus.HasValue)
             {
                 query = query.Where(user => user.AccountStatus == request.AccountStatus.Value);
@@ -99,7 +83,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
                 .SetSlidingExpiration(TimeSpan.FromMinutes(1))
                 .SetPriority(CacheItemPriority.Normal);
 
-            _cache.Set(cacheKey, result, cacheOptions);
+            cache.Set(cacheKey, result, cacheOptions);
             return result;
         }
 
@@ -115,26 +99,26 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<UserResult> GetUserAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
+            var permissionResult = await permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure([.. permissionResult.Errors]);
+                return userServiceResultFactory.UserOperationFailure([.. permissionResult.Errors], permissionResult.ErrorType);
             }
 
-            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
+            var userLookupResult = await userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure([.. userLookupResult.Errors]);
+                return userServiceResultFactory.UserOperationFailure([.. userLookupResult.Errors], userLookupResult.ErrorType);
             }
 
             var user = userLookupResult.UserFound;
             var roleId = await GetUserRoleIdAsync(user);
-            var userDTO = _mapper.Map<UserDTO>(user);
+            var userDTO = mapper.Map<UserDTO>(user);
             userDTO.RoleId = roleId;
 
-            return _userServiceResultFactory.UserOperationSuccess(userDTO);
+            return userServiceResultFactory.UserOperationSuccess(userDTO);
         }
 
         /// <summary>
@@ -153,10 +137,10 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         {
             ValidateUserDTO(user);
 
-            var country = await _countryService.FindCountryByIdAsync(user.CountryId);
+            var country = await countryService.FindCountryByIdAsync(user.CountryId);
             if (country == null)
             {
-                return _userServiceResultFactory.UserOperationFailure([ErrorMessages.User.CountryNotFound]);
+                return userServiceResultFactory.UserOperationFailure([ErrorMessages.User.CountryNotFound], ErrorType.UnprocessableEntity);
             }
 
             var newUser = new User
@@ -171,13 +155,13 @@ namespace IdentityServiceApi.Features.UserManagement.Services
                 UpdatedAt = DateTime.UtcNow,
             };
 
-            var result = await _userManager.CreateAsync(newUser);
+            var result = await userManager.CreateAsync(newUser);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.UserOperationFailure([.. result.Errors.Select(e => e.Description)]);
+                return userServiceResultFactory.UserOperationFailure([.. result.Errors.Select(e => e.Description)], ErrorType.Validation);
             }
 
-            _cacheService.ClearUserListCache();
+            cacheService.ClearUserListCache();
 
             var returnUser = new UserDTO
             {
@@ -191,7 +175,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
                 CountryName = country.Name
             };
 
-            return _userServiceResultFactory.UserOperationSuccess(returnUser);
+            return userServiceResultFactory.UserOperationSuccess(returnUser);
         }
 
         /// <summary>
@@ -209,25 +193,25 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<Result> UpdateUserAsync(string id, UserDTO user)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
             ValidateUserDTO(user);
 
-            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
+            var permissionResult = await permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
+                return userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors], permissionResult.ErrorType);
             }
 
-            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
+            var userLookupResult = await userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors]);
+                return userServiceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors], userLookupResult.ErrorType);
             }
 
-            var country = await _countryService.FindCountryByIdAsync(user.CountryId);
+            var country = await countryService.FindCountryByIdAsync(user.CountryId);
             if (country == null)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.CountryNotFound]);
+                return userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.CountryNotFound], ErrorType.UnprocessableEntity);
             }
 
             var existingUser = userLookupResult.UserFound;
@@ -239,14 +223,14 @@ namespace IdentityServiceApi.Features.UserManagement.Services
             existingUser.CountryId = user.CountryId;
             existingUser.UpdatedAt = DateTime.UtcNow;
 
-            var result = await _userManager.UpdateAsync(existingUser);
+            var result = await userManager.UpdateAsync(existingUser);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
+                return userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)], ErrorType.Validation);
             }
 
-            _cacheService.ClearUserListCache();
-            return _userServiceResultFactory.GeneralOperationSuccess();
+            cacheService.ClearUserListCache();
+            return userServiceResultFactory.GeneralOperationSuccess();
         }
 
         /// <summary>
@@ -263,34 +247,34 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<Result> DeleteUserAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
+            var permissionResult = await permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
+                return userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors], permissionResult.ErrorType);
             }
 
-            var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
+            var userLookupServiceResult = await userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors]);
+                return userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors], userLookupServiceResult.ErrorType);
             }
 
             var user = userLookupServiceResult.UserFound;
 
-            var result = await _userManager.DeleteAsync(user);
+            var result = await userManager.DeleteAsync(user);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
+                return userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)], ErrorType.Validation);
             }
 
             LogUserOperation($"User with ID {id} has been deleted.");
-            _cacheService.ClearUserListCache();
+            cacheService.ClearUserListCache();
 
             // delete all stored passwords for user once user is deleted for data clean up.
-            await _cleanupService.DeletePasswordHistoryAsync(id);
-            return _userServiceResultFactory.GeneralOperationSuccess();
+            await cleanupService.DeletePasswordHistoryAsync(id);
+            return userServiceResultFactory.GeneralOperationSuccess();
         }
 
         /// <summary>
@@ -305,38 +289,38 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<Result> ActivateUserAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
+            var permissionResult = await permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
+                return userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors], permissionResult.ErrorType);
             }
 
-            var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
+            var userLookupServiceResult = await userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors]);
+                return userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors], userLookupServiceResult.ErrorType);
             }
 
             var user = userLookupServiceResult.UserFound;
 
             if (user.AccountStatus != 0)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.AlreadyActivated]);
+                return userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.AlreadyActivated], ErrorType.InvalidState);
             }
 
             user.AccountStatus = 1;
 
-            var result = await _userManager.UpdateAsync(user);
+            var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
+                return userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)], ErrorType.Validation);
             }
 
             LogUserOperation($"User with ID {id} has been activated.");
-            _cacheService.ClearUserListCache();
-            return _userServiceResultFactory.GeneralOperationSuccess();
+            cacheService.ClearUserListCache();
+            return userServiceResultFactory.GeneralOperationSuccess();
         }
 
         /// <summary>
@@ -351,38 +335,38 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<Result> DeactivateUserAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var permissionResult = await _permissionService.ValidatePermissionsAsync(id);
+            var permissionResult = await permissionService.ValidatePermissionsAsync(id);
             if (!permissionResult.Success)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors]);
+                return userServiceResultFactory.GeneralOperationFailure([.. permissionResult.Errors], permissionResult.ErrorType);
             }
 
-            var userLookupServiceResult = await _userLookupService.FindUserByIdAsync(id);
+            var userLookupServiceResult = await userLookupService.FindUserByIdAsync(id);
             if (!userLookupServiceResult.Success)
             {
-                return _userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors]);
+                return userServiceResultFactory.UserOperationFailure([.. userLookupServiceResult.Errors], userLookupServiceResult.ErrorType);
             }
 
             var user = userLookupServiceResult.UserFound;
 
             if (user.AccountStatus != 1)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.NotActivated]);
+                return userServiceResultFactory.GeneralOperationFailure([ErrorMessages.User.NotActivated], ErrorType.InvalidState);
             }
 
             user.AccountStatus = 0;
 
-            var result = await _userManager.UpdateAsync(user);
+            var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                return _userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
+                return userServiceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)], ErrorType.Validation);
             }
 
             LogUserOperation($"User with ID {id} has been deactivated.");
-            _cacheService.ClearUserListCache();
-            return _userServiceResultFactory.GeneralOperationSuccess();
+            cacheService.ClearUserListCache();
+            return userServiceResultFactory.GeneralOperationSuccess();
         }
 
         /// <summary>
@@ -404,9 +388,9 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<Result> AssignRoleAsync(string id, string roleName)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
-            _parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
-            return await _roleService.AssignRoleAsync(id, roleName);
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
+            return await roleService.AssignRoleAsync(id, roleName);
         }
 
         /// <summary>
@@ -424,22 +408,22 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<Result> RemoveRoleAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
-            return await _roleService.RemoveRoleAsync(id);
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            return await roleService.RemoveRoleAsync(id);
         }
 
         private async Task<string?> GetUserRoleIdAsync(User user)
         {
-            _parameterValidator.ValidateObjectNotNull(user, nameof(user));
+            parameterValidator.ValidateObjectNotNull(user, nameof(user));
 
-            var roleNames = await _userManager.GetRolesAsync(user);
+            var roleNames = await userManager.GetRolesAsync(user);
             if (!roleNames.Any())
             {
                 return null;
             }
 
             var roleName = roleNames.First();
-            var role = await _roleManager.FindByNameAsync(roleName);
+            var role = await roleManager.FindByNameAsync(roleName);
             return role?.Id;
         }
 
@@ -452,17 +436,17 @@ namespace IdentityServiceApi.Features.UserManagement.Services
                 Message = message
             };
 
-            _loggerService.LogData(logEntry);
+            loggerService.LogData(logEntry);
         }
 
         private void ValidateUserDTO(UserDTO user)
         {
-            _parameterValidator.ValidateObjectNotNull(user, nameof(user));
-            _parameterValidator.ValidateNotNullOrEmpty(user.UserName, nameof(user.UserName));
-            _parameterValidator.ValidateNotNullOrEmpty(user.FirstName, nameof(user.FirstName));
-            _parameterValidator.ValidateNotNullOrEmpty(user.LastName, nameof(user.LastName));
-            _parameterValidator.ValidateNotNullOrEmpty(user.Email, nameof(user.Email));
-            _parameterValidator.ValidateNotNullOrEmpty(user.PhoneNumber, nameof(user.PhoneNumber));
+            parameterValidator.ValidateObjectNotNull(user, nameof(user));
+            parameterValidator.ValidateNotNullOrEmpty(user.UserName, nameof(user.UserName));
+            parameterValidator.ValidateNotNullOrEmpty(user.FirstName, nameof(user.FirstName));
+            parameterValidator.ValidateNotNullOrEmpty(user.LastName, nameof(user.LastName));
+            parameterValidator.ValidateNotNullOrEmpty(user.Email, nameof(user.Email));
+            parameterValidator.ValidateNotNullOrEmpty(user.PhoneNumber, nameof(user.PhoneNumber));
         }
     }
 }

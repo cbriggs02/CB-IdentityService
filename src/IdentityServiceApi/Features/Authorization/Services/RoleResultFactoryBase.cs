@@ -1,6 +1,6 @@
 ﻿using IdentityServiceApi.Features.Authorization.Interfaces;
 using IdentityServiceApi.Features.Authorization.Models;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.Authorization.Services
@@ -20,17 +20,19 @@ namespace IdentityServiceApi.Features.Authorization.Services
     /// </param>
     public abstract class RoleResultFactoryBase(IParameterValidator parameterValidator) : ResultFactory(parameterValidator), IRoleResultFactory
     {
-
         /// <summary>
         ///     Creates a failed role operation service result with specified errors.
         /// </summary>
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the role operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="RoleResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public abstract RoleResult RoleOperationFailure(string[] errors);
+        public abstract RoleResult RoleOperationFailure(string[] errors, ErrorType errorType);
 
         /// <summary>
         ///     Creates a successful role operation service result with the specified role data.

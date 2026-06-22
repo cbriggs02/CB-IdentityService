@@ -31,6 +31,11 @@
         UserService,
 
         /// <summary>
+        ///     Indicates the log originated from the user cache service.
+        /// </summary>
+        UserCacheService,
+
+        /// <summary>
         ///     Indicates the log originated from the password service.
         /// </summary>
         PasswordService,

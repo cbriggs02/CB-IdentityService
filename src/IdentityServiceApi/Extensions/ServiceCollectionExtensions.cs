@@ -6,9 +6,9 @@ using IdentityServiceApi.Features.Authentication.Services;
 using IdentityServiceApi.Features.Authorization.Services;
 using IdentityServiceApi.Features.UserManagement.Services;
 using IdentityServiceApi.Shared.Utilities;
-using IdentityServiceApi.Shared.ResultFactories;
 using IdentityServiceApi.Shared.Logging;
 using IdentityServiceApi.Features.UserManagement.Caching;
+using IdentityServiceApi.Shared.Results;
 
 namespace IdentityServiceApi.Extensions
 {

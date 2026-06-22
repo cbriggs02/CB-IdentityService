@@ -1,7 +1,7 @@
 ﻿using IdentityServiceApi.Features.Authorization.Interfaces;
 using IdentityServiceApi.Shared.Constants;
 using IdentityServiceApi.Shared.Logging;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.Authorization.Services
@@ -17,11 +17,6 @@ namespace IdentityServiceApi.Features.Authorization.Services
     /// </remarks>
     public class PermissionService(IAuthorizationService authService, IParameterValidator parameterValidator, IResultFactory serviceResultFactory, ILoggerService loggerService) : IPermissionService
     {
-        private readonly IAuthorizationService _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-        private readonly IResultFactory _serviceResultFactory = serviceResultFactory ?? throw new ArgumentNullException(nameof(serviceResultFactory));
-        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
-
         /// <summary>
         ///     Asynchronously validates the permissions of a user identified by the specified ID.
         /// </summary>
@@ -36,17 +31,17 @@ namespace IdentityServiceApi.Features.Authorization.Services
         /// </returns>
         public async Task<Result> ValidatePermissionsAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
             // Use the auth service to check permissions
-            bool hasPermission = await _authService.ValidatePermissionAsync(id);
+            bool hasPermission = await authService.ValidatePermissionAsync(id);
             if (!hasPermission)
             {
                 LogPermissionValidationFailure(id);
-                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Authorization.Forbidden]);
+                return serviceResultFactory.GeneralOperationFailure([ErrorMessages.Authorization.Forbidden], ErrorType.Forbidden);
             }
 
-            return _serviceResultFactory.GeneralOperationSuccess();
+            return serviceResultFactory.GeneralOperationSuccess();
         }
 
         private void LogPermissionValidationFailure(string id)
@@ -58,7 +53,7 @@ namespace IdentityServiceApi.Features.Authorization.Services
                 Message = $"User with ID {id} does not have the required permissions."
             };
 
-            _loggerService.LogData(LogEntry);
+            loggerService.LogData(LogEntry);
         }
     }
 }

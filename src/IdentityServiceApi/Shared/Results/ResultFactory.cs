@@ -1,6 +1,6 @@
 ﻿using IdentityServiceApi.Shared.Utilities;
 
-namespace IdentityServiceApi.Shared.ResultFactories
+namespace IdentityServiceApi.Shared.Results
 {
     /// <summary>
     ///     Implements the <see cref="IResultFactory"/> interface to create uniform service result 
@@ -14,8 +14,6 @@ namespace IdentityServiceApi.Shared.ResultFactories
     /// </remarks>
     public class ResultFactory(IParameterValidator parameterValidator) : IResultFactory
     {
-        protected readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-
         /// <summary>
         ///     Creates a successful service result for general operations.
         /// </summary>
@@ -23,20 +21,23 @@ namespace IdentityServiceApi.Shared.ResultFactories
         ///     A <see cref="Result"/> indicating success.
         /// </returns>
         public Result GeneralOperationSuccess() => new() { Success = true };
-        
+
         /// <summary>
         ///     Creates a failed service result with specified errors.
         /// </summary>
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="Result"/> indicating failure along with the provided errors.
         /// </returns>
-        public Result GeneralOperationFailure(string[] errors)
+        public Result GeneralOperationFailure(string[] errors, ErrorType errorType)
         {
             ValidateErrors(errors);
-            return new Result { Success = false, Errors = [.. errors] };
+            return new Result { Success = false, Errors = [.. errors], ErrorType = errorType };
         }
 
         /// <summary>
@@ -46,6 +47,6 @@ namespace IdentityServiceApi.Shared.ResultFactories
         ///     An array of error messages to validate.
         /// </param>
         protected void ValidateErrors(string[] errors) => 
-            _parameterValidator.ValidateObjectNotNull(errors, nameof(errors));   
+            parameterValidator.ValidateObjectNotNull(errors, nameof(errors));   
     }
 }

@@ -5,7 +5,6 @@ using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using System.Reflection.Metadata.Ecma335;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
 {
@@ -20,9 +19,6 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     /// </remarks>
     public class CountryService(IMemoryCache cache, ApplicationDbContext context) : ICountryService
     {
-        private readonly IMemoryCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        private readonly ApplicationDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
-
         /// <summary>
         ///     Asynchronously retrieves a list of all available countries in the system, 
         ///     ordered alphabetically by their name.
@@ -33,11 +29,12 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<CountryListResult> GetCountriesAsync()
         {
-            if (_cache.TryGetValue(CountriesCacheKeys.CountryList, out CountryListResult? cachedCountries) && cachedCountries != null)
+            if (cache.TryGetValue(CountriesCacheKeys.CountryList, out CountryListResult? cachedCountries) && cachedCountries != null)
             {
                 return cachedCountries;
             }
-            var countries = await _context.Countries
+
+            var countries = await context.Countries
                 .OrderBy(x => x.Name)
                 .AsNoTracking()
                 .ToListAsync();
@@ -46,7 +43,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetPriority(CacheItemPriority.NeverRemove);
 
-            _cache.Set(CountriesCacheKeys.CountryList, cachedCountries, cacheOptions);
+            cache.Set(CountriesCacheKeys.CountryList, cachedCountries, cacheOptions);
             return result;
         }
 
@@ -59,9 +56,11 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// <returns>
         ///     A <see cref="Country"/> object if found; otherwise, null.
         /// </returns>
-        public async Task<Country?> FindCountryByIdAsync(int id) =>
-            await _context.Countries
+        public async Task<Country?> FindCountryByIdAsync(int id)
+        {
+            return await context.Countries
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == id);
+        }
     }
 }

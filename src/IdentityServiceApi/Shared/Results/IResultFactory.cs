@@ -1,4 +1,4 @@
-﻿namespace IdentityServiceApi.Shared.ResultFactories
+﻿namespace IdentityServiceApi.Shared.Results
 {
     /// <summary>
     ///     Provides methods for creating uniform service result objects 
@@ -20,10 +20,13 @@
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="Result"/> object indicating failure.
         /// </returns>
-        Result GeneralOperationFailure(string[] errors);
+        Result GeneralOperationFailure(string[] errors, ErrorType errorType);
 
         /// <summary>
         ///     Creates a service result indicating a successful operation 

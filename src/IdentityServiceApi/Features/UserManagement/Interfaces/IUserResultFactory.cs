@@ -1,6 +1,6 @@
 ﻿using IdentityServiceApi.Features.UserManagement.Models.DTOs;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 
 namespace IdentityServiceApi.Features.UserManagement.Interfaces
 {
@@ -22,10 +22,13 @@ namespace IdentityServiceApi.Features.UserManagement.Interfaces
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the user operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="UserResult"/> indicating failure along with the provided errors.
         /// </returns>
-        UserResult UserOperationFailure(string[] errors);
+        UserResult UserOperationFailure(string[] errors, ErrorType errorType);
 
         /// <summary>
         ///     Creates a successful user operation service result with the specified user data.

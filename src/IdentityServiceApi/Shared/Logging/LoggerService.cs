@@ -11,8 +11,6 @@
     /// </remarks>
     public class LoggerService(ILogger<LoggerService> logger) : ILoggerService
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
         /// <summary>
         ///     Logs an application event using the provided <see cref="LogEntry"/>.
         /// </summary>
@@ -23,10 +21,10 @@
         {
             if (entry.Exception != null)
             {
-                _logger.Log(entry.LogLevel, entry.Exception, "{Source} | {Message}", entry.LogSource, entry.Message);
+                logger.Log(entry.LogLevel, entry.Exception, "{Source} | {Message}", entry.LogSource, entry.Message);
             }
 
-            _logger.Log(entry.LogLevel, "{Source} | {Message}", entry.LogSource, entry.Message);
+            logger.Log(entry.LogLevel, "{Source} | {Message}", entry.LogSource, entry.Message);
         }
     }
 }

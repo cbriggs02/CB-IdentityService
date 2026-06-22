@@ -1,5 +1,6 @@
 ﻿using IdentityServiceApi.Features.Authentication.Interfaces;
 using IdentityServiceApi.Features.Authentication.Models;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.Authentication.Services
@@ -22,13 +23,16 @@ namespace IdentityServiceApi.Features.Authentication.Services
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the login operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="LoginResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public override LoginResult LoginOperationFailure(string[] errors)
+        public override LoginResult LoginOperationFailure(string[] errors, ErrorType errorType)
         {
             ValidateErrors(errors);
-            return new LoginResult { Success = false, Errors = [.. errors] };
+            return new LoginResult { Success = false, Errors = [.. errors], ErrorType = errorType };
         }
 
         /// <summary>
@@ -42,7 +46,7 @@ namespace IdentityServiceApi.Features.Authentication.Services
         /// </returns>
         public override LoginResult LoginOperationSuccess(string token)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(token, nameof(token));
+            parameterValidator.ValidateNotNullOrEmpty(token, nameof(token));
             return new LoginResult { Success = true, Token = token };
         }
     }

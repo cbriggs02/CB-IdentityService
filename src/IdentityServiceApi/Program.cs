@@ -1,7 +1,7 @@
 using AspNetCoreRateLimit;
 using IdentityServiceApi.Data;
 using IdentityServiceApi.Extensions;
-using IdentityServiceApi.Middleware;
+using IdentityServiceApi.Shared.Errors;
 using IdentityServiceApi.Shared.Mapping;
 
 namespace IdentityServiceApi
@@ -33,6 +33,8 @@ namespace IdentityServiceApi
             builder.Services.AddAuthenticationServices(builder.Configuration);
             builder.Services.AddRateLimiting();
 
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
             {
@@ -50,7 +52,7 @@ namespace IdentityServiceApi
                 });
             }
 
-            app.UseMiddleware<GlobalExceptionMiddleware>();
+            app.UseExceptionHandler();
 
             if (app.Environment.IsProduction())
             {

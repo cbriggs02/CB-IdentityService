@@ -2,6 +2,7 @@
 using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
 using IdentityServiceApi.Shared.Constants;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 using Microsoft.AspNetCore.Identity;
 
@@ -20,10 +21,6 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     /// </remarks>
     public class UserLookupService(UserManager<User> userManager, IUserLookupResultFactory userLookupServiceResultFactory, IParameterValidator parameterValidator) : IUserLookupService
     {
-        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-        private readonly IUserLookupResultFactory _userLookupServiceResultFactory = userLookupServiceResultFactory ?? throw new ArgumentNullException(nameof(userLookupServiceResultFactory));
-        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-
         /// <summary>
         ///     Asynchronously retrieves a user by their unique identifier.
         /// </summary>
@@ -37,8 +34,8 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<UserLookupResult> FindUserByIdAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
-            var user = await _userManager.FindByIdAsync(id);
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            var user = await userManager.FindByIdAsync(id);
             return HandleLookupResult(user);
         }
 
@@ -55,8 +52,8 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<UserLookupResult> FindUserByUsernameAsync(string userName)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(userName, nameof(userName));
-            var user = await _userManager.FindByNameAsync(userName);
+            parameterValidator.ValidateNotNullOrEmpty(userName, nameof(userName));
+            var user = await userManager.FindByNameAsync(userName);
             return HandleLookupResult(user);
         }
 
@@ -64,9 +61,9 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         {
             if (user == null)
             {
-                return _userLookupServiceResultFactory.UserLookupOperationFailure([ErrorMessages.User.NotFound]);
+                return userLookupServiceResultFactory.UserLookupOperationFailure([ErrorMessages.User.NotFound], ErrorType.NotFound);
             }
-            return _userLookupServiceResultFactory.UserLookupOperationSuccess(user);
+            return userLookupServiceResultFactory.UserLookupOperationSuccess(user);
         }
     }
 }

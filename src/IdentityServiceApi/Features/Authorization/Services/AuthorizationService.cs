@@ -17,10 +17,6 @@ namespace IdentityServiceApi.Features.Authorization.Services
     /// </remarks>
     public class AuthorizationService(UserManager<User> userManager, IUserContextService userContextService, IUserLookupService userLookupService) : IAuthorizationService
     {
-        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-        private readonly IUserContextService _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
-        private readonly IUserLookupService _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
-
         /// <summary>
         ///     Asynchronously validates permissions based on the current user's role and the target user's data:
         ///     - Regular users can only access their own data.
@@ -45,19 +41,19 @@ namespace IdentityServiceApi.Features.Authorization.Services
                 return false; // No ID provided, so permission cannot be validated
             }
 
-            var principal = _userContextService.GetClaimsPrincipal();
+            var principal = userContextService.GetClaimsPrincipal();
             if (principal == null)
             {
                 return false; // No user context available, so permission cannot be validated
             }
 
-            var currentUserId = _userContextService.GetUserId(principal);
+            var currentUserId = userContextService.GetUserId(principal);
             if (currentUserId == null)
             {
                 return false; // No id recovered from http context, deny by default
             }
 
-            var roles = _userContextService.GetRoles(principal);
+            var roles = userContextService.GetRoles(principal);
             if (roles == null || roles.Count == 0)
             {
                 return false; // No roles assigned, deny access
@@ -83,7 +79,7 @@ namespace IdentityServiceApi.Features.Authorization.Services
                 return false; // No target user ID provided, so permission cannot be validated
             }
 
-            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
+            var userLookupResult = await userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
                 return false;
@@ -107,16 +103,16 @@ namespace IdentityServiceApi.Features.Authorization.Services
 
         private static bool IsSelfAccess(string userId, string currentUserId) =>
             userId.Equals(currentUserId, StringComparison.OrdinalIgnoreCase);
-        
+
         private async Task<bool> IsTargetAdmin(User user)
         {
-            var targetUserRoles = await _userManager.GetRolesAsync(user);
+            var targetUserRoles = await userManager.GetRolesAsync(user);
             return targetUserRoles.Any(role => role == Roles.Admin);
         }
 
         private async Task<bool> IsTargetSuperAdmin(User user)
         {
-            var targetUserRoles = await _userManager.GetRolesAsync(user);
+            var targetUserRoles = await userManager.GetRolesAsync(user);
             return targetUserRoles.Any(role => role == Roles.SuperAdmin);
         }
     }

@@ -22,8 +22,6 @@ namespace IdentityServiceApi.Features.UserManagement.Controllers
     [AllowAnonymous]
     public class CountriesController(ICountryService countryService) : ControllerBase
     {
-        private readonly ICountryService _countryService = countryService ?? throw new ArgumentNullException(nameof(countryService));
-
         /// <summary>
         ///     Retrieves all supported countries.
         /// </summary>
@@ -42,7 +40,7 @@ namespace IdentityServiceApi.Features.UserManagement.Controllers
         [SwaggerOperation(Summary = ApiDocumentation.CountriesApi.GetCountries)]
         public async Task<ActionResult<CountriesListResponse>> GetCountriesAsync()
         {
-            var result = await _countryService.GetCountriesAsync();
+            var result = await countryService.GetCountriesAsync();
             if (result.Countries == null || !result.Countries.Any())
             {
                 return NoContent();

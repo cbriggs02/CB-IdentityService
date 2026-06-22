@@ -1,5 +1,5 @@
 ﻿using IdentityServiceApi.Features.UserManagement.Models.DTOs;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 
 namespace IdentityServiceApi.Features.UserManagement.Models.Results
 {

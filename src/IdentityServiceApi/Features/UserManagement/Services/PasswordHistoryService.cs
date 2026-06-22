@@ -18,11 +18,6 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     /// </remarks>
     public class PasswordHistoryService(ApplicationDbContext context, IPasswordHistoryCleanupService cleanupService, IPasswordHasher<User> passwordHasher, IParameterValidator parameterValidator) : IPasswordHistoryService
     {
-        private readonly ApplicationDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
-        private readonly IPasswordHistoryCleanupService _cleanupService = cleanupService ?? throw new ArgumentNullException(nameof(cleanupService));
-        private readonly IPasswordHasher<User> _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
-        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-
         /// <summary>
         ///     Asynchronously records the current password hash of the specified user in the password history.
         ///     This method is called whenever a user successfully changes their password,
@@ -36,9 +31,9 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task AddPasswordHistoryAsync(StorePasswordHistoryRequest request)
         {
-            _parameterValidator.ValidateObjectNotNull(request, nameof(request));
-            _parameterValidator.ValidateNotNullOrEmpty(request.UserId, nameof(request.UserId));
-            _parameterValidator.ValidateNotNullOrEmpty(request.PasswordHash, nameof(request.PasswordHash));
+            parameterValidator.ValidateObjectNotNull(request, nameof(request));
+            parameterValidator.ValidateNotNullOrEmpty(request.UserId, nameof(request.UserId));
+            parameterValidator.ValidateNotNullOrEmpty(request.PasswordHash, nameof(request.PasswordHash));
 
             var passwordHistory = new PasswordHistory
             {
@@ -47,10 +42,10 @@ namespace IdentityServiceApi.Features.UserManagement.Services
                 CreatedDate = DateTime.UtcNow
             };
 
-            _context.PasswordHistories.Add(passwordHistory);
+            context.PasswordHistories.Add(passwordHistory);
 
-            await _cleanupService.RemoveOldPasswordsAsync(passwordHistory.UserId);
-            await _context.SaveChangesAsync();
+            await cleanupService.RemoveOldPasswordsAsync(passwordHistory.UserId);
+            await context.SaveChangesAsync();
         }
 
         /// <summary>
@@ -65,11 +60,11 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task<bool> FindPasswordHashAsync(SearchPasswordHistoryRequest request)
         {
-            _parameterValidator.ValidateObjectNotNull(request, nameof(request));
-            _parameterValidator.ValidateNotNullOrEmpty(request.UserId, nameof(request.UserId));
-            _parameterValidator.ValidateNotNullOrEmpty(request.Password, nameof(request.Password));
+            parameterValidator.ValidateObjectNotNull(request, nameof(request));
+            parameterValidator.ValidateNotNullOrEmpty(request.UserId, nameof(request.UserId));
+            parameterValidator.ValidateNotNullOrEmpty(request.Password, nameof(request.Password));
 
-            var passwordHistories = await _context.PasswordHistories
+            var passwordHistories = await context.PasswordHistories
                 .Where(x => x.UserId == request.UserId)
                 .Select(x => x.PasswordHash)
                 .AsNoTracking()
@@ -80,7 +75,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
 
             // Check if any stored hash matches the provided password
             return passwordHistories.Any(storedHash =>
-                _passwordHasher.VerifyHashedPassword(dummyUser, storedHash, request.Password) == PasswordVerificationResult.Success);
+                passwordHasher.VerifyHashedPassword(dummyUser, storedHash, request.Password) == PasswordVerificationResult.Success);
         }
     }
 }

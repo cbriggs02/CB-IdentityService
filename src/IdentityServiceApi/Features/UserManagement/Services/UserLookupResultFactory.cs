@@ -1,6 +1,7 @@
 ﻿using IdentityServiceApi.Features.UserManagement.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
@@ -29,13 +30,16 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// <param name="errors">An array of error messages that describe the reasons 
         ///     for the failure of the user lookup operation.</param>
         /// <returns>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the lookup operation.
+        /// </param>
         ///     A <see cref="UserLookupResult"/> object indicating failure 
         ///     and containing the list of error messages.
         /// </returns>
-        public override UserLookupResult UserLookupOperationFailure(string[] errors)
+        public override UserLookupResult UserLookupOperationFailure(string[] errors, ErrorType errorType)
         {
             ValidateErrors(errors);
-            return new UserLookupResult { Success = false, Errors = [.. errors] };
+            return new UserLookupResult { Success = false, Errors = [.. errors], ErrorType = errorType };
         }
 
         /// <summary>
@@ -51,7 +55,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public override UserLookupResult UserLookupOperationSuccess(User user)
         {
-            _parameterValidator.ValidateObjectNotNull(user, nameof(user));
+            parameterValidator.ValidateObjectNotNull(user, nameof(user));
             return new UserLookupResult { Success = true, UserFound = user };
         }
     }

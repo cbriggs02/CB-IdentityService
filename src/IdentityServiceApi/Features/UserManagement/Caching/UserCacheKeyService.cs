@@ -34,7 +34,6 @@ namespace IdentityServiceApi.Features.UserManagement.Caching
         public string GetUserListKey(int page, int pageSize, int? accountStatus)
         {
             var key = $"{DomainName}:list:Page:{page}:size:{pageSize}:status:{accountStatus?.ToString() ?? "null"}";
-
             lock (_trackedUserListKeys)
             {
                 _trackedUserListKeys.Add(key);

@@ -18,8 +18,6 @@ namespace IdentityServiceApi.Data
     /// </remarks>
     public class DbInitializer(ILogger<DbInitializer> logger)
     {
-        private readonly ILogger<DbInitializer> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
         /// <summary>
         ///     Asynchronously initializes the database and performs seeding if necessary.
         ///     This method is called during the application startup.
@@ -52,11 +50,11 @@ namespace IdentityServiceApi.Data
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, ErrorMessages.Database.UpdateFailed);
+                logger.LogError(dbEx, ErrorMessages.Database.UpdateFailed);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ErrorMessages.Database.InitializationFailed);
+                logger.LogError(ex, ErrorMessages.Database.InitializationFailed);
             }
         }
 
@@ -93,7 +91,6 @@ namespace IdentityServiceApi.Data
                 .RuleFor(u => u.UpdatedAt, f => DateTime.UtcNow);
 
             var users = faker.Generate(5000);
-
             foreach (var user in users)
             {
                 var result = await userManager.CreateAsync(user, password);

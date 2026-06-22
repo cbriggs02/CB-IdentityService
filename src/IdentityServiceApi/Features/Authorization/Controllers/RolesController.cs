@@ -23,8 +23,6 @@ namespace IdentityServiceApi.Features.Authorization.Controllers
     [Authorize(Roles = Roles.SuperAdmin)]
     public class RolesController(IRoleService roleService) : ControllerBase
     {
-        private readonly IRoleService _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
-
         /// <summary>
         ///     Retrieves all roles in the system.
         /// </summary>
@@ -43,7 +41,7 @@ namespace IdentityServiceApi.Features.Authorization.Controllers
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.GetRoles)]
         public async Task<ActionResult<RolesListResponse>> GetRolesAsync()
         {
-            var result = await _roleService.GetRolesAsync();
+            var result = await roleService.GetRolesAsync();
             if (result.Roles == null || !result.Roles.Any())
             {
                 return NoContent();
@@ -73,9 +71,8 @@ namespace IdentityServiceApi.Features.Authorization.Controllers
         [SwaggerOperation(Summary = ApiDocumentation.RolesApi.GetRoleById)]
         public async Task<ActionResult<RoleResponse>> GetRoleAsync([FromRoute][Required] string id)
         {
-            var result = await _roleService.GetRoleAsync(id);
-            if (!result.Success && result.Errors.Any(error =>
-                error.Contains(ErrorMessages.Role.NotFound, StringComparison.OrdinalIgnoreCase)))
+            var result = await roleService.GetRoleAsync(id);
+            if (!result.Success)
             {
                 return NotFound();
             }

@@ -17,10 +17,6 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     /// </remarks>
     public class PasswordHistoryCleanupService(ApplicationDbContext context, IParameterValidator parameterValidator, ILoggerService loggerService) : IPasswordHistoryCleanupService
     {
-        private readonly ApplicationDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
-        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
-
         /// <summary>
         ///     Asynchronously deletes all password history entries for the user matching the provided user ID.
         /// </summary>
@@ -32,15 +28,15 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task DeletePasswordHistoryAsync(string userId)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(userId, nameof(userId));
+            parameterValidator.ValidateNotNullOrEmpty(userId, nameof(userId));
 
             try
             {
                 var passwordHistories = await GetPasswordHistory(userId);
                 if (passwordHistories.Count != 0)
                 {
-                    _context.PasswordHistories.RemoveRange(passwordHistories);
-                    await _context.SaveChangesAsync();
+                    context.PasswordHistories.RemoveRange(passwordHistories);
+                    await context.SaveChangesAsync();
                 }
             }
             catch (Exception)
@@ -60,7 +56,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public async Task RemoveOldPasswordsAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
             try
             {
@@ -69,8 +65,8 @@ namespace IdentityServiceApi.Features.UserManagement.Services
 
                 if (historiesToDelete.Count != 0)
                 {
-                    _context.PasswordHistories.RemoveRange(historiesToDelete);
-                    await _context.SaveChangesAsync();
+                    context.PasswordHistories.RemoveRange(historiesToDelete);
+                    await context.SaveChangesAsync();
                 }
             }
             catch (Exception)
@@ -81,7 +77,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
 
         private async Task<List<PasswordHistory>> GetPasswordHistory(string userId)
         {
-            return await _context.PasswordHistories
+            return await context.PasswordHistories
                .Where(x => x.UserId == userId)
                .OrderBy(x => x.Id)
                .AsNoTracking()
@@ -97,7 +93,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
                 Message = $"Failed to clean up password history for user with ID {userId}"
             };
 
-            _loggerService.LogData(logEntry);
+            loggerService.LogData(logEntry);
         }
     }
 }

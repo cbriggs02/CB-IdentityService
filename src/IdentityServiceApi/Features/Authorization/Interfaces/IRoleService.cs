@@ -1,5 +1,5 @@
 ﻿using IdentityServiceApi.Features.Authorization.Models;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 
 namespace IdentityServiceApi.Features.Authorization.Interfaces
 {

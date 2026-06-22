@@ -1,5 +1,5 @@
 ﻿using IdentityServiceApi.Features.Authentication.Models;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 
 namespace IdentityServiceApi.Features.Authentication.Interfaces
 {
@@ -21,10 +21,13 @@ namespace IdentityServiceApi.Features.Authentication.Interfaces
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the login operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="LoginResult"/> indicating failure along with the provided errors.
         /// </returns>
-        LoginResult LoginOperationFailure(string[] errors);
+        LoginResult LoginOperationFailure(string[] errors, ErrorType errorType);
 
         /// <summary>
         ///     Creates a successful login service result with a token.

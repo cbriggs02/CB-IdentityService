@@ -1,7 +1,7 @@
 ﻿using IdentityServiceApi.Features.UserManagement.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Models.DTOs;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
@@ -24,11 +24,11 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </param>
         protected void ValidateUserProperties(UserDTO user)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(user.UserName, nameof(user.UserName));
-            _parameterValidator.ValidateNotNullOrEmpty(user.FirstName, nameof(user.FirstName));
-            _parameterValidator.ValidateNotNullOrEmpty(user.LastName, nameof(user.LastName));
-            _parameterValidator.ValidateNotNullOrEmpty(user.Email, nameof(user.Email));
-            _parameterValidator.ValidateNotNullOrEmpty(user.PhoneNumber, nameof(user.PhoneNumber));
+            parameterValidator.ValidateNotNullOrEmpty(user.UserName, nameof(user.UserName));
+            parameterValidator.ValidateNotNullOrEmpty(user.FirstName, nameof(user.FirstName));
+            parameterValidator.ValidateNotNullOrEmpty(user.LastName, nameof(user.LastName));
+            parameterValidator.ValidateNotNullOrEmpty(user.Email, nameof(user.Email));
+            parameterValidator.ValidateNotNullOrEmpty(user.PhoneNumber, nameof(user.PhoneNumber));
         }
 
         /// <summary>
@@ -37,10 +37,13 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the user operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="UserResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public abstract UserResult UserOperationFailure(string[] errors);
+        public abstract UserResult UserOperationFailure(string[] errors, ErrorType errorType);
 
         /// <summary>
         ///     Creates a successful user operation service result with the specified user data.

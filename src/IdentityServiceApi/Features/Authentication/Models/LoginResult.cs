@@ -1,4 +1,4 @@
-﻿using IdentityServiceApi.Shared.ResultFactories;
+﻿using IdentityServiceApi.Shared.Results;
 
 namespace IdentityServiceApi.Features.Authentication.Models
 {

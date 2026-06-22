@@ -5,7 +5,7 @@ using IdentityServiceApi.Features.UserManagement.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Shared.Constants;
 using IdentityServiceApi.Shared.Logging;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,14 +23,6 @@ namespace IdentityServiceApi.Features.Authorization.Services
     /// </remarks>
     public class RoleService(IMemoryCache cache, RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IParameterValidator parameterValidator, IRoleResultFactory serviceResultFactory, IUserLookupService userLookupService, ILoggerService loggerService) : IRoleService
     {
-        private readonly IMemoryCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        private readonly RoleManager<IdentityRole> _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
-        private readonly UserManager<User> _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-        private readonly IParameterValidator _parameterValidator = parameterValidator ?? throw new ArgumentNullException(nameof(parameterValidator));
-        private readonly IRoleResultFactory _serviceResultFactory = serviceResultFactory ?? throw new ArgumentNullException(nameof(serviceResultFactory));
-        private readonly IUserLookupService _userLookupService = userLookupService ?? throw new ArgumentNullException(nameof(userLookupService));
-        private readonly ILoggerService _loggerService = loggerService ?? throw new ArgumentNullException(nameof(loggerService));
-
         /// <summary>
         ///     Asynchronously retrieves all roles from the database, ordered by name.
         /// </summary>
@@ -40,11 +32,11 @@ namespace IdentityServiceApi.Features.Authorization.Services
         /// </returns>
         public async Task<RoleListResult> GetRolesAsync()
         {
-            if (_cache.TryGetValue(RolesCacheKeys.RoleList, out RoleListResult? cachedRoles) && cachedRoles != null)
+            if (cache.TryGetValue(RolesCacheKeys.RoleList, out RoleListResult? cachedRoles) && cachedRoles != null)
             {
                 return cachedRoles;
             }
-            var roles = await _roleManager.Roles
+            var roles = await roleManager.Roles
                 .AsNoTracking()
                 .OrderBy(x => x.Name)
                 .Select(x => new RoleDTO { Id = x.Id, Name = x.Name ?? string.Empty })
@@ -54,7 +46,7 @@ namespace IdentityServiceApi.Features.Authorization.Services
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetPriority(CacheItemPriority.NeverRemove);
 
-            _cache.Set(RolesCacheKeys.RoleList, cachedRoles, cacheOptions);
+            cache.Set(RolesCacheKeys.RoleList, cachedRoles, cacheOptions);
             return result;
         }
 
@@ -70,12 +62,12 @@ namespace IdentityServiceApi.Features.Authorization.Services
         /// </returns>
         public async Task<RoleResult> GetRoleAsync(string roleId)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(roleId, nameof(roleId));
+            parameterValidator.ValidateNotNullOrEmpty(roleId, nameof(roleId));
 
-            var role = await _roleManager.FindByIdAsync(roleId);
+            var role = await roleManager.FindByIdAsync(roleId);
             if (role == null)
             {
-                return _serviceResultFactory.RoleOperationFailure([ErrorMessages.Role.NotFound]);
+                return serviceResultFactory.RoleOperationFailure([ErrorMessages.Role.NotFound], ErrorType.NotFound);
             }
 
             var roleDto = new RoleDTO
@@ -84,7 +76,7 @@ namespace IdentityServiceApi.Features.Authorization.Services
                 Name = role.Name?.Trim() ?? string.Empty
             };
 
-            return _serviceResultFactory.RoleOperationSuccess(roleDto);
+            return serviceResultFactory.RoleOperationSuccess(roleDto);
         }
 
         /// <summary>
@@ -106,40 +98,40 @@ namespace IdentityServiceApi.Features.Authorization.Services
         /// </returns>
         public async Task<Result> AssignRoleAsync(string id, string roleName)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
-            _parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(roleName, nameof(roleName));
 
-            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
+            var userLookupResult = await userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _serviceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors]);
+                return serviceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors], userLookupResult.ErrorType);
             }
 
             var user = userLookupResult.UserFound;
             if (user.AccountStatus != 1)
             {
-                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.InactiveUser]);
+                return serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.InactiveUser], ErrorType.InvalidState);
             }
 
-            if (!await _roleManager.RoleExistsAsync(roleName))
+            if (!await roleManager.RoleExistsAsync(roleName))
             {
-                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.InvalidRole]);
+                return serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.InvalidRole], ErrorType.Validation);
             }
 
-            var existingRoles = await _userManager.GetRolesAsync(user);
+            var existingRoles = await userManager.GetRolesAsync(user);
             if (existingRoles.Any())
             {
-                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.UserAlreadyHasRole]);
+                return serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.UserAlreadyHasRole], ErrorType.InvalidState);
             }
 
-            var result = await _userManager.AddToRoleAsync(user, roleName);
+            var result = await userManager.AddToRoleAsync(user, roleName);
             if (!result.Succeeded)
             {
-                return _serviceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
+                return serviceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)], ErrorType.Validation);
             }
 
             LogRoleOperation($"Assigned role '{roleName}' to user with ID {id}.");
-            return _serviceResultFactory.GeneralOperationSuccess();
+            return serviceResultFactory.GeneralOperationSuccess();
         }
 
         /// <summary>
@@ -157,32 +149,32 @@ namespace IdentityServiceApi.Features.Authorization.Services
         /// </returns>
         public async Task<Result> RemoveRoleAsync(string id)
         {
-            _parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
+            parameterValidator.ValidateNotNullOrEmpty(id, nameof(id));
 
-            var userLookupResult = await _userLookupService.FindUserByIdAsync(id);
+            var userLookupResult = await userLookupService.FindUserByIdAsync(id);
             if (!userLookupResult.Success)
             {
-                return _serviceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors]);
+                return serviceResultFactory.GeneralOperationFailure([.. userLookupResult.Errors], userLookupResult.ErrorType);
             }
 
             var user = userLookupResult.UserFound;
 
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await userManager.GetRolesAsync(user);
             if (!roles.Any())
             {
-                return _serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.MissingRole]);
+                return serviceResultFactory.GeneralOperationFailure([ErrorMessages.Role.MissingRole], ErrorType.InvalidState);
             }
 
             var roleName = roles.First();
 
-            var result = await _userManager.RemoveFromRoleAsync(user, roleName);
+            var result = await userManager.RemoveFromRoleAsync(user, roleName);
             if (!result.Succeeded)
             {
-                return _serviceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)]);
+                return serviceResultFactory.GeneralOperationFailure([.. result.Errors.Select(e => e.Description)], ErrorType.Validation);
             }
 
             LogRoleOperation($"Removed role '{roleName}' to user with ID {id}.");
-            return _serviceResultFactory.GeneralOperationSuccess();
+            return serviceResultFactory.GeneralOperationSuccess();
         }
 
         private void LogRoleOperation(string message)
@@ -194,7 +186,7 @@ namespace IdentityServiceApi.Features.Authorization.Services
                 Message = message
             };
 
-            _loggerService.LogData(logEntry);
+            loggerService.LogData(logEntry);
         }
     }
 }

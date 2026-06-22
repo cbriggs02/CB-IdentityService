@@ -1,5 +1,6 @@
 ﻿using IdentityServiceApi.Features.Authorization.Interfaces;
 using IdentityServiceApi.Features.Authorization.Models;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.Authorization.Services
@@ -20,13 +21,16 @@ namespace IdentityServiceApi.Features.Authorization.Services
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the role operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="RoleResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public override RoleResult RoleOperationFailure(string[] errors)
+        public override RoleResult RoleOperationFailure(string[] errors, ErrorType errorType)
         {
             ValidateErrors(errors);
-            return new RoleResult { Success = false, Errors = [.. errors] };
+            return new RoleResult { Success = false, Errors = [.. errors], ErrorType = errorType };
         }
 
         /// <summary>
@@ -40,7 +44,7 @@ namespace IdentityServiceApi.Features.Authorization.Services
         /// </returns>
         public override RoleResult RoleOperationSuccess(RoleDTO role)
         {
-            _parameterValidator.ValidateObjectNotNull(role, nameof(role));
+            parameterValidator.ValidateObjectNotNull(role, nameof(role));
             return new RoleResult { Success = true, Role = role };
         }
     }

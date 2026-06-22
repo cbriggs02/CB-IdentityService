@@ -137,6 +137,11 @@
             public const string Mismatch = "Passwords do not match.";
 
             /// <summary>
+            ///     Message displayed when a user attempts to update a password but does not have a password hash.
+            /// </summary>
+            public const string MissingHash = "User does not have a password set.";
+
+            /// <summary>
             ///     Message displayed when a password is already set for a user.
             /// </summary>
             public const string AlreadySet = "Password has already been set.";

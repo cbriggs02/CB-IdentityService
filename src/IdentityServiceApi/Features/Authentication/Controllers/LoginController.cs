@@ -3,6 +3,7 @@ using IdentityServiceApi.Features.Authentication.Interfaces;
 using IdentityServiceApi.Features.Authentication.Models;
 using IdentityServiceApi.Shared.Constants;
 using IdentityServiceApi.Shared.Models;
+using IdentityServiceApi.Shared.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -23,8 +24,6 @@ namespace IdentityServiceApi.Features.Authentication.Controllers
     [AllowAnonymous]
     public class LoginController(ILoginService loginService) : ControllerBase
     {
-        private readonly ILoginService _loginService = loginService ?? throw new ArgumentNullException(nameof(loginService));
-
         /// <summary>
         ///     Authenticates a user and generates a JWT token upon successful login.
         /// </summary>
@@ -40,36 +39,38 @@ namespace IdentityServiceApi.Features.Authentication.Controllers
         /// <response code="400">
         ///     The request is invalid or authentication failed due to validation errors.
         /// </response>
-        /// <response code="404">
-        ///     The specified user could not be found.
-        /// </response>
         /// <response code="401">
         ///     Authentication failed due to invalid credentials or missing token generation.
+        /// </response>
+        /// <response code="404">
+        ///     The specified user could not be found.
         /// </response>
         [HttpPost("tokens")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerOperation(Summary = ApiDocumentation.LoginApi.Login)]
         public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] LoginRequest credentials)
         {
-            var result = await _loginService.LoginAsync(credentials);
+            var result = await loginService.LoginAsync(credentials);
             if (!result.Success)
             {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+                return result.ErrorType switch
                 {
-                    return NotFound();
-                }
-
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
+                    ErrorType.Unauthorized => Unauthorized(new ErrorResponse
+                    {
+                        Errors = result.Errors
+                    }),
+                    ErrorType.InvalidState => Unauthorized(new ErrorResponse
+                    {
+                        Errors = result.Errors
+                    }),
+                    ErrorType.NotFound => Unauthorized(),
+                    _ => Unauthorized()
+                };
             }
-
-            if (string.IsNullOrEmpty(result.Token))
-            {
-                return Unauthorized();
-            }
-
-            return Ok(new LoginResponse { Token = result.Token });
+            return Ok(new LoginResponse { Token = result.Token! });
         }
     }
 }

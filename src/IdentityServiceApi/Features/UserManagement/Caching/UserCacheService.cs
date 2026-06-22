@@ -1,5 +1,6 @@
 ﻿using IdentityServiceApi.Features.UserManagement.Interfaces;
 using IdentityServiceApi.Shared.Constants;
+using IdentityServiceApi.Shared.Logging;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace IdentityServiceApi.Features.UserManagement.Caching
@@ -15,12 +16,8 @@ namespace IdentityServiceApi.Features.UserManagement.Caching
     ///     @Created: 2025
     ///     @Updated: 2026
     /// </remarks>
-    public class UserCacheService(IMemoryCache cache, IUserCacheKeyService cacheKeyService, ILogger<UserCacheService> logger) : IUserCacheService
+    public class UserCacheService(IMemoryCache cache, IUserCacheKeyService cacheKeyService, ILoggerService loggerService) : IUserCacheService
     {
-        private readonly IMemoryCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        private readonly IUserCacheKeyService _cacheKeyService = cacheKeyService ?? throw new ArgumentNullException(nameof(cacheKeyService));
-        private readonly ILogger<UserCacheService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
         /// <summary>
         ///     Clears all tracked user list cache entries, including paginated and filtered user list data.
         ///     This ensures that any updates to user data are reflected immediately.
@@ -29,17 +26,25 @@ namespace IdentityServiceApi.Features.UserManagement.Caching
         {
             try
             {
-                var keys = _cacheKeyService.GetAllUserListKeys();
+                var keys = cacheKeyService.GetAllUserListKeys();
                 foreach (var key in keys)
                 {
-                    _cache.Remove(key);
+                    cache.Remove(key);
                 }
 
-                _cacheKeyService.ClearTrackedKeys();
+                cacheKeyService.ClearTrackedKeys();
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, ErrorMessages.UserCache.FailedToClearUserListCache);
+                var logEntry = new LogEntry
+                {
+                    LogLevel = LogLevel.Error,
+                    LogSource = LogSource.UserCacheService,
+                    Message = ErrorMessages.UserCache.FailedToClearUserListCache,
+                    Exception = ex
+                };
+
+                loggerService.LogData(logEntry);
             }
         }
     }

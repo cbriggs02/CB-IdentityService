@@ -1,6 +1,7 @@
 ﻿using IdentityServiceApi.Features.UserManagement.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Models.DTOs;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
@@ -15,20 +16,22 @@ namespace IdentityServiceApi.Features.UserManagement.Services
     /// </remarks>
     public class UserResultFactory(IParameterValidator parameterValidator) : UserResultFactoryBase(parameterValidator), IUserResultFactory
     {
-
         /// <summary>
         ///     Creates a failed user service result with specified errors.
         /// </summary>
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the user operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="UserResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public override UserResult UserOperationFailure(string[] errors)
+        public override UserResult UserOperationFailure(string[] errors, ErrorType errorType)
         {
             ValidateErrors(errors);
-            return new UserResult { Success = false, Errors = [.. errors] };
+            return new UserResult { Success = false, Errors = [.. errors], ErrorType = errorType };
         }
 
         /// <summary>
@@ -42,7 +45,7 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// </returns>
         public override UserResult UserOperationSuccess(UserDTO user)
         {
-            _parameterValidator.ValidateObjectNotNull(user, nameof(user));
+            parameterValidator.ValidateObjectNotNull(user, nameof(user));
             ValidateUserProperties(user);
             return new UserResult { Success = true, User = user };
         }

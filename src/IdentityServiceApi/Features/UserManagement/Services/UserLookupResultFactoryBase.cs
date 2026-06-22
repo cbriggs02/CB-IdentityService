@@ -1,7 +1,7 @@
 ﻿using IdentityServiceApi.Features.UserManagement.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Features.UserManagement.Models.Results;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.UserManagement.Services
@@ -23,10 +23,13 @@ namespace IdentityServiceApi.Features.UserManagement.Services
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the lookup operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="UserLookupResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public abstract UserLookupResult UserLookupOperationFailure(string[] errors);
+        public abstract UserLookupResult UserLookupOperationFailure(string[] errors, ErrorType errorType);
 
         /// <summary>
         ///     Creates a successful user lookup service result with the specified user.

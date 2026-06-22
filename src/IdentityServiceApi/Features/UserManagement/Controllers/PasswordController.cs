@@ -3,6 +3,7 @@ using IdentityServiceApi.Features.UserManagement.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Models.Requests;
 using IdentityServiceApi.Shared.Constants;
 using IdentityServiceApi.Shared.Models;
+using IdentityServiceApi.Shared.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -23,8 +24,6 @@ namespace IdentityServiceApi.Features.UserManagement.Controllers
     [Route("api/v{version:apiVersion}/password")]
     public class PasswordController(IPasswordService passwordService) : ControllerBase
     {
-        private readonly IPasswordService _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
-
         /// <summary>
         ///     Sets a user's password, typically used during initial account setup or reset scenarios.
         /// </summary>
@@ -46,25 +45,38 @@ namespace IdentityServiceApi.Features.UserManagement.Controllers
         /// <response code="404">
         ///     The specified user could not be found.
         /// </response>
+        /// <response code="409">
+        ///     The request could not be completed due to a conflict with the current state of the resource.
+        /// </response>
         [AllowAnonymous]
         [HttpPut("users/{id}/password")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ErrorResponse))]
         [SwaggerOperation(Summary = ApiDocumentation.PasswordApi.SetPassword)]
         public async Task<IActionResult> SetPasswordAsync([FromRoute][Required] string id, [FromBody] SetPasswordRequest request)
         {
-            var result = await _passwordService.SetPasswordAsync(id, request);
+            var result = await passwordService.SetPasswordAsync(id, request);
             if (!result.Success)
             {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.User.NotFound, StringComparison.OrdinalIgnoreCase)))
+                return result.ErrorType switch
                 {
-                    return NotFound();
-                }
-
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
+                    ErrorType.NotFound => NotFound(),
+                    ErrorType.InvalidState => Conflict(new ErrorResponse
+                    {
+                        Errors = result.Errors
+                    }),
+                    ErrorType.Validation => BadRequest(new ErrorResponse
+                    {
+                        Errors = result.Errors
+                    }),
+                    _ => BadRequest(new ErrorResponse
+                    {
+                        Errors = [ErrorMessages.General.GlobalExceptionMessage]
+                    })
+                };
             }
-
             return NoContent();
         }
 
@@ -94,20 +106,35 @@ namespace IdentityServiceApi.Features.UserManagement.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ErrorResponse))]
         [SwaggerOperation(Summary = ApiDocumentation.PasswordApi.UpdatePassword)]
         public async Task<IActionResult> UpdatePasswordAsync([FromRoute][Required] string id, [FromBody] UpdatePasswordRequest request)
         {
-            var result = await _passwordService.UpdatePasswordAsync(id, request);
+            var result = await passwordService.UpdatePasswordAsync(id, request);
             if (!result.Success)
             {
-                if (result.Errors.Any(error => error.Contains(ErrorMessages.Authorization.Forbidden, StringComparison.OrdinalIgnoreCase)))
+                return result.ErrorType switch
                 {
-                    return Forbid();
-                }
-
-                return BadRequest(new ErrorResponse { Errors = result.Errors });
+                    ErrorType.Forbidden => Forbid(),
+                    ErrorType.NotFound => NotFound(),
+                    ErrorType.InvalidState => Conflict(new ErrorResponse
+                    {
+                        Errors = result.Errors
+                    }),
+                    ErrorType.Unauthorized => Unauthorized(new ErrorResponse
+                    {
+                        Errors = result.Errors
+                    }),
+                    ErrorType.Validation => BadRequest(new ErrorResponse
+                    {
+                        Errors = result.Errors
+                    }),
+                    _ => BadRequest(new ErrorResponse
+                    {
+                        Errors = [ErrorMessages.General.GlobalExceptionMessage]
+                    })
+                };
             }
-
             return NoContent();
         }
     }

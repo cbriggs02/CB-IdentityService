@@ -1,6 +1,6 @@
 ﻿using IdentityServiceApi.Features.Authentication.Interfaces;
 using IdentityServiceApi.Features.Authentication.Models;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 using IdentityServiceApi.Shared.Utilities;
 
 namespace IdentityServiceApi.Features.Authentication.Services
@@ -21,10 +21,13 @@ namespace IdentityServiceApi.Features.Authentication.Services
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the login operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="LoginResult"/> indicating failure along with the provided errors.
         /// </returns>
-        public abstract LoginResult LoginOperationFailure(string[] errors);
+        public abstract LoginResult LoginOperationFailure(string[] errors, ErrorType errorType);
 
         /// <summary>
         ///     Creates a successful login service result with a token.

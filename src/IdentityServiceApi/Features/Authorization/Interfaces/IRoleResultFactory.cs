@@ -1,5 +1,5 @@
 ﻿using IdentityServiceApi.Features.Authorization.Models;
-using IdentityServiceApi.Shared.ResultFactories;
+using IdentityServiceApi.Shared.Results;
 
 namespace IdentityServiceApi.Features.Authorization.Interfaces
 {
@@ -21,10 +21,13 @@ namespace IdentityServiceApi.Features.Authorization.Interfaces
         /// <param name="errors">
         ///     An array of error messages describing the failure.
         /// </param>
+        /// <param name="errorType">
+        ///     An <see cref="ErrorType"/> indicating the type of error that occurred during the role operation.
+        /// </param>
         /// <returns>
         ///     A <see cref="RoleResult"/> indicating failure along with the provided errors.
         /// </returns>
-        RoleResult RoleOperationFailure(string[] errors);
+        RoleResult RoleOperationFailure(string[] errors, ErrorType errorType);
 
         /// <summary>
         ///     Creates a successful role service result with a role DTO.

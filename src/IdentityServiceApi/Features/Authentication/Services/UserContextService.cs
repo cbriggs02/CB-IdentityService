@@ -17,8 +17,6 @@ namespace IdentityServiceApi.Features.Authentication.Services
     /// </remarks>
     public class UserContextService(IHttpContextAccessor httpContextAccessor) : IUserContextService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-
         /// <summary>
         ///     Retrieves the claims principal of the currently authenticated user.
         ///     This includes all claims associated with the user, which can be used for
@@ -28,8 +26,8 @@ namespace IdentityServiceApi.Features.Authentication.Services
         ///     The claims principal representing the current user, or null if the user is not authenticated.
         /// </returns>
         public ClaimsPrincipal? GetClaimsPrincipal() =>
-            _httpContextAccessor.HttpContext?.User;
-        
+            httpContextAccessor.HttpContext?.User;
+
         /// <summary>
         ///     Extracts the ID of the currently authenticated user from the provided claims principal.
         ///     This ID is typically used for identifying the user in various operations throughout the application.
@@ -76,8 +74,8 @@ namespace IdentityServiceApi.Features.Authentication.Services
         /// <returns>
         ///     The remote IP address of the client as an <see cref="IPAddress"/>.
         /// </returns>
-        public IPAddress? GetAddress() => 
-            _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress;
+        public IPAddress? GetAddress() =>
+            httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress;
 
         /// <summary>
         ///     Retrieves the request path from the current HTTP context. This information is 
@@ -86,7 +84,7 @@ namespace IdentityServiceApi.Features.Authentication.Services
         /// <returns>
         ///     The request path as a string, or an empty string if not available.
         /// </returns>
-        public string? GetRequestPath() => 
-            _httpContextAccessor.HttpContext?.Request?.Path.Value;
+        public string? GetRequestPath() =>
+            httpContextAccessor.HttpContext?.Request?.Path.Value;
     }
 }
