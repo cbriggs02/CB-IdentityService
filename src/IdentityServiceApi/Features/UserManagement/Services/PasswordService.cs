@@ -105,7 +105,6 @@ namespace IdentityServiceApi.Features.UserManagement.Services
             }
 
             var user = userLookupResult.UserFound;
-
             if (string.IsNullOrEmpty(user.PasswordHash))
             {
                 return serviceResultFactory.GeneralOperationFailure([ErrorMessages.Password.MissingHash], ErrorType.InvalidState);

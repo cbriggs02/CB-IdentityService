@@ -27,8 +27,4 @@
 		<ProjectReference Include="..\..\src\IdentityServiceApi\IdentityServiceApi.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Features\UserManagement\" />
-	</ItemGroup>
-
 </Project>

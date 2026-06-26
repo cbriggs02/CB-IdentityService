@@ -43,7 +43,6 @@ namespace IdentityServiceApi.Features.UserManagement.Services
             };
 
             context.PasswordHistories.Add(passwordHistory);
-
             await cleanupService.RemoveOldPasswordsAsync(passwordHistory.UserId);
             await context.SaveChangesAsync();
         }
