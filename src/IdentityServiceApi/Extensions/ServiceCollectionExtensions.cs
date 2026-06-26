@@ -9,6 +9,7 @@ using IdentityServiceApi.Shared.Utilities;
 using IdentityServiceApi.Shared.Logging;
 using IdentityServiceApi.Features.UserManagement.Caching;
 using IdentityServiceApi.Shared.Results;
+using IdentityServiceApi.Shared.Context;
 
 namespace IdentityServiceApi.Extensions
 {

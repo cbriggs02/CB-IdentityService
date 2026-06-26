@@ -1,8 +1,7 @@
-﻿using IdentityServiceApi.Features.Authentication.Interfaces;
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 
-namespace IdentityServiceApi.Features.Authentication.Services
+namespace IdentityServiceApi.Shared.Context
 {
     /// <summary>
     ///     Provides methods for accessing user context information from the HTTP context,

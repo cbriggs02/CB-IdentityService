@@ -1,14 +1,14 @@
-﻿using IdentityServiceApi.Features.Authentication.Interfaces;
-using IdentityServiceApi.Features.Authorization.Interfaces;
+﻿using IdentityServiceApi.Features.Authorization.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Interfaces;
 using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using IdentityServiceApi.Shared.Constants;
+using IdentityServiceApi.Shared.Context;
 using Microsoft.AspNetCore.Identity;
 
 namespace IdentityServiceApi.Features.Authorization.Services
 {
     /// <summary>
-    ///     Service responsible for interacting with authorization-related data and business logic.
+    ///    Provides authorization services for validating user permissions based on roles and user context.
     /// </summary>
     /// <remarks>
     ///     @Author: Christian Briglio
@@ -18,55 +18,78 @@ namespace IdentityServiceApi.Features.Authorization.Services
     public class AuthorizationService(UserManager<User> userManager, IUserContextService userContextService, IUserLookupService userLookupService) : IAuthorizationService
     {
         /// <summary>
-        ///     Asynchronously validates permissions based on the current user's role and the target user's data:
-        ///     - Regular users can only access their own data.
-        ///     - Admin users can access their own data and any non-admin user's data,
-        ///       but are restricted from accessing data of other admin users.
+        ///     Validates whether the current authenticated user has permission to access or 
+        ///     operate on a resource identified by the specified ID.
+        ///     The permission logic is based on the user's roles and identity:
+        ///     <list type="bullet">
+        ///         <item>
+        ///             <description>
+        ///                 SuperAdmin users have unrestricted access.
+        ///             </description>
+        ///         </item>
+        ///         <item>
+        ///             <description>
+        ///                 Admin users require additional validation via <c>ValidateAdminPermission</c>.
+        ///             </description>
+        ///         </item>
+        ///         <item>
+        ///             <description>
+        ///                 Non-admin users are only permitted to access their own resources (self-access).
+        ///             </description>
+        ///         </item>
+        ///     </list>
         /// </summary>
         /// <param name="id">
-        ///     The ID of the user whose permissions are being validated. 
-        ///     This represents the target user whose data the current user is attempting to access.
+        ///     The identifier of the target resource or user being accessed. Must not be null or empty.
         /// </param>
         /// <returns>
-        ///     True if the current user has permission to access the target user's data; otherwise, false.
-        ///     - Returns true if the current user is a regular user accessing their own data.
-        ///     - Returns true if the current user is an admin accessing their own data or non-admin data.
-        ///     - Returns false if an admin attempts to access another admin's data.
-        ///     -Returns false if id is not provided or user context is not available.
-        /// </returns>
+        ///     A <see cref="Task{Boolean}"/> that resolves to:
+        ///     <list type="bullet">
+        ///         <item>
+        ///             <description>
+        ///                 <c>true</c> if the current user has permission.
+        ///             </description>
+        ///         </item>
+        ///         <item>
+        ///             <description>
+        ///                 <c>false</c> if the user is not authenticated, lacks required roles, or 
+        ///                 does not have sufficient permissions.
+        ///             </description>
+        ///         </item>
+        ///     </returns>
         public async Task<bool> ValidatePermissionAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
-                return false; // No ID provided, so permission cannot be validated
+                return false;
             }
 
             var principal = userContextService.GetClaimsPrincipal();
             if (principal == null)
             {
-                return false; // No user context available, so permission cannot be validated
+                return false;
             }
 
             var currentUserId = userContextService.GetUserId(principal);
             if (currentUserId == null)
             {
-                return false; // No id recovered from http context, deny by default
+                return false;
             }
 
             var roles = userContextService.GetRoles(principal);
             if (roles == null || roles.Count == 0)
             {
-                return false; // No roles assigned, deny access
+                return false;
+            }
+
+            if (roles.Contains(Roles.SuperAdmin))
+            {
+                return true;
             }
 
             if (roles.Contains(Roles.Admin))
             {
                 return await ValidateAdminPermission(id, currentUserId);
-            }
-
-            if (roles.Contains(Roles.SuperAdmin))
-            {
-                return true; // super admin can access any endpoint and data.
             }
 
             return IsSelfAccess(id, currentUserId);
@@ -76,7 +99,7 @@ namespace IdentityServiceApi.Features.Authorization.Services
         {
             if (string.IsNullOrEmpty(id))
             {
-                return false; // No target user ID provided, so permission cannot be validated
+                return false;
             }
 
             var userLookupResult = await userLookupService.FindUserByIdAsync(id);
@@ -86,16 +109,16 @@ namespace IdentityServiceApi.Features.Authorization.Services
             }
 
             var user = userLookupResult.UserFound;
+            var targetUserRoles = await userManager.GetRolesAsync(user);
 
-            if (await IsTargetSuperAdmin(user))
+            if (targetUserRoles.Contains(Roles.SuperAdmin))
             {
-                return false; // Can't access Super Admin
+                return false;
             }
 
-
-            if (await IsTargetAdmin(user) && !IsSelfAccess(id, currentUserId))
+            if (targetUserRoles.Contains(Roles.Admin) && !IsSelfAccess(id, currentUserId))
             {
-                return false; // Can't access another admin's data or super admin data
+                return false;
             }
 
             return true;
@@ -103,17 +126,5 @@ namespace IdentityServiceApi.Features.Authorization.Services
 
         private static bool IsSelfAccess(string userId, string currentUserId) =>
             userId.Equals(currentUserId, StringComparison.OrdinalIgnoreCase);
-
-        private async Task<bool> IsTargetAdmin(User user)
-        {
-            var targetUserRoles = await userManager.GetRolesAsync(user);
-            return targetUserRoles.Any(role => role == Roles.Admin);
-        }
-
-        private async Task<bool> IsTargetSuperAdmin(User user)
-        {
-            var targetUserRoles = await userManager.GetRolesAsync(user);
-            return targetUserRoles.Any(role => role == Roles.SuperAdmin);
-        }
     }
 }

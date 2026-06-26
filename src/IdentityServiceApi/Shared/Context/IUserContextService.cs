@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Security.Claims;
 
-namespace IdentityServiceApi.Features.Authentication.Interfaces
+namespace IdentityServiceApi.Shared.Context
 {
     /// <summary>
     ///     Defines methods for retrieving user context information, such as claims, user ID,
