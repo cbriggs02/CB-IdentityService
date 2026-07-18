@@ -19,14 +19,27 @@
         /// </param>
         public void LogData(LogEntry entry)
         {
+            var sanitizedSource = SanitizeForLog(entry.LogSource.ToString());
+            var sanitizedMessage = SanitizeForLog(entry.Message);
+
             if (entry.Exception != null)
             {
-                logger.Log(entry.LogLevel, entry.Exception, "{Source} | {Message}", entry.LogSource, entry.Message);
+                logger.Log(entry.LogLevel, entry.Exception, "{Source} | {Message}", sanitizedSource, sanitizedMessage);
             } 
             else
             {
-                logger.Log(entry.LogLevel, "{Source} | {Message}", entry.LogSource, entry.Message);
+                logger.Log(entry.LogLevel, "{Source} | {Message}", sanitizedSource, sanitizedMessage);
             }
+        }
+
+        private static string SanitizeForLog(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return string.Empty;
+            }
+
+            return value.Replace("\r", " ").Replace("\n", " ");
         }
     }
 }
