@@ -22,9 +22,11 @@
             if (entry.Exception != null)
             {
                 logger.Log(entry.LogLevel, entry.Exception, "{Source} | {Message}", entry.LogSource, entry.Message);
+            } 
+            else
+            {
+                logger.Log(entry.LogLevel, "{Source} | {Message}", entry.LogSource, entry.Message);
             }
-
-            logger.Log(entry.LogLevel, "{Source} | {Message}", entry.LogSource, entry.Message);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace IdentityServiceApi.UnitTests.Features.UserManagement.UserServiceTests
                 };
 
                 _resultFactory.Setup(x =>
-                    x.UserOperationFailure(It.IsAny<string[]>(), expectedErrorType))
+                    x.GeneralOperationFailure(It.IsAny<string[]>(), expectedErrorType))
                     .Returns(expected);
 
                 var result = await _service.UpdateUserAsync("id", CreateValidDto());
