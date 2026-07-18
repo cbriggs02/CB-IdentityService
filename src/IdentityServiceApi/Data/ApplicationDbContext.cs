@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using IdentityServiceApi.Models.Entities;
+using IdentityServiceApi.Features.UserManagement.Models.Entities;
 
 namespace IdentityServiceApi.Data
 {
@@ -11,6 +11,7 @@ namespace IdentityServiceApi.Data
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
     public class ApplicationDbContext : IdentityDbContext<User>
     {
@@ -41,13 +42,6 @@ namespace IdentityServiceApi.Data
         ///     user passwords over time, facilitating password history management and security.
         /// </summary>
         public virtual DbSet<PasswordHistory> PasswordHistories { get; set; } = null!;
-
-        /// <summary>
-        ///     Gets or sets the <see cref="DbSet{AuditLog}"/> representing the collection of audit 
-        ///     log records in the database. This table captures actions performed within the application 
-        ///     for auditing purposes, including user actions and system events.
-        /// </summary>
-        public virtual DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
         /// <summary>
         ///     Gets or sets the <see cref="DbSet{Country}"/> representing the collection 
@@ -85,16 +79,6 @@ namespace IdentityServiceApi.Data
                 .WithMany(x => x.Passwords)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<AuditLog>()
-                .ToTable("AuditLogs")
-                .HasKey(x => x.Id);
-
-            modelBuilder.Entity<AuditLog>()
-                .HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Country>()
                 .ToTable("Countries")

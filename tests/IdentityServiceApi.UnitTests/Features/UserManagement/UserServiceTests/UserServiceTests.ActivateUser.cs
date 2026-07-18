@@ -1,0 +1,52 @@
+﻿using IdentityServiceApi.Features.UserManagement.Models.Entities;
+using IdentityServiceApi.Shared.Constants;
+using IdentityServiceApi.Shared.Results;
+using Microsoft.AspNetCore.Identity;
+using Moq;
+
+namespace IdentityServiceApi.UnitTests.Features.UserManagement.UserServiceTests
+{
+    public partial class UserServiceTests
+    {
+        public class ActivateUserAsyncTests : UserServiceTests
+        {
+            [Fact]
+            public async Task ActivateUserAsync_AlreadyActive_ReturnsFailure()
+            {
+                var expectedErrorType = ErrorType.InvalidState;
+                var user = new User { Id = "id", AccountStatus = 1 };
+                SetupPermissionAndLookup(user);
+
+                _resultFactory.Setup(x =>
+                    x.GeneralOperationFailure(It.IsAny<string[]>(), expectedErrorType))
+                    .Returns(new Result
+                    {
+                        Success = false,
+                        Errors = [ErrorMessages.User.AlreadyActivated],
+                        ErrorType = expectedErrorType
+                    });
+
+                var result = await _service.ActivateUserAsync("id");
+                Assert.False(result.Success);
+            }
+
+            [Fact]
+            public async Task ActivateUserAsync_Success()
+            {
+                var user = new User { Id = "id", AccountStatus = 0 };
+                SetupPermissionAndLookup(user);
+
+                _userManager.Setup(x => x.UpdateAsync(user))
+                    .ReturnsAsync(IdentityResult.Success);
+
+                _resultFactory.Setup(x => x.GeneralOperationSuccess())
+                    .Returns(new Result { Success = true });
+
+                var result = await _service.ActivateUserAsync("id");
+                Assert.True(result.Success);
+            }
+        }
+    }
+}
+
+

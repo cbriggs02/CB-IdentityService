@@ -8,6 +8,7 @@ namespace IdentityServiceApi.Extensions
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public static class RateLimitingExtensions
     {
@@ -27,8 +28,8 @@ namespace IdentityServiceApi.Extensions
             {
                 options.EnableEndpointRateLimiting = true;
                 options.HttpStatusCode = 429;
-                options.GeneralRules = new List<RateLimitRule>
-                {
+                options.GeneralRules =
+                [
                     new()
                     {
                         Endpoint = "POST:/api/*/login/tokens",
@@ -65,7 +66,7 @@ namespace IdentityServiceApi.Extensions
                         Period = "1m",
                         Limit = 50
                     }
-                };
+                ];
             });
 
             services.AddInMemoryRateLimiting();

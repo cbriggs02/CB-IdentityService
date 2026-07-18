@@ -10,6 +10,7 @@ namespace IdentityServiceApi.Extensions
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public static class DatabaseServiceExtensions
     {

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Bogus;
+using IdentityServiceApi.Features.UserManagement.Models.Entities;
+using IdentityServiceApi.Shared.Constants;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using IdentityServiceApi.Models.Entities;
-using IdentityServiceApi.Constants;
 
 namespace IdentityServiceApi.Data
 {
@@ -13,24 +14,10 @@ namespace IdentityServiceApi.Data
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2024
+    ///     @Updated: 2026
     /// </remarks>
-    public class DbInitializer
+    public class DbInitializer(ILogger<DbInitializer> logger)
     {
-        private readonly ILogger<DbInitializer> _logger;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="DbInitializer"/> class.
-        ///     This constructor injects the <see cref="ILogger{DbInitializer}"/> 
-        ///     for logging.
-        /// </summary>
-        /// <param name="logger">
-        ///     The logger used for logging messages.
-        /// </param>
-        public DbInitializer(ILogger<DbInitializer> logger)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
         /// <summary>
         ///     Asynchronously initializes the database and performs seeding if necessary.
         ///     This method is called during the application startup.
@@ -52,10 +39,9 @@ namespace IdentityServiceApi.Data
                 var userManager = services.GetRequiredService<UserManager<User>>();
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
+                await context.Database.MigrateAsync();
                 await InitializeRolesAsync(roleManager);
                 await InitializeCountriesAsync(context);
-
-                await context.Database.MigrateAsync();
 
                 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
                 {
@@ -64,11 +50,11 @@ namespace IdentityServiceApi.Data
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, ErrorMessages.Database.UpdateFailed);
+                logger.LogError(dbEx, ErrorMessages.Database.UpdateFailed);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ErrorMessages.Database.InitializationFailed);
+                logger.LogError(ex, ErrorMessages.Database.InitializationFailed);
             }
         }
 
@@ -89,23 +75,28 @@ namespace IdentityServiceApi.Data
         {
             const string password = "P@s_s8w0rd!";
 
-            if (!userManager.Users.Any())
+            if (userManager.Users.Any())
             {
-                for (int i = 0; i < 5000; i++)
-                {
-                    var user = new User
-                    {
-                        UserName = $"userTest{i}",
-                        FirstName = $"FirstName{i}",
-                        LastName = $"LastName{i}",
-                        Email = $"userTest{i}@gmail.com",
-                        PhoneNumber = "222-222-2222",
-                        CountryId = 2,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
+                return;
+            }
 
-                    await userManager.CreateAsync(user, password);
+            var faker = new Faker<User>()
+                .RuleFor(u => u.UserName, f => f.Internet.UserName())
+                .RuleFor(u => u.Email, f => f.Internet.Email())
+                .RuleFor(u => u.FirstName, f => f.Name.FirstName())
+                .RuleFor(u => u.LastName, f => f.Name.LastName())
+                .RuleFor(u => u.PhoneNumber, f => f.Phone.PhoneNumber())
+                .RuleFor(u => u.CountryId, f => f.Random.Int(1, 20))
+                .RuleFor(u => u.CreatedAt, f => DateTime.UtcNow)
+                .RuleFor(u => u.UpdatedAt, f => DateTime.UtcNow);
+
+            var users = faker.Generate(5000);
+            foreach (var user in users)
+            {
+                var result = await userManager.CreateAsync(user, password);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, Roles.User);
                 }
             }
         }
@@ -116,27 +107,30 @@ namespace IdentityServiceApi.Data
             const string Password = "superPassword123!";
 
             var superAdmin = await userManager.FindByEmailAsync(Email);
-            if (superAdmin == null)
+            if (superAdmin != null)
             {
-                superAdmin = new User
-                {
-                    UserName = Email,
-                    FirstName = "Christian",
-                    LastName = "Briglio",
-                    Email = Email,
-                    PhoneNumber = "222-222-2222",
-                    CountryId = 2,
-                    AccountStatus = 1,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    EmailConfirmed = true
-                };
+                return;
+            }
 
-                var result = await userManager.CreateAsync(superAdmin, Password);
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(superAdmin, Roles.SuperAdmin);
-                }
+            var faker = new Faker();
+            superAdmin = new User
+            {
+                UserName = Email,
+                Email = Email,
+                FirstName = faker.Name.FirstName(),
+                LastName = faker.Name.LastName(),
+                PhoneNumber = faker.Phone.PhoneNumber(),
+                CountryId = faker.Random.Int(1, 20),
+                AccountStatus = 1,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(superAdmin, Password);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(superAdmin, Roles.SuperAdmin);
             }
         }
 
@@ -145,34 +139,37 @@ namespace IdentityServiceApi.Data
             const string Email = "admin@admin.com";
             const string Password = "AdminPassword123!";
 
-            var adminUser = await userManager.FindByEmailAsync(Email);
-            if (adminUser == null)
+            var admin = await userManager.FindByEmailAsync(Email);
+            if (admin != null)
             {
-                adminUser = new User
-                {
-                    UserName = Email,
-                    FirstName = "Robert",
-                    LastName = "Plankton",
-                    Email = Email,
-                    PhoneNumber = "222-222-2222",
-                    CountryId = 2,
-                    AccountStatus = 1,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    EmailConfirmed = true
-                };
+                return;
+            }
 
-                var result = await userManager.CreateAsync(adminUser, Password);
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(adminUser, Roles.Admin);
-                }
+            var faker = new Faker();
+            admin = new User
+            {
+                UserName = Email,
+                Email = Email,
+                FirstName = faker.Name.FirstName(),
+                LastName = faker.Name.LastName(),
+                PhoneNumber = faker.Phone.PhoneNumber(),
+                CountryId = faker.Random.Int(1, 20),
+                AccountStatus = 1,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(admin, Password);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, Roles.SuperAdmin);
             }
         }
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
         {
-            string[] roleNames = { Roles.SuperAdmin, Roles.Admin, Roles.User };
+            string[] roleNames = [Roles.SuperAdmin, Roles.Admin, Roles.User];
             foreach (var roleName in roleNames)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))

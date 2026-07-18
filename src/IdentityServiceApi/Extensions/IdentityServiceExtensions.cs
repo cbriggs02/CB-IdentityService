@@ -1,5 +1,5 @@
 ﻿using IdentityServiceApi.Data;
-using IdentityServiceApi.Models.Entities;
+using IdentityServiceApi.Features.UserManagement.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace IdentityServiceApi.Extensions
@@ -11,6 +11,7 @@ namespace IdentityServiceApi.Extensions
     /// <remarks>
     ///     @Author: Christian Briglio
     ///     @Created: 2025
+    ///     @Updated: 2026
     /// </remarks>
     public static class IdentityServiceExtensions
     {
