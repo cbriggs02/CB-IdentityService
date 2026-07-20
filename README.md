@@ -1,15 +1,20 @@
-# IdentityServiceApi
+# Identity Web Service
 
 [![Board Status](https://dev.azure.com/chrisbriglio/921b1b04-8655-415f-8bcf-4b5b235431d1/c1ed23dd-9fde-4a79-880d-0555945b5d49/_apis/work/boardbadge/694f5a15-99d9-486b-a2b0-b56bd56925c1)](https://dev.azure.com/chrisbriglio/921b1b04-8655-415f-8bcf-4b5b235431d1/_boards/board/t/c1ed23dd-9fde-4a79-880d-0555945b5d49/Backlog%20items/)
 
-A secure, modular RESTful API built with ASP.NET Core Web API for identity management, authentication, and role-based access control. The project is designed with scalability, maintainability, and modern DevOps practices in mind, making it suitable for both development and production environments.
+Identity Web Service is a secure, modular backend platform built with ASP.NET Core. The solution currently consists of two APIs:
+
+- **Identity Service Gateway API** – The public entry point that routes client requests to backend services and provides a single access point to the platform.
+- **Identity Service API** – Responsible for authentication, authorization, user management, and role-based access control.
+
+The project is designed with scalability, maintainability, and modern DevOps practices in mind, making it suitable for both development and production environments.
 
 ---
 
 ## Technology Stack
 
-- **Framework:** ASP.NET Core Web API (.NET 6 LTS)
-- **ORM:** Entity Framework Core 6.x (SQL Server)
+- **Framework:** ASP.NET Core Web API (.NET 10.x)
+- **ORM:** Entity Framework Core 10.x (SQL Server)
 - **Authentication:** ASP.NET Identity with JWT
 - **API Documentation:** Swagger UI
 - **Testing:** xUnit for unit and integration tests
@@ -44,26 +49,30 @@ This project incorporates modern CI/CD and DevOps practices to ensure code quali
 
 ## Overview
 
-This API enables secure communication between clients and the server over HTTPS using standard web protocols. It follows a clean, modular architecture that separates responsibilities across well-defined layers:
+Identity Web Service provides secure communication between clients and backend services over HTTPS using standard web protocols.
 
-* **Interfaces** – Define contracts for application services
-* **Services** – Contain business logic and core functionality
-* **Controllers** – Handle HTTP requests and API routing
-* **Models & DTOs** – Represent domain entities and data transfer objects
+The solution currently consists of:
 
----
+- **Identity Service Gateway API** – Routes incoming client requests to the appropriate backend services and acts as the single entry point into the platform.
+- **Identity Service API** – Handles authentication, authorization, identity management, and role-based access control.
 
-## Clients / Consumers
+The backend services follow a **feature-based architecture**, where each feature encapsulates the components required to implement a specific area of functionality. This improves modularity, maintainability, and scalability by keeping related code together.
 
-This API is consumed by the following frontend application(s):
+A typical feature may include:
 
-* [Admin Portal (Angular)](https://github.com/cbriggs02/CB-IdentityAdminPortal)
+- **Controllers** – Handle HTTP requests and API routing.
+- **Services** – Implement business logic.
+- **Models & DTOs** – Represent domain entities and data transfer objects.
+- **Interfaces** – Define contracts where abstraction or dependency injection is required.
+
+Shared utilities, infrastructure, and cross-cutting concerns are located in common project areas outside individual features.
 
 ---
 
 ## System Design
 
-* **Modular Architecture** – Clear separation of concerns across layers
+* **API Gateway** – Centralized routing for backend services
+* **Feature-Based Architecture** – Organizes code by business capability
 * **Entity Framework Core** – Code-first approach with SQL Server
 * **Dependency Injection** – Built-in DI for flexibility and testability
 * **Swagger UI** – Interactive API documentation and testing
